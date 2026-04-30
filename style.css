@@ -22,7 +22,7 @@
 body {
     background-color: var(--bg-color);
     /* Using the generated image as background */
-    background-image: url('bg.png');
+    background-image: url('assets/bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
