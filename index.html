@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mudit Agrawal - Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <div class="menu-left">
+            <div class="menu-dropdown-container">
+                <i class="fab fa-apple apple-icon menu-item" onclick="toggleMenu('apple-menu')"></i>
+                <div class="menu-dropdown hidden" id="apple-menu">
+                    <div class="dropdown-item profile-item" style="display: flex; align-items: center; padding: 10px;">
+                        <img src="Professionalimage.jpeg" width="45" height="45" style="border-radius:50%; margin-right: 12px; object-fit: cover;">
+                        <div style="line-height: 1.3;">
+                            <strong style="font-size: 15px; color: #fff;">Mudit Agrawal</strong><br>
+                            <span style="font-size: 12px; color: #aaa;">AI/ML Undergraduate<br>IILM University</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-dropdown-container">
+                <span class="menu-item bold" onclick="toggleMenu('finder-menu')">Finder</span>
+                <div class="menu-dropdown hidden" id="finder-menu">
+                    <div class="dropdown-item" onclick="openWindow('about-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> About Me</div>
+                    <div class="dropdown-item" onclick="openWindow('experience-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Experience</div>
+                    <div class="dropdown-item" onclick="openWindow('education-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Education</div>
+                    <div class="dropdown-item" onclick="openWindow('projects-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Projects</div>
+                    <div class="dropdown-item" onclick="openWindow('skills-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Skills</div>
+                    <div class="dropdown-item" onclick="openWindow('contact-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Contact</div>
+                </div>
+            </div>
+
+            <div class="menu-dropdown-container hide-mobile">
+                <span class="menu-item" onclick="toggleMenu('view-menu')">View</span>
+                <div class="menu-dropdown hidden" id="view-menu">
+                    <div class="dropdown-item" onclick="openResumeWindow()"><i class="fas fa-file-pdf icon-color-yellow" style="width: 20px;"></i> Resume PDF</div>
+                    <div id="resume-download-btn" style="display: none;">
+                        <div class="dropdown-divider"></div>
+                        <a href="MuditAgrawalResumeJanuary2026.pdf" download class="dropdown-item" style="display:block;"><i class="fas fa-download icon-color-green" style="width: 20px;"></i> Download Resume</a>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="window.open('https://github.com/muditagrawal-alt', '_blank')"><i class="fab fa-github" style="width: 20px;"></i> GitHub</div>
+                    <div class="dropdown-item" onclick="window.open('https://www.linkedin.com/in/mudit-agrawal-167610318', '_blank')"><i class="fab fa-linkedin" style="width: 20px; color:#0a66c2;"></i> LinkedIn</div>
+                    <div class="dropdown-item" onclick="window.open('https://huggingface.co/muditagrawal03', '_blank')"><i class="fas fa-robot" style="width: 20px; color:#ffcc00;"></i> HuggingFace</div>
+                    <div class="dropdown-item" onclick="window.open('https://muditagrawal03.blogspot.com/', '_blank')"><i class="fab fa-blogger" style="width: 20px; color:#f57c00;"></i> Blog</div>
+                </div>
+            </div>
+
+            <div class="menu-dropdown-container hide-mobile">
+                <span class="menu-item" onclick="toggleMenu('go-menu')">Go</span>
+                <div class="menu-dropdown hidden" id="go-menu">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div class="menu-dropdown-container hide-mobile">
+                <span class="menu-item" onclick="toggleMenu('window-menu')">Window</span>
+                <div class="menu-dropdown hidden" id="window-menu">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div class="menu-dropdown-container hide-mobile">
+                <span class="menu-item" onclick="toggleMenu('help-menu')">Help</span>
+                <div class="menu-dropdown hidden" id="help-menu" style="width: 280px; padding: 15px;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <i class="fas fa-info-circle fa-2x" style="color: #4facfe; margin-bottom: 5px;"></i>
+                        <div style="font-weight: 600; font-size: 15px;">Navigation Guide</div>
+                    </div>
+                    <div class="dropdown-item" style="white-space: normal; line-height: 1.6; padding: 10px; cursor: default; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <ul style="padding-left: 15px; margin: 0;">
+                            <li style="margin-bottom: 8px;"><strong>Open Folders:</strong> Double click desktop icons or use the Finder menu.</li>
+                            <li style="margin-bottom: 8px;"><strong>Quick Access:</strong> Use the Dock at the bottom.</li>
+                            <li style="margin-bottom: 8px;"><strong>Move Windows:</strong> Drag windows by their top title bar.</li>
+                            <li><strong>Window Controls:</strong> Click <span style="color:#ff5f56; font-size:18px;">●</span><span style="color:#ffbd2e; font-size:18px;">●</span><span style="color:#27c93f; font-size:18px;">●</span> to close, minimize, or maximize.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-dropdown-container">
+                <span class="menu-item bold" style="color: #4facfe;" onclick="openWindow('terminal-window')"><i class="fas fa-terminal"></i> Terminal</span>
+            </div>
+        </div>
+        <div class="menu-right">
+            <i class="fas fa-wifi menu-icon" id="wifi-icon" data-tooltip="Wi-Fi: Checking status..."></i>
+            <i class="fas fa-battery-full menu-icon" id="battery-icon" data-tooltip="Battery: Checking status..."></i>
+            <span id="clock" class="menu-time">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Desktop -->
+    <div class="desktop" id="desktop">
+        
+        <!-- Desktop Icons -->
+        <div class="desktop-icon" ondblclick="openWindow('about-window')">
+            <img src="https://github.com/muditagrawal-alt.png" alt="About Me" style="border-radius: 50%;">
+            <span>About Me</span>
+        </div>
+        <div class="desktop-icon" ondblclick="openWindow('experience-window')">
+            <i class="fas fa-briefcase icon-color-blue"></i>
+            <span>Experience</span>
+        </div>
+        <div class="desktop-icon" ondblclick="openWindow('education-window')">
+            <i class="fas fa-graduation-cap icon-color-green"></i>
+            <span>Education</span>
+        </div>
+        <div class="desktop-icon" ondblclick="openWindow('projects-window')">
+            <i class="fas fa-folder-open icon-color-folder"></i>
+            <span>Projects</span>
+        </div>
+        <div class="desktop-icon" ondblclick="openWindow('skills-window')">
+            <i class="fas fa-code icon-color-purple"></i>
+            <span>Skills</span>
+        </div>
+        <div class="desktop-icon" ondblclick="openWindow('contact-window')">
+            <i class="fas fa-envelope icon-color-yellow"></i>
+            <span>Contact</span>
+        </div>
+
+        <!-- Windows Template -->
+        
+        <!-- About Window -->
+        <div class="window" id="about-window" style="top: 10%; left: 10%; z-index: 10;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'about-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('about-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('about-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('about-window')"></div>
+                </div>
+                <div class="window-title">About Me</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item active" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area content-padding">
+                    <h1>Mudit Agrawal</h1>
+                    <h2>Computer Science (AI/ML) Undergraduate</h2>
+                    <p>I’m a Computer Science student interested in how technology works in real-world environments, beyond theory and coursework.</p>
+                    <p>Through internships and hands-on projects, I’ve been gradually building an understanding of software systems, data, and applied AI/ML, with a focus on learning by doing rather than just studying concepts. I value practical exposure, problem-solving, and understanding how technology supports large-scale operations.</p>
+                    <p>I’m especially interested in roles and projects at the intersection of technology, data, and real-world impact, and I enjoy working on things that require both technical thinking and context awareness.</p>
+                    <p>Currently focused on strengthening fundamentals, gaining industry exposure, and building projects that actually hold up outside the classroom.</p>
+                    <p>Double click the folders on the desktop or use the sidebar to explore my portfolio!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experience Window -->
+        <div class="window hidden" id="experience-window" style="top: 15%; left: 15%;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'experience-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('experience-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('experience-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('experience-window')"></div>
+                </div>
+                <div class="window-title">Experience</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item active" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area content-padding list-view">
+                    
+                    <div class="resume-item">
+                        <div class="resume-header">
+                            <h3>Machine Learning Intern</h3>
+                            <span class="date">Dec 2025 - Jan 2026</span>
+                        </div>
+                        <div class="company">Zee Tech and Innovation Centre</div>
+                        <ul>
+                            <li>Built OmniDoc, a multimodal RAG system using Mistral-7B, Nomic embeddings, and BLIP.</li>
+                            <li>Developed an AI video-highlight pipeline using YOLOv8-Face, YOLOv11, and FFmpeg.</li>
+                            <li>Engineered Sentinel-Web, an ML-driven security decision-intelligence prototype.</li>
+                            <li>Authored AI security design specs focused on explainability and false-positive reduction.</li>
+                        </ul>
+                    </div>
+
+                    <div class="resume-item">
+                        <div class="resume-header">
+                            <h3>Summer Intern</h3>
+                            <span class="date">June 2025 - July 2025</span>
+                        </div>
+                        <div class="company">WESEE, Indian Navy</div>
+                        <ul>
+                            <li>Evaluated in-house Large Language Models (LLMs) for naval applications in a secure defense R&D environment.</li>
+                            <li>Identified bugs, inconsistencies, and logic failures in model outputs to ensure mission-critical reliability.</li>
+                            <li>Assisted in validating Retrieval-Augmented Generation (RAG) pipelines and improving contextual accuracy.</li>
+                            <li>Gained hands-on experience with Python, ML workflows, CV modules, and REST API integrations.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Education Window -->
+        <div class="window hidden" id="education-window" style="top: 20%; left: 20%;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'education-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('education-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('education-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('education-window')"></div>
+                </div>
+                <div class="window-title">Education & Certifications</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item active" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area content-padding list-view">
+                    
+                    <h2>Education</h2>
+                    <div class="resume-item">
+                        <div class="resume-header">
+                            <h3>B.Tech in Computer Science (AI/ML)</h3>
+                            <span class="date">2023 - 2027</span>
+                        </div>
+                        <div class="company">IILM University, Greater Noida</div>
+                        <p>CGPA: 8.14</p>
+                    </div>
+
+                    <div class="resume-item">
+                        <div class="resume-header">
+                            <h3>Class 12</h3>
+                            <span class="date">2023</span>
+                        </div>
+                        <div class="company">Navy Children School, New Delhi</div>
+                        <p>Percentage: 74%</p>
+                    </div>
+
+                    <div class="resume-item">
+                        <div class="resume-header">
+                            <h3>Class 10</h3>
+                            <span class="date">2021</span>
+                        </div>
+                        <div class="company">Navy Children School, Mumbai</div>
+                        <p>Percentage: 89%</p>
+                    </div>
+
+                    <h2>Certifications</h2>
+                    <ul class="cert-list">
+                        <li><strong>Machine Learning Specialization</strong> — Stanford University (DeepLearning.AI)</li>
+                        <li><strong>Python Specialisation</strong> — University of Michigan</li>
+                        <li><strong>Technology Job Simulation</strong> — Deloitte</li>
+                        <li><strong>Java Programming and OOP</strong> — Duke University</li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Window -->
+        <div class="window hidden" id="projects-window" style="top: 25%; left: 25%; width: 700px; height: 450px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'projects-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('projects-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('projects-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('projects-window')"></div>
+                </div>
+                <div class="window-title">Projects</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item active" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area projects-grid content-padding">
+                    <!-- Project 1 -->
+                    <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" rel="noopener noreferrer" class="project-card">
+                        <div class="project-icon"><i class="fas fa-brain"></i></div>
+                        <h3>OmniDoc</h3>
+                        <p>RAG based LLM Document Intelligence System using Mistral 7B & BLIP.</p>
+                        <div class="tags"><span class="tag">Python</span><span class="tag">Mistral-7B</span></div>
+                    </a>
+                    <!-- Project 2 -->
+                    <a href="https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool" target="_blank" class="project-card">
+                        <div class="project-icon"><i class="fas fa-video"></i></div>
+                        <h3>Sliver.Ai</h3>
+                        <p>Smart Video Clipping Tool. Video clipping pipeline using YOLOv8n & YOLO11m.</p>
+                        <div class="tags"><span class="tag">Python</span><span class="tag">YOLO</span></div>
+                    </a>
+                    <!-- Project 3 -->
+                    <a href="https://github.com/muditagrawal-alt/Project-S.W.O.R.D" target="_blank" rel="noopener noreferrer" class="project-card">
+                        <div class="project-icon"><i class="fas fa-crosshairs"></i></div>
+                        <h3>S.W.O.R.D</h3>
+                        <p>Surveillance for Weapon Observation Using Real-Time Deep Learning (YOLOv8).</p>
+                        <div class="tags"><span class="tag">Python</span><span class="tag">YOLOv8</span></div>
+                    </a>
+                    <!-- Project 4 -->
+                    <a href="https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector" target="_blank" class="project-card">
+                        <div class="project-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Deepfake Detector</h3>
+                        <p>ML-based system for detecting deepfake media and classifying fake news signals across digital content.</p>
+                        <div class="tags"><span class="tag">Python</span></div>
+                    </a>
+                    <!-- Project 5 -->
+                    <a href="https://github.com/muditagrawal-alt/Helix-Compiler" target="_blank" class="project-card">
+                        <div class="project-icon"><i class="fas fa-terminal"></i></div>
+                        <h3>Helix-Compiler</h3>
+                        <p>C-based compiler project focused on core parsing, translation, and systems-level language design concepts.</p>
+                        <div class="tags"><span class="tag">C</span></div>
+                    </a>
+                    <!-- Project 6 -->
+                    <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" class="project-card">
+                        <div class="project-icon"><i class="fas fa-globe"></i></div>
+                        <h3>Multiva.Ai</h3>
+                        <p>AI voice cloning platform built with Whisper, Coqui XTTS, and FB-NLLB for multilingual speech and translation workflows.</p>
+                        <div class="tags"><span class="tag">Python</span><span class="tag">XTTS</span><span class="tag">Whisper</span></div>
+                    </a>
+                    <!-- Project 7 -->
+                    <a href="https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-" target="_blank" rel="noopener noreferrer" class="project-card">
+                        <div class="project-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Inflx</h3>
+                        <p>AutoStream agent service for orchestrating intelligent workflow and streaming automation.</p>
+                        <div class="tags"><span class="tag">Python</span><span class="tag">Agents</span></div>
+                    </a>
+                    <!-- Project 8 -->
+                    <a href="https://github.com/muditagrawal-alt/Artifex.ai" target="_blank" rel="noopener noreferrer" class="project-card">
+                        <div class="project-icon"><i class="fas fa-palette"></i></div>
+                        <h3>Artifex</h3>
+                        <p>Creative AI project focused on intelligent design and art-driven interactive experiences.</p>
+                        <div class="tags"><span class="tag">AI</span><span class="tag">Creative Tech</span></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Window -->
+        <div class="window hidden" id="skills-window" style="top: 30%; left: 30%;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'skills-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('skills-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('skills-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('skills-window')"></div>
+                </div>
+                <div class="window-title">Skills & Stacks</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item active" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area content-padding list-view">
+                    
+                    <div class="skill-category">
+                        <h3>Programming</h3>
+                        <div class="tags large-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">C</span>
+                            <span class="tag">Java</span>
+                            <span class="tag">HTML</span>
+                            <span class="tag">CSS</span>
+                            <span class="tag">Tailwind CSS</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3>Frameworks & Libraries</h3>
+                        <div class="tags large-tags">
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">TensorFlow</span>
+                            <span class="tag">Keras</span>
+                            <span class="tag">OpenCV</span>
+                            <span class="tag">Scikit-Learn</span>
+                            <span class="tag">Torchvision</span>
+                            <span class="tag">Torchaudio</span>
+                            <span class="tag">PIL</span>
+                            <span class="tag">NumPy</span>
+                            <span class="tag">Pandas</span>
+                            <span class="tag">Matplotlib</span>
+                            <span class="tag">Flask</span>
+                            <span class="tag">Gradio</span>
+                            <span class="tag">Streamlit</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3>Models</h3>
+                        <div class="tags large-tags">
+                            <span class="tag">YOLOv8</span>
+                            <span class="tag">YOLOv11</span>
+                            <span class="tag">YOLOv26</span>
+                            <span class="tag">Whisper</span>
+                            <span class="tag">XTTS</span>
+                            <span class="tag">BLIP</span>
+                            <span class="tag">Mistral 7B</span>
+                            <span class="tag">FB-NLLB</span>
+                            <span class="tag">Wav2Lip</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3>Tools</h3>
+                        <div class="tags large-tags">
+                            <span class="tag">Git</span>
+                            <span class="tag">GitHub</span>
+                            <span class="tag">Hugging Face</span>
+                            <span class="tag">Jupyter</span>
+                            <span class="tag">FFMPEG</span>
+                            <span class="tag">Colab</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Window -->
+        <div class="window hidden" id="contact-window" style="top: 35%; left: 35%;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'contact-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('contact-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('contact-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('contact-window')"></div>
+                </div>
+                <div class="window-title">Contact</div>
+            </div>
+            <div class="window-content">
+                <div class="sidebar">
+                    <div class="sidebar-title">Favorites</div>
+                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item active" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                </div>
+                <div class="main-area content-padding contact-grid">
+                    
+                    <a href="mailto:muditagrawal03@gmail.com" class="contact-card">
+                        <i class="fas fa-envelope fa-2x"></i>
+                        <h3>Email</h3>
+                        <p>muditagrawal03@gmail.com</p>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="contact-card">
+                        <i class="fab fa-linkedin fa-2x"></i>
+                        <h3>LinkedIn</h3>
+                        <p>Mudit Agrawal</p>
+                    </a>
+
+                    <a href="https://github.com/muditagrawal-alt" target="_blank" class="contact-card">
+                        <i class="fab fa-github fa-2x"></i>
+                        <h3>GitHub</h3>
+                        <p>muditagrawal-alt</p>
+                    </a>
+
+                    <a href="https://huggingface.co/muditagrawal03" target="_blank" class="contact-card">
+                        <i class="fas fa-robot fa-2x"></i>
+                        <h3>HuggingFace</h3>
+                        <p>muditagrawal03</p>
+                    </a>
+                    
+                    <a href="https://muditagrawal03.blogspot.com/" target="_blank" class="contact-card">
+                        <i class="fab fa-blogger fa-2x"></i>
+                        <h3>Blog</h3>
+                        <p>muditagrawal03.blogspot.com</p>
+                    </a>
+
+                    <div class="contact-card">
+                        <i class="fas fa-phone fa-2x"></i>
+                        <h3>Phone</h3>
+                        <p>+91-7289887349</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Window -->
+        <div class="window hidden" id="resume-window" style="top: 15%; left: 25%; width: 700px; height: 500px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'resume-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('resume-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('resume-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('resume-window')"></div>
+                </div>
+                <div class="window-title">Resume PDF</div>
+                <button type="button" onmousedown="event.stopPropagation()" onclick="downloadResume(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); color: #eee; font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;"><i class="fas fa-download"></i> Download</button>
+            </div>
+            <div class="window-content" style="overflow: auto; background: white; display: block;">
+                <img src="MuditAgrawalResumePreview.png" alt="Resume PDF preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
+            </div>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="window hidden" id="terminal-window" style="top: 20%; left: 40%; width: 600px; height: 350px; background: rgba(0, 0, 0, 0.9);">
+            <div class="title-bar" style="background: rgba(30, 30, 30, 0.9);" onmousedown="dragMouseDown(event, 'terminal-window')">
+                <div class="window-controls">
+                    <div class="control close" onclick="closeWindow('terminal-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('terminal-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('terminal-window')"></div>
+                </div>
+                <div class="window-title" style="color: #bbb;">muditagrawal@macbook ~ zsh</div>
+            </div>
+            <div class="window-content" style="flex-direction: column; padding: 10px; font-family: 'Courier New', Courier, monospace; overflow-y: auto;" id="terminal-content" onclick="document.getElementById('terminal-input').focus()">
+                <div id="terminal-output">
+                    <div style="color: #4facfe; margin-bottom: 10px;">Welcome to Mudit's Terminal. Type 'help' to see available commands.</div>
+                </div>
+                <div style="display: flex; align-items: center; margin-top: 5px;">
+                    <span style="color: #43e97b; margin-right: 8px;">muditagrawal@macbook</span> <span style="color: #4facfe;">~ %</span>
+                    <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" style="flex: 1; background: transparent; border: none; color: #fff; font-family: inherit; font-size: 14px; outline: none; margin-left: 8px;" onkeydown="handleTerminalInput(event)">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Dock -->
+    <div class="dock-container">
+        <div class="dock">
+            <div class="dock-item" onclick="openWindow('about-window')" data-tooltip="Finder">
+                <img src="FINDER.jpeg" alt="Finder" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dock-item" onclick="openWindow('experience-window')" data-tooltip="Experience">
+                <img src="experience.jpeg" alt="Experience" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dock-item" onclick="openWindow('education-window')" data-tooltip="Education">
+                <img src="education.png" alt="Education" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dock-item" onclick="openWindow('projects-window')" data-tooltip="Projects">
+                <img src="PROJECTS.jpeg" alt="Projects" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dock-item" onclick="openWindow('skills-window')" data-tooltip="Skills">
+                <img src="SKILLS.jpeg" alt="Skills" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dock-divider"></div>
+            <div class="dock-item" onclick="openWindow('contact-window')" data-tooltip="Contact">
+                <img src="CONTACT.jpeg" alt="Contact" style="width:100%;height:100%;object-fit:contain;">
+            </div>
+        </div>
+    </div>
+
+    <script src="battery-status.js"></script>
+    <script src="resume-data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
