@@ -1126,8 +1126,8 @@ function loadSafariDestination(tab, dest) {
     } else if (dest.startsWith('search:')) {
         const q = dest.replace('search:', '');
         tab.type = 'ddg_search';
-        tab.title = `DuckDuckGo: ${q}`;
-        tab.url = `https://duckduckgo.com/?q=${encodeURIComponent(q)}`;
+        tab.title = q;
+        tab.url = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
         tab.searchQuery = q;
         tab.icon = 'fas fa-search';
         tab.shortcutKey = null;
@@ -1255,6 +1255,48 @@ function toggleSafariFaq(el) {
     if (el) el.classList.toggle('open');
 }
 
+// --------------------------------------------------------------------------
+// Real-Time Video Search for User Query
+// --------------------------------------------------------------------------
+async function fetchVideosForQuery(q) {
+    const instances = [
+        `https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(q)}&type=video`,
+        `https://invidious.nerdvpn.de/api/v1/search?q=${encodeURIComponent(q)}&type=video`,
+        `https://vid.priv.au/api/v1/search?q=${encodeURIComponent(q)}&type=video`
+    ];
+
+    for (const url of instances) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    const valid = data.filter(item => item.videoId && item.title).slice(0, 3).map(item => {
+                        const vidId = item.videoId;
+                        let thumb = vidId ? `https://img.youtube.com/vi/${vidId}/mqdefault.jpg` : '';
+                        if (item.videoThumbnails && item.videoThumbnails[0] && item.videoThumbnails[0].url) {
+                            thumb = item.videoThumbnails[0].url;
+                        }
+                        return {
+                            id: vidId,
+                            title: item.title,
+                            channel: item.author || 'YouTube',
+                            thumb: thumb
+                        };
+                    });
+                    if (valid.length > 0) return valid;
+                }
+            }
+        } catch(e) {
+            // try next instance
+        }
+    }
+    return [];
+}
+
 function renderDuckDuckGoSearch(tab, renderArea) {
     const q = tab.searchQuery || 'macOS';
     const mathResult = evaluateMathExpression(q);
@@ -1266,9 +1308,9 @@ function renderDuckDuckGoSearch(tab, renderArea) {
                 <div class="safari-search-tabs">
                     <span class="safari-search-tab active"><i class="fas fa-search"></i> All</span>
                     <span class="safari-search-tab" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos</span>
-                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iar=news', '_blank')"><i class="far fa-newspaper"></i> News</span>
-                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iax=images&ia=images', '_blank')"><i class="far fa-image"></i> Images</span>
-                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&ia=web', '_blank')"><i class="fas fa-filter"></i> Tools</span>
+                    <span class="safari-search-tab" onclick="window.open('https://news.google.com/search?q=${encodeURIComponent(q)}', '_blank')"><i class="far fa-newspaper"></i> News</span>
+                    <span class="safari-search-tab" onclick="window.open('https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}', '_blank')"><i class="far fa-image"></i> Images</span>
+                    <span class="safari-search-tab" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(q)}', '_blank')"><i class="fas fa-filter"></i> Tools</span>
                 </div>
                 <div class="safari-search-stats">About 1,840,000 results (0.24s)</div>
             </div>
@@ -1295,7 +1337,7 @@ function renderDuckDuckGoSearch(tab, renderArea) {
         </div>
     `;
 
-    // Fetch APIs: Wikipedia Search, Wikipedia Summary, DuckDuckGo Instant Answer
+    // Fetch APIs: Wikipedia Search, Wikipedia Summary, Invidious Video Search, DuckDuckGo Instant Answer
     const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&utf8=&format=json&origin=*`;
     const wikiSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
     const ddgApiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=1`;
@@ -1303,8 +1345,9 @@ function renderDuckDuckGoSearch(tab, renderArea) {
     Promise.allSettled([
         fetch(wikiSearchUrl).then(r => r.json()),
         fetch(wikiSummaryUrl).then(r => r.json()),
+        fetchVideosForQuery(q),
         fetch(ddgApiUrl).then(r => r.json())
-    ]).then(([searchRes, summaryRes, ddgRes]) => {
+    ]).then(([searchRes, summaryRes, videoRes, ddgRes]) => {
         const organicSlot = document.getElementById('safari-organic-slot');
         const knowledgeSlot = document.getElementById('safari-knowledge-slot');
         if (!organicSlot) return;
@@ -1319,17 +1362,22 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             searchArticles = searchRes.value.query.search;
         }
 
+        let matchedVideos = [];
+        if (videoRes.status === 'fulfilled' && Array.isArray(videoRes.value)) {
+            matchedVideos = videoRes.value;
+        }
+
         let ddgData = null;
         let relatedTopics = [];
         if (ddgRes.status === 'fulfilled' && ddgRes.value) {
             ddgData = ddgRes.value;
             if (ddgData.RelatedTopics && Array.isArray(ddgData.RelatedTopics)) {
                 ddgData.RelatedTopics.slice(0, 8).forEach(t => {
-                    if (t.Text) relatedTopics.push({ text: t.Text, url: t.FirstURL });
-                    else if (t.Topics) {
-                        t.Topics.slice(0, 2).forEach(st => {
-                            if (st.Text) relatedTopics.push({ text: st.Text, url: st.FirstURL });
-                        });
+                    if (t.Text) {
+                        const cleanT = t.Text.split(' - ')[0].trim();
+                        if (cleanT && cleanT.toLowerCase().includes(q.toLowerCase())) {
+                            relatedTopics.push(cleanT);
+                        }
                     }
                 });
             }
@@ -1383,54 +1431,56 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             `;
         });
 
-        // 2. Video Spotlight Carousel (Interactive In-Browser Playback!)
-        organicHtml += `
-            <div class="safari-video-spotlight">
-                <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
-                <div class="safari-video-cards-row">
-                    <div class="safari-search-vcard" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')">
-                        <div class="safari-search-vcard-thumb">
-                            <img src="https://img.youtube.com/vi/1-SJGQ2HLp8/mqdefault.jpg" alt="Video">
-                        </div>
-                        <div class="safari-search-vcard-info">
-                            <div class="safari-search-vcard-title">Top Guide & Demonstration for ${q}</div>
-                            <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube • Watch in Safari</div>
-                        </div>
-                    </div>
-
-                    <div class="safari-search-vcard" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')">
-                        <div class="safari-search-vcard-thumb">
-                            <img src="https://img.youtube.com/vi/7sZkF40e3wM/mqdefault.jpg" alt="Video">
-                        </div>
-                        <div class="safari-search-vcard-info">
-                            <div class="safari-search-vcard-title">${q} Masterclass & Complete Breakdown</div>
-                            <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube • Watch in Safari</div>
-                        </div>
+        // 2. Video Spotlight Carousel (Strictly Relevant to User Query!)
+        if (matchedVideos.length > 0) {
+            organicHtml += `
+                <div class="safari-video-spotlight">
+                    <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
+                    <div class="safari-video-cards-row">
+                        ${matchedVideos.map(vid => `
+                            <div class="safari-search-vcard" onclick="selectYouTubeVideo('${vid.id}', '${vid.title.replace(/'/g, "\\'")}', '${vid.channel.replace(/'/g, "\\'")}')">
+                                <div class="safari-search-vcard-thumb">
+                                    <img src="${vid.thumb}" alt="${vid.title}" onerror="this.src='https://img.youtube.com/vi/${vid.id}/hqdefault.jpg'">
+                                </div>
+                                <div class="safari-search-vcard-info">
+                                    <div class="safari-search-vcard-title">${vid.title}</div>
+                                    <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> ${vid.channel}</div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            organicHtml += `
+                <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+                    <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
+                    <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch trending demonstrations, tutorials, and community videos for <strong>${q}</strong>.</div>
+                    <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
+                </div>
+            `;
+        }
 
-        // 3. "People Also Ask" Interactive Accordion (Safari/Google standard)
+        // 3. "People Also Ask" Interactive Accordion (Strictly about User Query)
         organicHtml += `
             <div class="safari-faq-card">
                 <div class="safari-faq-header">People also ask</div>
                 <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
                     <div class="safari-faq-question">
-                        <span>What is the origin and history of ${q}?</span>
+                        <span>What is ${q}?</span>
                         <i class="fas fa-chevron-down safari-faq-chevron"></i>
                     </div>
                     <div class="safari-faq-answer">
-                        ${summaryData ? summaryData.extract.slice(0, 200) + '...' : `Historical records and comprehensive encyclopedic research show that ${q} has evolved through key milestones.`}
+                        ${summaryData ? summaryData.extract : `${q} is recognized across contemporary reference works, encyclopedias, and literature.`}
                     </div>
                 </div>
                 <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
                     <div class="safari-faq-question">
-                        <span>What are the most popular varieties or applications of ${q}?</span>
+                        <span>What are the key facts and applications of ${q}?</span>
                         <i class="fas fa-chevron-down safari-faq-chevron"></i>
                     </div>
                     <div class="safari-faq-answer">
-                        ${q} is utilized across multiple global disciplines, regional styles, and modern industry standards worldwide.
+                        Information and practical applications for ${q} continue to develop across diverse international fields and disciplines.
                     </div>
                 </div>
             </div>
@@ -1461,28 +1511,28 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             organicHtml += `
                 <div class="safari-result-item">
                     <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=32" class="safari-result-favicon" alt="DuckDuckGo">
+                        <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
                         <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">DuckDuckGo</span>
-                            <span class="safari-result-url">https://duckduckgo.com/?q=${encodeURIComponent(q)}</span>
+                            <span class="safari-result-site-name">Web Search</span>
+                            <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
                         </div>
                     </div>
-                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search DuckDuckGo for "${q}" ↗</a>
+                    <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
                     <p class="safari-result-snippet">Explore live web results, articles, documentation, and discussions across the internet for ${q}.</p>
                 </div>
             `;
         }
 
-        // 6. Related Searches Chips
+        // 6. Related Searches Chips (Strictly Query Recommendations)
         const sampleRelated = relatedTopics.length > 0 
-            ? relatedTopics.map(t => t.text.split(' - ')[0])
-            : [`${q} guide`, `${q} definition`, `best ${q} examples`, `${q} tutorial`, `how to use ${q}`, `${q} tips`];
+            ? relatedTopics 
+            : [`${q} overview`, `${q} guide`, `${q} tutorial`, `${q} examples`, `best ${q} tips`, `${q} news`];
 
         organicHtml += `
             <div class="safari-related-section">
                 <div class="safari-related-title">Related searches</div>
                 <div class="safari-related-chips">
-                    ${sampleRelated.slice(0, 8).map(term => `
+                    ${sampleRelated.slice(0, 6).map(term => `
                         <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
                             <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
                         </div>
@@ -1498,14 +1548,14 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             organicSlot.innerHTML = `
                 <div class="safari-result-item">
                     <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=32" class="safari-result-favicon" alt="DuckDuckGo">
+                        <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
                         <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">DuckDuckGo</span>
-                            <span class="safari-result-url">https://duckduckgo.com/?q=${encodeURIComponent(q)}</span>
+                            <span class="safari-result-site-name">Web Search</span>
+                            <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
                         </div>
                     </div>
-                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search DuckDuckGo for "${q}" ↗</a>
-                    <p class="safari-result-snippet">Access live privacy-protected search results for ${q}.</p>
+                    <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
+                    <p class="safari-result-snippet">Access live search results for ${q}.</p>
                 </div>
             `;
         }

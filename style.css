@@ -1477,38 +1477,11 @@ p {
     height: 100%;
 }
 
-.safari-page-top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px;
-    background: rgba(25, 25, 25, 0.85);
-    border-bottom: 1px solid var(--window-border);
-}
-
-.page-top-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #eee;
-    font-weight: 500;
-}
-
-.safari-live-badge {
-    font-size: 10px;
-    background: rgba(52, 199, 89, 0.2);
-    color: #34c759;
-    border: 1px solid rgba(52, 199, 89, 0.4);
-    padding: 1px 6px;
-    border-radius: 10px;
-}
-
 .safari-page-render-area {
     flex: 1;
-    padding: 24px 30px;
+    padding: 16px 24px;
     overflow-y: auto;
-    background: rgba(18, 18, 18, 0.5);
+    background: #1c1c1e;
 }
 
 /* ==========================================================================
