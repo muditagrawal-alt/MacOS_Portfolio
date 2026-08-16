@@ -19,9 +19,37 @@ updateClock();
 // Window Management
 let highestZIndex = 10;
 
+function updateDockRunningIndicators() {
+    const dockMap = {
+        'finder-window': 'dock-finder',
+        'mail-window': 'dock-mail',
+        'notes-window': 'dock-notes',
+        'safari-window': 'dock-safari',
+        'appstore-window': 'dock-appstore',
+        'settings-window': 'dock-settings',
+        'terminal-window': 'dock-terminal',
+        'trash-window': 'dock-trash'
+    };
+
+    Object.keys(dockMap).forEach(winId => {
+        const win = document.getElementById(winId);
+        const dockItem = document.getElementById(dockMap[winId]);
+        if (win && dockItem) {
+            if (!win.classList.contains('hidden') && !win.classList.contains('minimized')) {
+                dockItem.classList.add('is-running');
+            } else {
+                dockItem.classList.remove('is-running');
+            }
+        }
+    });
+}
+
 function bringToFront(windowId) {
     highestZIndex++;
-    document.getElementById(windowId).style.zIndex = highestZIndex;
+    const win = document.getElementById(windowId);
+    if (win) {
+        win.style.zIndex = highestZIndex;
+    }
 }
 
 function openWindow(windowId) {
@@ -30,6 +58,7 @@ function openWindow(windowId) {
         win.classList.remove('hidden');
         win.classList.remove('minimized');
         bringToFront(windowId);
+        updateDockRunningIndicators();
     }
 }
 
@@ -76,6 +105,7 @@ function closeWindow(windowId) {
     const win = document.getElementById(windowId);
     if (win) {
         win.classList.add('hidden');
+        updateDockRunningIndicators();
     }
 }
 
@@ -83,6 +113,7 @@ function minimizeWindow(windowId) {
     const win = document.getElementById(windowId);
     if (win) {
         win.classList.add('minimized');
+        updateDockRunningIndicators();
     }
 }
 
@@ -114,13 +145,14 @@ function maximizeWindow(windowId) {
 function dragMouseDown(e, windowId) {
     e = e || window.event;
     
-    // Don't drag if clicking window controls
-    if(e.target.classList.contains('control')) return;
+    // Don't drag if clicking window controls or inputs/buttons
+    if (e.target.classList.contains('control') || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
     
     e.preventDefault();
     bringToFront(windowId);
     
     const win = document.getElementById(windowId);
+    if (!win) return;
     
     // Don't drag if maximized
     if (win.style.width === '100vw') return;
@@ -205,9 +237,7 @@ function switchFinderPane(paneName) {
 function openFinderPane(paneName) {
     const finderWindow = document.getElementById('finder-window');
     if (finderWindow) {
-        finderWindow.classList.remove('hidden');
-        finderWindow.classList.remove('minimized');
-        bringToFront('finder-window');
+        openWindow('finder-window');
         switchFinderPane(paneName);
     }
 }
@@ -215,8 +245,14 @@ function openFinderPane(paneName) {
 // // Menu Bar Dropdown Logic
 const windowNames = {
     'finder-window': 'Finder',
-    'resume-window': 'Resume PDF',
-    'terminal-window': 'Terminal'
+    'safari-window': 'Safari',
+    'mail-window': 'Mail',
+    'notes-window': 'Notes',
+    'appstore-window': 'App Store',
+    'settings-window': 'System Settings',
+    'terminal-window': 'Terminal',
+    'trash-window': 'Trash',
+    'resume-window': 'Resume PDF'
 };
 
 function populateDynamicMenus() {
@@ -470,7 +506,361 @@ function maximizeActiveWindow() {
     if (win) maximizeWindow(win.id);
 }
 
-// Terminal Logic
+// ==========================================================================
+// Mail.app Controller Logic
+// ==========================================================================
+const emailData = {
+    1: {
+        subject: "Open for AI/ML Roles & Projects",
+        from: "Mudit Agrawal <muditagrawal03@gmail.com>",
+        to: "Recruiter / Collaborator <you@future.org>",
+        date: "Today at 4:30 PM",
+        body: `
+            <p>Hi there,</p>
+            <p>Thank you for exploring my macOS portfolio workspace!</p>
+            <p>I am a Computer Science Undergraduate specialising in Artificial Intelligence & Machine Learning at IILM University. I have built real-world AI pipelines including multimodal document intelligence (<strong>OmniDoc</strong>), automated video clipping (<strong>Sliver.Ai</strong>), and defense-grade surveillance (<strong>S.W.O.R.D</strong>).</p>
+            <p>I am actively looking for software engineering and machine learning roles where I can contribute to mission-critical systems and learn by doing.</p>
+            <div class="mail-action-buttons">
+                <a href="mailto:muditagrawal03@gmail.com?subject=Opportunity%20Discussion%20with%20Mudit" class="mail-action-btn primary"><i class="fas fa-reply"></i> Reply via Email</a>
+                <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="mail-action-btn"><i class="fab fa-linkedin"></i> Connect on LinkedIn</a>
+                <a href="tel:+917289887349" class="mail-action-btn"><i class="fas fa-phone"></i> Call +91-7289887349</a>
+            </div>
+        `
+    },
+    2: {
+        subject: "Latest Repos: OmniDoc & Sliver.Ai",
+        from: "GitHub Notifications <notifications@github.com>",
+        to: "Mudit Agrawal <muditagrawal03@gmail.com>",
+        date: "Yesterday at 11:15 AM",
+        body: `
+            <p>Recent commits across <strong>@muditagrawal-alt</strong> repositories:</p>
+            <ul style="padding-left:20px;margin-bottom:15px;color:#ccc;line-height:1.6;">
+                <li><strong>OmniDoc:</strong> Integrated Mistral-7B Instruct with quantized Nomic embeddings & BLIP visual QA.</li>
+                <li><strong>Sliver.Ai:</strong> Upgraded video highlight chunking with YOLOv8-Face and YOLO11m weights.</li>
+                <li><strong>Sentinel-Web:</strong> Decision-intelligence security specifications documented.</li>
+            </ul>
+            <div class="mail-action-buttons">
+                <a href="https://github.com/muditagrawal-alt" target="_blank" class="mail-action-btn primary"><i class="fab fa-github"></i> Open GitHub Profile</a>
+            </div>
+        `
+    },
+    3: {
+        subject: "Direct Reach & Collaboration Channels",
+        from: "Contact Book <contacts@muditagrawal.dev>",
+        to: "Visitor <guest@macbook>",
+        date: "Aug 12 at 10:00 AM",
+        body: `
+            <p>Here are all the channels where you can reach Mudit directly:</p>
+            <p><strong>Email:</strong> muditagrawal03@gmail.com<br>
+            <strong>Phone:</strong> +91-7289887349<br>
+            <strong>LinkedIn:</strong> linkedin.com/in/mudit-agrawal-167610318<br>
+            <strong>Hugging Face:</strong> huggingface.co/muditagrawal03<br>
+            <strong>Blog:</strong> muditagrawal03.blogspot.com</p>
+            <div class="mail-action-buttons">
+                <a href="mailto:muditagrawal03@gmail.com" class="mail-action-btn primary"><i class="fas fa-envelope"></i> Send Direct Email</a>
+                <button type="button" class="mail-action-btn" onclick="openResumeWindow()"><i class="fas fa-file-pdf"></i> View Resume</button>
+            </div>
+        `
+    }
+};
+
+function selectEmail(id, element) {
+    document.querySelectorAll('.mail-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    const email = emailData[id];
+    if (!email) return;
+
+    const subjectEl = document.getElementById('mail-reader-subject');
+    const bodyEl = document.getElementById('mail-reader-body');
+    if (subjectEl) subjectEl.textContent = email.subject;
+    if (bodyEl) bodyEl.innerHTML = email.body;
+}
+
+function switchMailbox(boxName, element) {
+    document.querySelectorAll('.mail-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+}
+
+function openMailCompose() {
+    const modal = document.getElementById('mail-compose-modal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeMailCompose() {
+    const modal = document.getElementById('mail-compose-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function sendMailCompose() {
+    const subject = document.getElementById('compose-subject').value || "Portfolio Connection";
+    const message = document.getElementById('compose-message').value || "";
+    const statusEl = document.getElementById('compose-status');
+
+    if (statusEl) {
+        statusEl.style.display = 'inline';
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+            closeMailCompose();
+            window.location.href = `mailto:muditagrawal03@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+        }, 800);
+    }
+}
+
+// ==========================================================================
+// Notes.app Controller Logic
+// ==========================================================================
+const notesData = {
+    1: {
+        title: "Engineering Philosophy",
+        date: "August 16, 2026 at 2:15 PM",
+        body: `
+            <p>I value <strong>learning by building</strong> over purely memorizing theoretical concepts. The most instructive moments come when models break under edge cases, latencies spike on inference, or data pipelines hit unexpected bottlenecks.</p>
+            <div class="note-checklist">
+                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Context Awareness:</strong> Tech is only as good as the problem it solves.</span></div>
+                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Robustness:</strong> Build systems that hold up outside clean sandbox environments.</span></div>
+                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Speed of Iteration:</strong> Prototype quickly, evaluate rigorously, refactor thoughtfully.</span></div>
+            </div>
+            <p style="margin-top: 15px; color:#c0bbb4;"><em>"Always stay curious, dig into the internals, and never treat AI models as black boxes."</em></p>
+        `
+    },
+    2: {
+        title: "What I'm Learning Currently",
+        date: "August 15, 2026 at 6:40 PM",
+        body: `
+            <p>Areas of deep technical dive right now:</p>
+            <div class="note-checklist">
+                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Multimodal Agent Architectures:</strong> Function calling, tool use, and structured outputs with open-weights LLMs.</span></div>
+                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Model Quantization & Inference:</strong> GGUF, AWQ, vLLM, and TensorRT optimizations for fast localized serving.</span></div>
+                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Advanced Vision Transformers:</strong> Video temporal processing and real-time zero-shot detection.</span></div>
+            </div>
+        `
+    },
+    3: {
+        title: "Core Tech Stack Cheat Sheet",
+        date: "August 10, 2026 at 1:10 PM",
+        body: `
+            <p><strong>Languages:</strong> Python, C, Java, HTML5, CSS3, JavaScript, SQL.</p>
+            <p><strong>AI/ML & Deep Learning:</strong> PyTorch, TensorFlow, Keras, OpenCV, Scikit-Learn, Torchvision, Torchaudio.</p>
+            <p><strong>Pretrained Models & Tools:</strong> Mistral-7B, YOLOv8/11, Whisper, Coqui XTTS, BLIP, Nomic, FFMPEG, Git, Hugging Face, Linux/Bash.</p>
+        `
+    },
+    4: {
+        title: "Quick Facts & Interests",
+        date: "August 2, 2026 at 9:30 AM",
+        body: `
+            <p>• Navy background: Grew up moving across naval bases in Mumbai and New Delhi, developing high adaptability and respect for mission discipline.</p>
+            <p>• B.Tech CS (AI/ML) with 8.14 CGPA at IILM University.</p>
+            <p>• Passionate about robotics, applied computer vision, competitive hackathons, and systems-level programming.</p>
+        `
+    }
+};
+
+function selectNote(id, element) {
+    document.querySelectorAll('.note-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    const note = notesData[id];
+    if (!note) return;
+
+    const titleEl = document.getElementById('note-title-display');
+    const dateEl = document.getElementById('note-date-stamp');
+    const bodyEl = document.getElementById('note-body-content');
+
+    if (titleEl) titleEl.textContent = note.title;
+    if (dateEl) dateEl.textContent = note.date;
+    if (bodyEl) bodyEl.innerHTML = note.body;
+}
+
+function switchNotesCategory(cat, element) {
+    document.querySelectorAll('.notes-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+}
+
+function addNewNotePrompt() {
+    const title = prompt("Enter note title:", "New Note Idea");
+    if (title) {
+        const body = prompt("Enter note content:", "Thoughts on AI system architecture...");
+        const newId = Date.now();
+        notesData[newId] = {
+            title: title,
+            date: "Just now",
+            body: `<p>${body || 'No content provided.'}</p>`
+        };
+        const list = document.querySelector('.notes-list');
+        if (list) {
+            const item = document.createElement('div');
+            item.className = 'note-item';
+            item.onclick = function() { selectNote(newId, this); };
+            item.innerHTML = `<div class="note-item-title">${title}</div><div class="note-item-meta"><span class="note-time">Just now</span> ${body ? body.substring(0, 30) + '...' : ''}</div>`;
+            list.insertBefore(item, list.firstChild);
+            selectNote(newId, item);
+        }
+    }
+}
+
+// ==========================================================================
+// Safari.app Controller Logic
+// ==========================================================================
+const safariUrls = {
+    'blog': 'https://muditagrawal03.blogspot.com',
+    'github': 'https://github.com/muditagrawal-alt',
+    'huggingface': 'https://huggingface.co/muditagrawal03'
+};
+
+let currentSafariTab = 'blog';
+
+function switchSafariTab(tabName) {
+    currentSafariTab = tabName;
+
+    // Tabs active state
+    document.querySelectorAll('.safari-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+    });
+
+    // URL bar
+    const urlInput = document.getElementById('safari-url-input');
+    if (urlInput && safariUrls[tabName]) {
+        urlInput.value = safariUrls[tabName];
+    }
+
+    // Panes
+    document.querySelectorAll('.safari-pane').forEach(pane => pane.classList.add('hidden'));
+    const activePane = document.getElementById(`safari-pane-${tabName}`);
+    if (activePane) activePane.classList.remove('hidden');
+}
+
+function safariBack() {
+    if (currentSafariTab === 'huggingface') switchSafariTab('github');
+    else if (currentSafariTab === 'github') switchSafariTab('blog');
+}
+
+function safariForward() {
+    if (currentSafariTab === 'blog') switchSafariTab('github');
+    else if (currentSafariTab === 'github') switchSafariTab('huggingface');
+}
+
+function reloadSafariTab(e) {
+    if (e) e.stopPropagation();
+    const input = document.getElementById('safari-url-input');
+    if (input) {
+        input.style.opacity = '0.4';
+        setTimeout(() => { input.style.opacity = '1'; }, 300);
+    }
+}
+
+function openCurrentSafariLink() {
+    if (safariUrls[currentSafariTab]) {
+        window.open(safariUrls[currentSafariTab], '_blank');
+    }
+}
+
+function focusSafariUrl() {
+    const input = document.getElementById('safari-url-input');
+    if (input) input.select();
+}
+
+// ==========================================================================
+// App Store.app Controller Logic
+// ==========================================================================
+function filterAppStoreCategory(category, element) {
+    document.querySelectorAll('.appstore-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    document.querySelectorAll('.app-card').forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterAppStoreProjects(query) {
+    const q = (query || '').toLowerCase().trim();
+    document.querySelectorAll('.app-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(q)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// ==========================================================================
+// System Settings.app Controller Logic
+// ==========================================================================
+function switchSettingsTab(tabName, element) {
+    document.querySelectorAll('.settings-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    document.querySelectorAll('.settings-pane').forEach(pane => pane.classList.add('hidden'));
+    const target = document.getElementById(`settings-pane-${tabName}`);
+    if (target) target.classList.remove('hidden');
+}
+
+function setThemeMode(mode, element) {
+    document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    if (mode === 'glass') {
+        document.documentElement.style.setProperty('--window-bg', 'rgba(30, 30, 30, 0.45)');
+        document.documentElement.style.setProperty('--sidebar-bg', 'rgba(15, 15, 15, 0.4)');
+    } else {
+        document.documentElement.style.setProperty('--window-bg', 'rgba(30, 30, 30, 0.7)');
+        document.documentElement.style.setProperty('--sidebar-bg', 'rgba(20, 20, 20, 0.6)');
+    }
+}
+
+function setAccentColor(colorHex, element) {
+    document.querySelectorAll('.accent-dot').forEach(dot => dot.classList.remove('active'));
+    if (element) element.classList.add('active');
+    document.documentElement.style.setProperty('--accent', colorHex);
+}
+
+function setDesktopWallpaper(val, element, isGradient) {
+    document.querySelectorAll('.wallpaper-card').forEach(card => card.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    if (isGradient) {
+        document.body.style.backgroundImage = val;
+    } else {
+        document.body.style.backgroundImage = `url('${val}')`;
+    }
+}
+
+// ==========================================================================
+// Trash.app Controller Logic
+// ==========================================================================
+function showTrashItemInfo(name, desc) {
+    const toast = document.getElementById('trash-item-toast');
+    if (toast) {
+        toast.textContent = `${name}: ${desc}`;
+        toast.classList.remove('hidden');
+        setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+}
+
+function emptyTrash() {
+    const container = document.getElementById('trash-content-area');
+    const title = document.getElementById('trash-title');
+    if (container) {
+        container.innerHTML = `
+            <div style="text-align:center;color:#aaa;padding:40px;">
+                <i class="fas fa-check-circle fa-3x" style="color:#27c93f;margin-bottom:12px;"></i>
+                <div style="font-size:16px;color:#fff;font-weight:600;">Trash is Empty</div>
+                <p style="font-size:12px;margin-top:6px;">All discarded experiments have been recycled into clean memory.</p>
+                <button type="button" class="app-pill-btn" onclick="location.reload()" style="margin-top:10px;">Undo / Restore</button>
+            </div>
+        `;
+    }
+    if (title) title.textContent = "Trash — 0 items";
+}
+
+// ==========================================================================
+// Enhanced Terminal Logic
+// ==========================================================================
 function handleTerminalInput(e) {
     if (e.key === 'Enter') {
         const inputField = document.getElementById('terminal-input');
@@ -483,35 +873,105 @@ function handleTerminalInput(e) {
         inputField.value = '';
         
         let response = '';
-        switch(cmd) {
-            case 'help':
-                response = 'Available commands: about me, experience, education, projects, skills, contact, clear';
-                break;
-            case 'about me':
-                response = 'Mudit Agrawal. Computer Science (AI/ML) Undergraduate at IILM University.';
-                break;
-            case 'experience':
-                response = '- Machine Learning Intern @ Zee Tech and Innovation Centre<br>- Summer Intern @ WESEE, Indian Navy';
-                break;
-            case 'education':
-                response = '- B.Tech in Computer Science (AI/ML), IILM University (2023 - 2027)<br>- Class 12, Navy Children School, New Delhi (2023)<br>- Class 10, Navy Children School, Mumbai (2021)';
-                break;
-            case 'projects':
-                response = '- OmniDoc (RAG LLM System)<br>- Sliver.Ai (Smart Video Clipping)<br>- S.W.O.R.D (Surveillance Deep Learning)<br>- Deepfake Detector<br>- Helix-Compiler<br>- Multiva.Ai<br>- Inflx<br>- Artifex';
-                break;
-            case 'skills':
-                response = 'Python, C, Java, HTML, CSS, Tailwind CSS, PyTorch, TensorFlow, OpenCV, YOLO, Whisper, Mistral 7B.';
-                break;
-            case 'contact':
-                response = 'Email: muditagrawal03@gmail.com<br>Phone: +91-7289887349<br>LinkedIn: /in/mudit-agrawal-167610318';
-                break;
-            case 'clear':
-                outputDiv.innerHTML = '';
-                return;
-            case '':
-                break;
-            default:
-                response = `zsh: command not found: ${cmd}`;
+        
+        if (cmd.startsWith('open ')) {
+            const app = cmd.replace('open ', '').trim();
+            const winMap = {
+                'finder': 'finder-window',
+                'safari': 'safari-window',
+                'mail': 'mail-window',
+                'notes': 'notes-window',
+                'app store': 'appstore-window',
+                'appstore': 'appstore-window',
+                'settings': 'settings-window',
+                'system settings': 'settings-window',
+                'trash': 'trash-window',
+                'resume': 'resume-window',
+                'terminal': 'terminal-window'
+            };
+            if (winMap[app]) {
+                openWindow(winMap[app]);
+                response = `Opening ${app}...`;
+            } else {
+                response = `open: Application '${app}' not found. Try: finder, safari, mail, notes, appstore, settings, trash, resume`;
+            }
+        } else {
+            switch(cmd) {
+                case 'help':
+                    response = `
+                        <strong>Available Commands:</strong><br>
+                        • <span style="color:#4facfe">neofetch</span> — View system specs & portfolio summary<br>
+                        • <span style="color:#4facfe">open &lt;app&gt;</span> — Launch any macOS app (e.g. <em>open safari</em>, <em>open mail</em>)<br>
+                        • <span style="color:#4facfe">about me</span> — Mudit's brief bio<br>
+                        • <span style="color:#4facfe">experience</span> — Internship history at Zee & WESEE<br>
+                        • <span style="color:#4facfe">projects</span> — List core AI/ML repositories<br>
+                        • <span style="color:#4facfe">skills</span> — Technologies & models stack<br>
+                        • <span style="color:#4facfe">contact</span> — Email, phone, & LinkedIn<br>
+                        • <span style="color:#4facfe">cat resume.txt</span> — Display resume summary<br>
+                        • <span style="color:#4facfe">whoami</span> — Current user info<br>
+                        • <span style="color:#4facfe">clear</span> — Clear terminal output
+                    `;
+                    break;
+                case 'neofetch':
+                    response = `
+<pre style="color:#4facfe;font-family:inherit;line-height:1.3;margin:0;">
+       .---.          <span style="color:#fff;font-weight:700;">mudit@macbook-pro</span>
+      /     \\         -----------------
+     | () () |        <span style="color:#f6d365;">OS:</span> macOS Mudit 1.0 (Finder Portfolio)
+      \\  _  /         <span style="color:#f6d365;">Host:</span> MacBook Pro 16" (Portfolio Edition)
+       \`---\`          <span style="color:#f6d365;">Uptime:</span> Continuous Learning (3+ Years)
+                      <span style="color:#f6d365;">Degree:</span> B.Tech CSE (AI/ML) @ IILM University
+                      <span style="color:#f6d365;">Focus:</span> Multimodal RAG, CV (YOLO), LLM Systems
+                      <span style="color:#f6d365;">Internships:</span> Zee Tech Innovation • WESEE (Indian Navy)
+                      <span style="color:#f6d365;">Shell:</span> zsh 5.9
+                      <span style="color:#f6d365;">Memory:</span> 100% Passion & Grit
+</pre>
+                    `;
+                    break;
+                case 'whoami':
+                    response = 'Mudit Agrawal — AI/ML Engineer & Undergraduate Researcher';
+                    break;
+                case 'cat resume.txt':
+                    response = `
+                        <strong>MUDIT AGRAWAL — RESUME SUMMARY</strong><br>
+                        • B.Tech CSE (AI/ML) @ IILM University (CGPA: 8.14)<br>
+                        • ML Intern @ Zee Tech Innovation Centre (OmniDoc Multimodal RAG, Video Highlighting)<br>
+                        • Summer Intern @ WESEE, Indian Navy (Defense LLM Evaluation)<br>
+                        • Projects: OmniDoc, Sliver.Ai, Project S.W.O.R.D, Helix-Compiler<br>
+                        • Type <em>open resume</em> to view the full PDF!
+                    `;
+                    break;
+                case 'about me':
+                    response = 'Mudit Agrawal. Computer Science (AI/ML) Undergraduate at IILM University. Focuses on building real-world AI pipelines that hold up outside clean environments.';
+                    break;
+                case 'experience':
+                    response = '- Machine Learning Intern @ Zee Tech and Innovation Centre (Dec 2025 - Jan 2026)<br>- Summer Intern @ WESEE, Indian Navy (Jun 2025 - Jul 2025)';
+                    break;
+                case 'education':
+                    response = '- B.Tech in Computer Science (AI/ML), IILM University (2023 - 2027) — CGPA 8.14<br>- Class 12, Navy Children School, New Delhi (2023) — 74%<br>- Class 10, Navy Children School, Mumbai (2021) — 89%';
+                    break;
+                case 'projects':
+                    response = '- OmniDoc (Multimodal RAG LLM System)<br>- Sliver.Ai (Smart Video Clipping & Highlights)<br>- S.W.O.R.D (Surveillance Deep Learning YOLOv8)<br>- Deepfake Detector<br>- Helix-Compiler<br>- Multiva.Ai<br>- Inflx<br>- Artifex';
+                    break;
+                case 'skills':
+                    response = 'Python, C, Java, HTML, CSS, PyTorch, TensorFlow, OpenCV, YOLOv8/11, Whisper, Mistral-7B, BLIP, Nomic, XTTS.';
+                    break;
+                case 'contact':
+                    response = 'Email: muditagrawal03@gmail.com<br>Phone: +91-7289887349<br>LinkedIn: /in/mudit-agrawal-167610318<br>Hugging Face: /muditagrawal03';
+                    break;
+                case 'sudo hire-me':
+                case 'hire me':
+                case 'hire':
+                    response = '<span style="color:#27c93f;font-weight:700;">[SUCCESS] Great decision! Sending offer letter transmission to muditagrawal03@gmail.com 🚀</span>';
+                    break;
+                case 'clear':
+                    outputDiv.innerHTML = '';
+                    return;
+                case '':
+                    break;
+                default:
+                    response = `zsh: command not found: ${cmd}. Type 'help' for available commands.`;
+            }
         }
         
         if (response) {
@@ -520,6 +980,6 @@ function handleTerminalInput(e) {
         
         // Scroll to bottom
         const contentDiv = document.getElementById('terminal-content');
-        contentDiv.scrollTop = contentDiv.scrollHeight;
+        if (contentDiv) contentDiv.scrollTop = contentDiv.scrollHeight;
     }
 }
