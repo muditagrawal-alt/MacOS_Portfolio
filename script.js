@@ -1274,13 +1274,284 @@ function toggleSafariFaq(el) {
 }
 
 // --------------------------------------------------------------------------
-// Safari Web Search Engine (Wikipedia Search + Knowledge Card Chaining)
+// Local Portfolio Corpus Search (zero network calls, runs before Wikipedia)
+// --------------------------------------------------------------------------
+const portfolioCorpus = [
+  { title: 'OmniDoc', type: 'Project', url: 'https://github.com/muditagrawal-alt/OmniDoc',
+    action: 'open_project:OmniDoc',
+    text: 'Multimodal RAG Document Intelligence System using Mistral-7B, Nomic embeddings, and BLIP.',
+    tags: ['rag', 'llm', 'multimodal', 'document intelligence', 'omnidoc', 'ai', 'mistral', 'nomic', 'blip', 'python'] },
+  { title: 'Project S.W.O.R.D', type: 'Project', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D',
+    action: 'open_project:Project S.W.O.R.D',
+    text: 'Real-time weapon detection using YOLOv26m, pose estimation, and behavioral classification. 90.1% mAP@0.5 on 7,500 images.',
+    tags: ['computer vision', 'yolo', 'weapon detection', 'defense', 'surveillance', 'sword', 's.w.o.r.d'] },
+  { title: 'Sliver.Ai', type: 'Project', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool',
+    action: 'open_project:Sliver.Ai',
+    text: 'AI highlight clipping pipeline using YOLOv8-Face, YOLOv11, and FFmpeg.',
+    tags: ['video', 'clipping', 'yolo', 'ffmpeg', 'sliver', 'sliver.ai'] },
+  { title: 'Multiva.Ai', type: 'Project', url: 'https://github.com/muditagrawal-alt/Multiva.Ai',
+    action: 'open_project:Multiva.Ai',
+    text: 'Voice cloning with Whisper, Coqui XTTS, and FB-NLLB.',
+    tags: ['audio', 'speech synthesis', 'voice cloning', 'whisper', 'multiva', 'multiva.ai'] },
+  { title: 'Helix-Compiler', type: 'Project', url: 'https://github.com/muditagrawal-alt/Helix-Compiler',
+    action: 'open_project:Helix-Compiler',
+    text: 'C-based parsing, translation, and systems compiler.',
+    tags: ['compiler', 'systems', 'c', 'parsing', 'helix', 'helix-compiler'] },
+  { title: 'Machine Learning Intern — Zee Tech and Innovation Centre', type: 'Experience', url: null,
+    action: 'open_finder:experience',
+    text: 'Dec 2025 – Jan 2026. Built OmniDoc, an AI video-highlight pipeline, and Sentinel-Web, an ML-driven security prototype.',
+    tags: ['experience', 'internship', 'zee tech', 'zee', 'ml intern', 'machine learning intern'] },
+  { title: 'Summer Intern — WESEE, Indian Navy', type: 'Experience', url: null,
+    action: 'open_finder:experience',
+    text: 'June 2025 – July 2025. Evaluated in-house LLMs for naval applications in a secure defense R&D environment.',
+    tags: ['experience', 'internship', 'wesee', 'navy', 'indian navy', 'defense', 'r&d'] },
+  { title: 'B.Tech in Computer Science (AI/ML)', type: 'Education', url: null,
+    action: 'open_finder:education',
+    text: 'IILM University, Greater Noida. 2023–2027. CGPA 8.14.', 
+    tags: ['education', 'iilm', 'university', 'btech', 'degree', 'cgpa'] },
+  { title: 'Contact Information', type: 'Contact', url: 'mailto:muditagrawal03@gmail.com',
+    action: 'open_finder:contact',
+    text: 'Email muditagrawal03@gmail.com • Phone +91-7289887349 • LinkedIn: /in/mudit-agrawal-167610318 • GitHub: muditagrawal-alt', 
+    tags: ['contact', 'email', 'linkedin', 'phone', 'reach out', 'hire'] },
+  { title: 'Mudit Agrawal — Portfolio Bio & Skills', type: 'About', url: null,
+    action: 'open_finder:about',
+    text: 'Machine Learning Engineer & Developer with expertise in PyTorch, Python, Computer Vision, Multi-modal RAG, and High-Performance Systems.', 
+    tags: ['about', 'bio', 'mudit', 'skills', 'python', 'pytorch'] }
+];
+
+function searchPortfolioCorpus(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+  // Filter out very short terms (≤2 chars) to avoid false positives from stopwords like "in", "a", "of"
+  const terms = q.split(/\s+/).filter(t => t.length > 2);
+  if (terms.length === 0) return [];
+
+  return portfolioCorpus
+    .map(entry => {
+      const haystack = `${entry.title} ${entry.text} ${entry.tags.join(' ')}`.toLowerCase();
+      let score = 0;
+      terms.forEach(term => {
+        if (entry.title.toLowerCase().includes(term)) score += 3;
+        if (entry.tags.some(t => t.includes(term))) score += 2;
+        if (haystack.includes(term)) score += 1;
+      });
+      return { entry, score };
+    })
+    .filter(r => r.score >= 3) // Require meaningful relevance (title or tag match minimum)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(r => r.entry);
+}
+
+function handlePortfolioMatchClick(action, url) {
+    if (url) {
+        window.open(url, '_blank');
+    } else if (action && action.startsWith('open_finder:')) {
+        const tabName = action.replace('open_finder:', '');
+        openWindow('finder-window');
+        switchTab(tabName);
+    }
+}
+
+// --------------------------------------------------------------------------
+// In-Memory Wikipedia Search & Summary Cache (10-minute TTL)
+// --------------------------------------------------------------------------
+const wikiSearchCache = new Map(); // query (lowercased) -> { searchArticles, summaryData, timestamp }
+const WIKI_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function getCachedWikiResult(q) {
+  if (!q) return null;
+  const hit = wikiSearchCache.get(q.toLowerCase().trim());
+  if (hit && (Date.now() - hit.timestamp) < WIKI_CACHE_TTL_MS) return hit;
+  return null;
+}
+
+function setCachedWikiResult(q, searchArticles, summaryData) {
+  if (!q) return;
+  wikiSearchCache.set(q.toLowerCase().trim(), { searchArticles, summaryData, timestamp: Date.now() });
+}
+
+// Helper to build organic search results HTML
+function buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches) {
+    let organicHtml = '';
+
+    // 1. Local Portfolio Matches (Pinned at top with distinct accent border)
+    if (portfolioMatches && portfolioMatches.length > 0) {
+        organicHtml += `
+            <div class="safari-portfolio-match-section">
+                <div class="safari-portfolio-match-header">
+                    <i class="fas fa-sparkles"></i>
+                    <span>From this portfolio</span>
+                </div>
+                <div class="safari-portfolio-cards">
+                    ${portfolioMatches.map(item => `
+                        <div class="safari-portfolio-card" onclick="handlePortfolioMatchClick('${item.action || ''}', '${item.url || ''}')">
+                            <div class="safari-portfolio-card-top">
+                                <span class="safari-portfolio-badge">${item.type}</span>
+                                ${item.url ? `<a href="${item.url}" target="_blank" onclick="event.stopPropagation()" class="safari-portfolio-link-icon" title="Open Link"><i class="fas fa-external-link-alt"></i></a>` : `<span class="safari-portfolio-link-icon" title="View in Finder"><i class="fas fa-folder-open"></i></span>`}
+                            </div>
+                            <div class="safari-portfolio-card-title">${item.title}</div>
+                            <p class="safari-portfolio-card-text">${item.text}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. Render top Wikipedia results
+    const firstBatch = searchArticles.slice(0, 2);
+    firstBatch.forEach(art => {
+        const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+        const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
+        organicHtml += `
+            <div class="safari-result-item">
+                <div class="safari-result-source-row">
+                    <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
+                    <div class="safari-result-source-info">
+                        <span class="safari-result-site-name">Wikipedia</span>
+                        <span class="safari-result-url">${artUrl}</span>
+                    </div>
+                </div>
+                <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
+                <p class="safari-result-snippet">${cleanSnippet}...</p>
+            </div>
+        `;
+    });
+
+    // 3. Video Spotlight Direct YouTube CTA
+    organicHtml += `
+        <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+            <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
+            <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch live demonstrations, tutorials, and community videos for <strong>${q}</strong> on YouTube.</div>
+            <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
+        </div>
+    `;
+
+    // 4. "People Also Ask" Interactive Accordion
+    organicHtml += `
+        <div class="safari-faq-card">
+            <div class="safari-faq-header">People also ask</div>
+            <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
+                <div class="safari-faq-question">
+                    <span>What is ${q}?</span>
+                    <i class="fas fa-chevron-down safari-faq-chevron"></i>
+                </div>
+                <div class="safari-faq-answer">
+                    ${summaryData ? summaryData.extract : `${q} is recognized across contemporary reference works, encyclopedias, and literature.`}
+                </div>
+            </div>
+            <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
+                <div class="safari-faq-question">
+                    <span>What are the key facts and applications of ${q}?</span>
+                    <i class="fas fa-chevron-down safari-faq-chevron"></i>
+                </div>
+                <div class="safari-faq-answer">
+                    Information and practical applications for ${q} continue to develop across diverse international fields and disciplines.
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 5. Remaining Wikipedia articles (3-6)
+    const remainingBatch = searchArticles.slice(2, 6);
+    remainingBatch.forEach(art => {
+        const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+        const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
+        organicHtml += `
+            <div class="safari-result-item">
+                <div class="safari-result-source-row">
+                    <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
+                    <div class="safari-result-source-info">
+                        <span class="safari-result-site-name">Wikipedia</span>
+                        <span class="safari-result-url">${artUrl}</span>
+                    </div>
+                </div>
+                <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
+                <p class="safari-result-snippet">${cleanSnippet}...</p>
+            </div>
+        `;
+    });
+
+    // 6. Honest No Results Card if both Wikipedia and Local Corpus had zero matches
+    if (searchArticles.length === 0 && (!portfolioMatches || portfolioMatches.length === 0)) {
+        organicHtml += `
+            <div class="safari-noresults-card">
+                <i class="fas fa-info-circle" style="color:#8e8e93;font-size:28px;margin-bottom:8px;"></i>
+                <div class="safari-noresults-title">No matches in this portfolio or Wikipedia for "${q}"</div>
+                <p class="safari-noresults-sub">This is a demo search layer scoped to Mudit's portfolio content and Wikipedia — not a full web index.</p>
+                <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="app-pill-btn primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-top:4px;">
+                    <i class="fas fa-external-link-alt"></i> Search the live web instead ↗
+                </a>
+            </div>
+        `;
+    }
+
+    // 7. Related Searches Chips
+    const relatedSearches = [
+        `${q} overview`,
+        `${q} guide`,
+        `${q} tutorial`,
+        `${q} examples`,
+        `best ${q} tips`,
+        `${q} latest news`
+    ];
+    organicHtml += `
+        <div class="safari-related-section">
+            <div class="safari-related-title">Related searches</div>
+            <div class="safari-related-chips">
+                ${relatedSearches.map(term => `
+                    <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    return organicHtml;
+}
+
+// Helper to build knowledge card HTML
+function buildKnowledgeCardHtml(summaryData) {
+    if (!summaryData) return '';
+    const thumbSrc = summaryData.thumbnail ? summaryData.thumbnail.source : '';
+    const pageUrl = summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`;
+    
+    return `
+        <div class="safari-knowledge-card">
+            ${thumbSrc ? `<img src="${thumbSrc}" alt="${summaryData.title}" class="safari-kc-thumb">` : ''}
+            <div class="safari-kc-title">${summaryData.title}</div>
+            <div class="safari-kc-subtitle">${summaryData.description || 'Overview & Reference'}</div>
+            <div class="safari-kc-extract">${summaryData.extract}</div>
+            
+            <div class="safari-kc-attributes">
+                <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Source:</span> Wikipedia Encyclopedia</div>
+                <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Language:</span> English (en)</div>
+            </div>
+
+            <div class="safari-kc-actions">
+                <a href="${pageUrl}" target="_blank" class="app-pill-btn primary" style="justify-content:center;text-decoration:none;"><i class="fas fa-external-link-alt"></i> View on Wikipedia</a>
+                <button type="button" class="app-pill-btn" onclick="searchYouTube('${summaryData.title.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Watch on YouTube</button>
+            </div>
+        </div>
+    `;
+}
+
+// --------------------------------------------------------------------------
+// Safari Web Search Engine (Portfolio Search + Cached Wikipedia)
 // --------------------------------------------------------------------------
 async function renderDuckDuckGoSearch(tab, renderArea) {
     const q = tab.searchQuery || 'macOS';
     const mathResult = evaluateMathExpression(q);
 
-    // Initial Loading Skeleton in Safari Search UI
+    // 1. Synchronously search local portfolio corpus (zero network calls)
+    const portfolioMatches = searchPortfolioCorpus(q);
+
+    // 2. Check in-memory Wikipedia cache
+    const cachedWiki = getCachedWikiResult(q);
+
+    // Initial Search Shell with Shimmer Skeletons (or instant cached content)
     renderArea.innerHTML = `
         <div class="safari-search-container">
             <div class="safari-search-nav-bar">
@@ -1303,32 +1574,64 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
 
             <div class="safari-search-layout" id="safari-search-layout-root">
                 <div class="safari-results-feed" id="safari-organic-slot">
-                    <div style="padding:40px 0;text-align:center;color:#8e8e93;">
-                        <i class="fas fa-spinner fa-spin fa-2x" style="color:#2997ff;margin-bottom:12px;"></i>
-                        <div>Searching web for <strong>"${q}"</strong>...</div>
-                    </div>
+                    ${cachedWiki ? buildSearchResultsHtml(q, cachedWiki.searchArticles, cachedWiki.summaryData, portfolioMatches) : `
+                        ${portfolioMatches.length > 0 ? `
+                            <div class="safari-portfolio-match-section">
+                                <div class="safari-portfolio-match-header">
+                                    <i class="fas fa-sparkles"></i>
+                                    <span>From this portfolio</span>
+                                </div>
+                                <div class="safari-portfolio-cards">
+                                    ${portfolioMatches.map(item => `
+                                        <div class="safari-portfolio-card" onclick="handlePortfolioMatchClick('${item.action || ''}', '${item.url || ''}')">
+                                            <div class="safari-portfolio-card-top">
+                                                <span class="safari-portfolio-badge">${item.type}</span>
+                                                ${item.url ? `<a href="${item.url}" target="_blank" onclick="event.stopPropagation()" class="safari-portfolio-link-icon" title="Open Link"><i class="fas fa-external-link-alt"></i></a>` : `<span class="safari-portfolio-link-icon" title="View in Finder"><i class="fas fa-folder-open"></i></span>`}
+                                            </div>
+                                            <div class="safari-portfolio-card-title">${item.title}</div>
+                                            <p class="safari-portfolio-card-text">${item.text}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="safari-skel-block">
+                            <div class="safari-skel-line" style="width:35%;height:10px;margin-bottom:12px;"></div>
+                            <div class="safari-skel-line" style="width:80%;height:18px;margin-bottom:10px;"></div>
+                            <div class="safari-skel-line" style="width:100%;"></div>
+                            <div class="safari-skel-line" style="width:65%;"></div>
+                        </div>
+                        <div class="safari-skel-block">
+                            <div class="safari-skel-line" style="width:30%;height:10px;margin-bottom:12px;"></div>
+                            <div class="safari-skel-line" style="width:70%;height:18px;margin-bottom:10px;"></div>
+                            <div class="safari-skel-line" style="width:100%;"></div>
+                            <div class="safari-skel-line" style="width:55%;"></div>
+                        </div>
+                    `}
                 </div>
 
                 <div id="safari-knowledge-slot">
-                    <!-- Knowledge Card Slot -->
+                    ${cachedWiki ? buildKnowledgeCardHtml(cachedWiki.summaryData) : `
+                        <div class="safari-knowledge-card">
+                            <div class="safari-skel-line" style="width:100%;height:140px;border-radius:10px;margin-bottom:14px;"></div>
+                            <div class="safari-skel-line" style="width:70%;height:20px;margin-bottom:10px;"></div>
+                            <div class="safari-skel-line" style="width:40%;height:12px;margin-bottom:16px;"></div>
+                            <div class="safari-skel-line" style="width:100%;"></div>
+                            <div class="safari-skel-line" style="width:90%;"></div>
+                            <div class="safari-skel-line" style="width:65%;"></div>
+                        </div>
+                    `}
                 </div>
             </div>
         </div>
     `;
 
+    // If served from cache, we're done immediately! Zero network requests.
+    if (cachedWiki) return;
+
     const organicSlot = document.getElementById('safari-organic-slot');
     const knowledgeSlot = document.getElementById('safari-knowledge-slot');
     if (!organicSlot) return;
-
-    // Primary path: Templated, query-accurate related searches
-    const relatedSearches = [
-        `${q} overview`,
-        `${q} guide`,
-        `${q} tutorial`,
-        `${q} examples`,
-        `best ${q} tips`,
-        `${q} latest news`
-    ];
 
     try {
         // Step 1: Query Wikipedia Search API for user query
@@ -1337,7 +1640,7 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
         const searchData = await searchRes.json();
         const searchArticles = (searchData.query && searchData.query.search) ? searchData.query.search : [];
 
-        // Step 2: If we have search results, chain to Wikipedia REST summary using the EXACT top article title
+        // Step 2: If search has matches, chain to Wikipedia REST summary using exact top article title
         let summaryData = null;
         if (searchArticles.length > 0) {
             try {
@@ -1352,164 +1655,19 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
             } catch(err) {}
         }
 
-        // Render Knowledge Card if summary was retrieved
-        if (summaryData && knowledgeSlot) {
-            const thumbSrc = summaryData.thumbnail ? summaryData.thumbnail.source : '';
-            const pageUrl = summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`;
-            
-            knowledgeSlot.innerHTML = `
-                <div class="safari-knowledge-card">
-                    ${thumbSrc ? `<img src="${thumbSrc}" alt="${summaryData.title}" class="safari-kc-thumb">` : ''}
-                    <div class="safari-kc-title">${summaryData.title}</div>
-                    <div class="safari-kc-subtitle">${summaryData.description || 'Overview & Reference'}</div>
-                    <div class="safari-kc-extract">${summaryData.extract}</div>
-                    
-                    <div class="safari-kc-attributes">
-                        <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Source:</span> Wikipedia Encyclopedia</div>
-                        <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Language:</span> English (en)</div>
-                    </div>
+        // Cache the retrieved results
+        setCachedWikiResult(q, searchArticles, summaryData);
 
-                    <div class="safari-kc-actions">
-                        <a href="${pageUrl}" target="_blank" class="app-pill-btn primary" style="justify-content:center;text-decoration:none;"><i class="fas fa-external-link-alt"></i> View on Wikipedia</a>
-                        <button type="button" class="app-pill-btn" onclick="searchYouTube('${summaryData.title.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Watch on YouTube</button>
-                    </div>
-                </div>
-            `;
+        // Update slots with resolved results
+        organicSlot.innerHTML = buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches);
+        if (knowledgeSlot) {
+            knowledgeSlot.innerHTML = buildKnowledgeCardHtml(summaryData);
         }
-
-        // Build Organic Results List
-        let organicHtml = '';
-
-        // 1. Render top Wikipedia results
-        const firstBatch = searchArticles.slice(0, 2);
-        firstBatch.forEach(art => {
-            const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
-            const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
-            organicHtml += `
-                <div class="safari-result-item">
-                    <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
-                        <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">Wikipedia</span>
-                            <span class="safari-result-url">${artUrl}</span>
-                        </div>
-                    </div>
-                    <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
-                    <p class="safari-result-snippet">${cleanSnippet}...</p>
-                </div>
-            `;
-        });
-
-        // 2. Video Spotlight Direct YouTube CTA
-        organicHtml += `
-            <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
-                <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
-                <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch live demonstrations, tutorials, and community videos for <strong>${q}</strong> on YouTube.</div>
-                <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
-            </div>
-        `;
-
-        // 3. "People Also Ask" Interactive Accordion
-        organicHtml += `
-            <div class="safari-faq-card">
-                <div class="safari-faq-header">People also ask</div>
-                <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
-                    <div class="safari-faq-question">
-                        <span>What is ${q}?</span>
-                        <i class="fas fa-chevron-down safari-faq-chevron"></i>
-                    </div>
-                    <div class="safari-faq-answer">
-                        ${summaryData ? summaryData.extract : `${q} is recognized across contemporary reference works, encyclopedias, and literature.`}
-                    </div>
-                </div>
-                <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
-                    <div class="safari-faq-question">
-                        <span>What are the key facts and applications of ${q}?</span>
-                        <i class="fas fa-chevron-down safari-faq-chevron"></i>
-                    </div>
-                    <div class="safari-faq-answer">
-                        Information and practical applications for ${q} continue to develop across diverse international fields and disciplines.
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // 4. Remaining Wikipedia articles (3-6)
-        const remainingBatch = searchArticles.slice(2, 6);
-        remainingBatch.forEach(art => {
-            const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
-            const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
-            organicHtml += `
-                <div class="safari-result-item">
-                    <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
-                        <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">Wikipedia</span>
-                            <span class="safari-result-url">${artUrl}</span>
-                        </div>
-                    </div>
-                    <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
-                    <p class="safari-result-snippet">${cleanSnippet}...</p>
-                </div>
-            `;
-        });
-
-        // 5. Fallback Web result if search was empty
-        if (searchArticles.length === 0) {
-            organicHtml += `
-                <div class="safari-result-item">
-                    <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
-                        <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">Web Search</span>
-                            <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
-                        </div>
-                    </div>
-                    <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
-                    <p class="safari-result-snippet">Explore live web results, articles, documentation, and discussions across the internet for ${q}.</p>
-                </div>
-            `;
-        }
-
-        // 6. Related Searches Chips
-        organicHtml += `
-            <div class="safari-related-section">
-                <div class="safari-related-title">Related searches</div>
-                <div class="safari-related-chips">
-                    ${relatedSearches.map(term => `
-                        <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-
-        organicSlot.innerHTML = organicHtml;
     } catch (e) {
-        organicSlot.innerHTML = `
-            <div class="safari-result-item">
-                <div class="safari-result-source-row">
-                    <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
-                    <div class="safari-result-source-info">
-                        <span class="safari-result-site-name">Web Search</span>
-                        <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
-                    </div>
-                </div>
-                <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
-                <p class="safari-result-snippet">Access live web search results for ${q}.</p>
-            </div>
-            <div class="safari-related-section">
-                <div class="safari-related-title">Related searches</div>
-                <div class="safari-related-chips">
-                    ${relatedSearches.map(term => `
-                        <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+        organicSlot.innerHTML = buildSearchResultsHtml(q, [], null, portfolioMatches);
+        if (knowledgeSlot) {
+            knowledgeSlot.innerHTML = '';
+        }
     }
 }
 
