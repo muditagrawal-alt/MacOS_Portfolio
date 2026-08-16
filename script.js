@@ -1236,7 +1236,7 @@ function navigateSafariTo(queryOrUrl) {
 }
 
 // --------------------------------------------------------------------------
-// DuckDuckGo Live Search & Research Engine (Clean & Dynamic)
+// Safari Web Search Engine (macOS Safari Authentic UI)
 // --------------------------------------------------------------------------
 function evaluateMathExpression(str) {
     try {
@@ -1251,74 +1251,83 @@ function evaluateMathExpression(str) {
     return null;
 }
 
+function toggleSafariFaq(el) {
+    if (el) el.classList.toggle('open');
+}
+
 function renderDuckDuckGoSearch(tab, renderArea) {
-    const q = tab.searchQuery || 'Artificial Intelligence';
+    const q = tab.searchQuery || 'macOS';
     const mathResult = evaluateMathExpression(q);
 
-    // Initial Loading Skeleton
+    // Initial Loading Skeleton in Safari Search UI
     renderArea.innerHTML = `
-        <div class="ddg-search-container">
-            <div class="ddg-search-header-bar">
-                <div class="ddg-brand-badge"><i class="fas fa-shield-alt"></i> DuckDuckGo Privacy Search</div>
-                <div class="ddg-tabs-bar">
-                    <span class="ddg-tab-item active">All</span>
-                    <span class="ddg-tab-item" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos</span>
-                    <span class="ddg-tab-item" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iar=news', '_blank')">News</span>
-                    <span class="ddg-tab-item" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iax=images&ia=images', '_blank')">Images</span>
+        <div class="safari-search-container">
+            <div class="safari-search-nav-bar">
+                <div class="safari-search-tabs">
+                    <span class="safari-search-tab active"><i class="fas fa-search"></i> All</span>
+                    <span class="safari-search-tab" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos</span>
+                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iar=news', '_blank')"><i class="far fa-newspaper"></i> News</span>
+                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&iax=images&ia=images', '_blank')"><i class="far fa-image"></i> Images</span>
+                    <span class="safari-search-tab" onclick="window.open('https://duckduckgo.com/?q=${encodeURIComponent(q)}&ia=web', '_blank')"><i class="fas fa-filter"></i> Tools</span>
                 </div>
+                <div class="safari-search-stats">About 1,840,000 results (0.24s)</div>
             </div>
 
             ${mathResult !== null ? `
-                <div class="ddg-instant-card">
-                    <div class="ddg-instant-header"><i class="fas fa-calculator"></i> Calculation Result</div>
-                    <div class="ddg-calc-result">${mathResult}</div>
-                    <div class="ddg-instant-source">${q} = ${mathResult}</div>
+                <div class="safari-calc-card">
+                    <div class="safari-calc-expr">${q} =</div>
+                    <div class="safari-calc-val">${mathResult}</div>
                 </div>
             ` : ''}
 
-            <div id="ddg-instant-slot">
-                <div class="ddg-instant-card" style="opacity:0.7;">
-                    <div class="ddg-instant-header"><i class="fas fa-spinner fa-spin"></i> Researching live web...</div>
-                    <div class="ddg-instant-title">${q}</div>
-                    <div class="ddg-instant-abstract">Fetching verified answers, facts, and topics from DuckDuckGo and open knowledge engines...</div>
+            <div class="safari-search-layout" id="safari-search-layout-root">
+                <div class="safari-results-feed" id="safari-organic-slot">
+                    <div style="padding:40px 0;text-align:center;color:#8e8e93;">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color:#2997ff;margin-bottom:12px;"></i>
+                        <div>Searching web for <strong>"${q}"</strong>...</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="ddg-results-list" id="ddg-results-slot">
-                <!-- Web Results List -->
+                <div id="safari-knowledge-slot">
+                    <!-- Knowledge Card Slot -->
+                </div>
             </div>
         </div>
     `;
 
-    // Fetch DuckDuckGo Open Instant Answer API
+    // Fetch APIs: Wikipedia Search, Wikipedia Summary, DuckDuckGo Instant Answer
+    const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&utf8=&format=json&origin=*`;
+    const wikiSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
     const ddgApiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=1`;
-    const wikiApiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
 
     Promise.allSettled([
-        fetch(ddgApiUrl).then(r => r.json()),
-        fetch(wikiApiUrl).then(r => r.json())
-    ]).then(([ddgRes, wikiRes]) => {
-        const instantSlot = document.getElementById('ddg-instant-slot');
-        const resultsSlot = document.getElementById('ddg-results-slot');
-        if (!resultsSlot) return;
+        fetch(wikiSearchUrl).then(r => r.json()),
+        fetch(wikiSummaryUrl).then(r => r.json()),
+        fetch(ddgApiUrl).then(r => r.json())
+    ]).then(([searchRes, summaryRes, ddgRes]) => {
+        const organicSlot = document.getElementById('safari-organic-slot');
+        const knowledgeSlot = document.getElementById('safari-knowledge-slot');
+        if (!organicSlot) return;
 
-        let abstractText = '';
-        let abstractSource = '';
-        let abstractUrl = '';
+        let summaryData = null;
+        if (summaryRes.status === 'fulfilled' && summaryRes.value && summaryRes.value.title && summaryRes.value.extract) {
+            summaryData = summaryRes.value;
+        }
+
+        let searchArticles = [];
+        if (searchRes.status === 'fulfilled' && searchRes.value && searchRes.value.query && searchRes.value.query.search) {
+            searchArticles = searchRes.value.query.search;
+        }
+
+        let ddgData = null;
         let relatedTopics = [];
-
         if (ddgRes.status === 'fulfilled' && ddgRes.value) {
-            const data = ddgRes.value;
-            if (data.AbstractText) {
-                abstractText = data.AbstractText;
-                abstractSource = data.AbstractSource || 'DuckDuckGo Instant Answers';
-                abstractUrl = data.AbstractURL;
-            }
-            if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
-                data.RelatedTopics.slice(0, 8).forEach(t => {
+            ddgData = ddgRes.value;
+            if (ddgData.RelatedTopics && Array.isArray(ddgData.RelatedTopics)) {
+                ddgData.RelatedTopics.slice(0, 8).forEach(t => {
                     if (t.Text) relatedTopics.push({ text: t.Text, url: t.FirstURL });
                     else if (t.Topics) {
-                        t.Topics.slice(0, 3).forEach(st => {
+                        t.Topics.slice(0, 2).forEach(st => {
                             if (st.Text) relatedTopics.push({ text: st.Text, url: st.FirstURL });
                         });
                     }
@@ -1326,68 +1335,177 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             }
         }
 
-        if (!abstractText && wikiRes.status === 'fulfilled' && wikiRes.value && wikiRes.value.extract) {
-            abstractText = wikiRes.value.extract;
-            abstractSource = 'Wikipedia Reference';
-            abstractUrl = wikiRes.value.content_urls ? wikiRes.value.content_urls.desktop.page : '';
-        }
+        // Render Knowledge Card on the right
+        if (summaryData && knowledgeSlot) {
+            const thumbSrc = summaryData.thumbnail ? summaryData.thumbnail.source : '';
+            const pageUrl = summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`;
+            
+            knowledgeSlot.innerHTML = `
+                <div class="safari-knowledge-card">
+                    ${thumbSrc ? `<img src="${thumbSrc}" alt="${summaryData.title}" class="safari-kc-thumb">` : ''}
+                    <div class="safari-kc-title">${summaryData.title}</div>
+                    <div class="safari-kc-subtitle">${summaryData.description || 'Overview & Reference'}</div>
+                    <div class="safari-kc-extract">${summaryData.extract}</div>
+                    
+                    <div class="safari-kc-attributes">
+                        <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Source:</span> Wikipedia Encyclopedia</div>
+                        <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Language:</span> English (en)</div>
+                    </div>
 
-        // Render Instant Knowledge Card
-        if (abstractText && instantSlot) {
-            instantSlot.innerHTML = `
-                <div class="ddg-instant-card">
-                    <div class="ddg-instant-header"><i class="fas fa-bolt"></i> Instant Answer • ${abstractSource}</div>
-                    <div class="ddg-instant-title">${q}</div>
-                    <div class="ddg-instant-abstract">${abstractText}</div>
-                    ${abstractUrl ? `<div class="ddg-instant-source"><a href="${abstractUrl}" target="_blank" style="color:#de5833;text-decoration:none;">Read full documentation ↗</a></div>` : ''}
-                </div>
-            `;
-        } else if (instantSlot && mathResult === null) {
-            instantSlot.innerHTML = '';
-        }
-
-        // Render Related Topics Chips
-        let topicsHtml = '';
-        if (relatedTopics.length > 0) {
-            topicsHtml = `
-                <div style="font-size:12px;font-weight:600;color:#aaa;margin-bottom:8px;">Related Topics:</div>
-                <div class="ddg-topics-row">
-                    ${relatedTopics.map(t => `<div class="ddg-topic-chip" onclick="navigateSafariTo('${t.text.replace(/'/g, "\\'")}')">${t.text.split(' - ')[0]}</div>`).join('')}
+                    <div class="safari-kc-actions">
+                        <a href="${pageUrl}" target="_blank" class="app-pill-btn primary" style="justify-content:center;text-decoration:none;"><i class="fas fa-external-link-alt"></i> View on Wikipedia</a>
+                        <button type="button" class="app-pill-btn" onclick="searchYouTube('${summaryData.title.replace(/'/g, "\\'")}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Watch on YouTube</button>
+                    </div>
                 </div>
             `;
         }
 
-        // Render Clean Context-Aware Web Results
-        let webItemsHtml = `
-            ${topicsHtml}
-            <div class="ddg-result-item">
-                <div class="ddg-result-cite">https://en.wikipedia.org/wiki/${encodeURIComponent(q.replace(/\s+/g, '_'))}</div>
-                <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(q.replace(/\s+/g, '_'))}" target="_blank" class="ddg-result-title">${q} — Knowledge Overview & Encyclopedia</a>
-                <div class="ddg-result-snippet">Explore comprehensive definitions, history, background, and essential principles about ${q}.</div>
-            </div>
+        // Build Organic Results List
+        let organicHtml = '';
 
-            <div class="ddg-result-item" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
-                <div class="ddg-result-cite"><i class="fab fa-youtube" style="color:#ff0000;"></i> youtube.com &gt; results?search_query=${encodeURIComponent(q)}</div>
-                <div class="ddg-result-title" style="color:#ff4444;"><i class="fab fa-youtube"></i> Watch Trending Videos for "${q}" on YouTube</div>
-                <div class="ddg-result-snippet">Open in-browser YouTube engine to watch video guides, demonstrations, and community clips for ${q}.</div>
-            </div>
+        // 1. If we have Wikipedia search articles, render top 2
+        const firstBatch = searchArticles.slice(0, 2);
+        firstBatch.forEach(art => {
+            const cleanSnippet = art.snippet.replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+            const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
+            organicHtml += `
+                <div class="safari-result-item">
+                    <div class="safari-result-source-row">
+                        <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
+                        <div class="safari-result-source-info">
+                            <span class="safari-result-site-name">Wikipedia</span>
+                            <span class="safari-result-url">${artUrl}</span>
+                        </div>
+                    </div>
+                    <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
+                    <p class="safari-result-snippet">${cleanSnippet}...</p>
+                </div>
+            `;
+        });
 
-            <div class="ddg-result-item">
-                <div class="ddg-result-cite">https://duckduckgo.com/?q=${encodeURIComponent(q)}</div>
-                <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="ddg-result-title">Search DuckDuckGo Web for "${q}" ↗</a>
-                <div class="ddg-result-snippet">Browse real-time privacy-protected web results across the internet for ${q}.</div>
+        // 2. Video Spotlight Carousel (Interactive In-Browser Playback!)
+        organicHtml += `
+            <div class="safari-video-spotlight">
+                <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
+                <div class="safari-video-cards-row">
+                    <div class="safari-search-vcard" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')">
+                        <div class="safari-search-vcard-thumb">
+                            <img src="https://img.youtube.com/vi/1-SJGQ2HLp8/mqdefault.jpg" alt="Video">
+                        </div>
+                        <div class="safari-search-vcard-info">
+                            <div class="safari-search-vcard-title">Top Guide & Demonstration for ${q}</div>
+                            <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube • Watch in Safari</div>
+                        </div>
+                    </div>
+
+                    <div class="safari-search-vcard" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')">
+                        <div class="safari-search-vcard-thumb">
+                            <img src="https://img.youtube.com/vi/7sZkF40e3wM/mqdefault.jpg" alt="Video">
+                        </div>
+                        <div class="safari-search-vcard-info">
+                            <div class="safari-search-vcard-title">${q} Masterclass & Complete Breakdown</div>
+                            <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube • Watch in Safari</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
 
-        resultsSlot.innerHTML = webItemsHtml;
+        // 3. "People Also Ask" Interactive Accordion (Safari/Google standard)
+        organicHtml += `
+            <div class="safari-faq-card">
+                <div class="safari-faq-header">People also ask</div>
+                <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
+                    <div class="safari-faq-question">
+                        <span>What is the origin and history of ${q}?</span>
+                        <i class="fas fa-chevron-down safari-faq-chevron"></i>
+                    </div>
+                    <div class="safari-faq-answer">
+                        ${summaryData ? summaryData.extract.slice(0, 200) + '...' : `Historical records and comprehensive encyclopedic research show that ${q} has evolved through key milestones.`}
+                    </div>
+                </div>
+                <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
+                    <div class="safari-faq-question">
+                        <span>What are the most popular varieties or applications of ${q}?</span>
+                        <i class="fas fa-chevron-down safari-faq-chevron"></i>
+                    </div>
+                    <div class="safari-faq-answer">
+                        ${q} is utilized across multiple global disciplines, regional styles, and modern industry standards worldwide.
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 4. Remaining Wikipedia Search Articles (3-6)
+        const remainingBatch = searchArticles.slice(2, 6);
+        remainingBatch.forEach(art => {
+            const cleanSnippet = art.snippet.replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+            const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
+            organicHtml += `
+                <div class="safari-result-item">
+                    <div class="safari-result-source-row">
+                        <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
+                        <div class="safari-result-source-info">
+                            <span class="safari-result-site-name">Wikipedia</span>
+                            <span class="safari-result-url">${artUrl}</span>
+                        </div>
+                    </div>
+                    <a href="${artUrl}" target="_blank" class="safari-result-title">${art.title}</a>
+                    <p class="safari-result-snippet">${cleanSnippet}...</p>
+                </div>
+            `;
+        });
+
+        // 5. Fallback Web result if search was minimal
+        if (searchArticles.length === 0) {
+            organicHtml += `
+                <div class="safari-result-item">
+                    <div class="safari-result-source-row">
+                        <img src="https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=32" class="safari-result-favicon" alt="DuckDuckGo">
+                        <div class="safari-result-source-info">
+                            <span class="safari-result-site-name">DuckDuckGo</span>
+                            <span class="safari-result-url">https://duckduckgo.com/?q=${encodeURIComponent(q)}</span>
+                        </div>
+                    </div>
+                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search DuckDuckGo for "${q}" ↗</a>
+                    <p class="safari-result-snippet">Explore live web results, articles, documentation, and discussions across the internet for ${q}.</p>
+                </div>
+            `;
+        }
+
+        // 6. Related Searches Chips
+        const sampleRelated = relatedTopics.length > 0 
+            ? relatedTopics.map(t => t.text.split(' - ')[0])
+            : [`${q} guide`, `${q} definition`, `best ${q} examples`, `${q} tutorial`, `how to use ${q}`, `${q} tips`];
+
+        organicHtml += `
+            <div class="safari-related-section">
+                <div class="safari-related-title">Related searches</div>
+                <div class="safari-related-chips">
+                    ${sampleRelated.slice(0, 8).map(term => `
+                        <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        organicSlot.innerHTML = organicHtml;
     }).catch(() => {
-        const resultsSlot = document.getElementById('ddg-results-slot');
-        if (resultsSlot) {
-            resultsSlot.innerHTML = `
-                <div class="ddg-result-item">
-                    <div class="ddg-result-cite">https://duckduckgo.com/?q=${encodeURIComponent(q)}</div>
-                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="ddg-result-title">Search DuckDuckGo for "${q}"</a>
-                    <div class="ddg-result-snippet">Access live privacy-protected search results for ${q}.</div>
+        const organicSlot = document.getElementById('safari-organic-slot');
+        if (organicSlot) {
+            organicSlot.innerHTML = `
+                <div class="safari-result-item">
+                    <div class="safari-result-source-row">
+                        <img src="https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=32" class="safari-result-favicon" alt="DuckDuckGo">
+                        <div class="safari-result-source-info">
+                            <span class="safari-result-site-name">DuckDuckGo</span>
+                            <span class="safari-result-url">https://duckduckgo.com/?q=${encodeURIComponent(q)}</span>
+                        </div>
+                    </div>
+                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search DuckDuckGo for "${q}" ↗</a>
+                    <p class="safari-result-snippet">Access live privacy-protected search results for ${q}.</p>
                 </div>
             `;
         }

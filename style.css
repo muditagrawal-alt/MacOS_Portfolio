@@ -1519,153 +1519,424 @@ p {
     margin: 0 auto;
 }
 
-.ddg-search-header-bar {
+/* ==========================================================================
+   Safari Web Search Engine (macOS Safari Authentic UI)
+   ========================================================================== */
+.safari-search-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 8px 12px 40px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #e3e3e8;
+}
+
+/* Safari Search Top Nav Bar */
+.safari-search-nav-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.ddg-brand-badge {
+.safari-search-tabs {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.safari-search-tab {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-size: 13px;
-    font-weight: 600;
-    color: #de5833;
-}
-
-.ddg-tabs-bar {
-    display: flex;
-    gap: 16px;
-    font-size: 12.5px;
-    color: #888;
-}
-
-.ddg-tab-item {
+    color: #98989d;
     cursor: pointer;
-    padding-bottom: 4px;
+    padding-bottom: 8px;
+    position: relative;
     transition: color 0.15s;
 }
 
-.ddg-tab-item:hover, .ddg-tab-item.active {
-    color: #fff;
-    border-bottom: 2px solid #de5833;
-    font-weight: 500;
+.safari-search-tab:hover {
+    color: #f5f5f7;
 }
 
-/* Instant Answer / Knowledge Panel Card */
-.ddg-instant-card {
-    background: rgba(222, 88, 51, 0.08);
-    border: 1px solid rgba(222, 88, 51, 0.25);
-    border-radius: 12px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    backdrop-filter: blur(10px);
+.safari-search-tab.active {
+    color: #2997ff;
+    font-weight: 600;
 }
 
-.ddg-instant-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #de5833;
-    text-transform: uppercase;
-    margin-bottom: 8px;
+.safari-search-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 0;
+    width: 100%;
+    height: 2.5px;
+    background: #2997ff;
+    border-radius: 2px;
 }
 
-.ddg-instant-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 8px;
+.safari-search-stats {
+    font-size: 12px;
+    color: #8e8e93;
 }
 
-.ddg-instant-abstract {
-    font-size: 13.5px;
-    color: #ddd;
-    line-height: 1.6;
+/* Safari Search Two-Column Layout */
+.safari-search-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 820px) {
+    .safari-search-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Safari Knowledge Card (Right column on desktop) */
+.safari-knowledge-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.safari-kc-thumb {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
     margin-bottom: 12px;
+    background: #111;
 }
 
-.ddg-instant-source {
-    font-size: 11px;
+.safari-kc-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+    letter-spacing: -0.3px;
+}
+
+.safari-kc-subtitle {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-bottom: 12px;
+    text-transform: capitalize;
+}
+
+.safari-kc-extract {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #d1d1d6;
+    margin-bottom: 14px;
+}
+
+.safari-kc-attributes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    margin-bottom: 14px;
+}
+
+.safari-kc-attr-item {
+    font-size: 12px;
     color: #aaa;
+    display: flex;
+    gap: 6px;
 }
 
-.ddg-calc-result {
+.safari-kc-attr-label {
+    font-weight: 600;
+    color: #e5e5ea;
+}
+
+.safari-kc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Safari Calculation Result Card */
+.safari-calc-card {
+    background: rgba(41, 151, 255, 0.08);
+    border: 1px solid rgba(41, 151, 255, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.safari-calc-expr {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-bottom: 4px;
+}
+
+.safari-calc-val {
     font-size: 32px;
     font-weight: 700;
-    color: #4facfe;
-    margin: 8px 0;
+    color: #2997ff;
 }
 
-/* Related Topics Chips */
-.ddg-topics-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-}
-
-.ddg-topic-chip {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 12px;
-    color: #ccc;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.ddg-topic-chip:hover {
-    background: rgba(222, 88, 51, 0.2);
-    border-color: #de5833;
-    color: #fff;
-}
-
-/* Web Result Items */
-.ddg-results-list {
+/* Safari Organic Result Item */
+.safari-results-feed {
     display: flex;
     flex-direction: column;
     gap: 22px;
 }
 
-.ddg-result-item {
+.safari-result-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.safari-result-source-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.safari-result-favicon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.safari-result-source-info {
     display: flex;
     flex-direction: column;
 }
 
-.ddg-result-cite {
+.safari-result-site-name {
+    font-size: 12px;
+    color: #f5f5f7;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.safari-result-url {
     font-size: 11px;
-    color: #888;
-    margin-bottom: 3px;
+    color: #8e8e93;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 500px;
 }
 
-.ddg-result-title {
-    font-size: 16px;
-    font-weight: 600;
+.safari-result-title {
+    font-size: 17px;
+    font-weight: 500;
     color: #58a6ff;
     text-decoration: none;
+    line-height: 1.35;
     cursor: pointer;
-    margin-bottom: 4px;
+    display: inline-block;
+    transition: color 0.1s;
 }
 
-.ddg-result-title:hover {
+.safari-result-title:hover {
     text-decoration: underline;
+    color: #79b8ff;
 }
 
-.ddg-result-snippet {
+.safari-result-snippet {
     font-size: 13px;
-    color: #bbb;
-    line-height: 1.5;
+    color: #c9d1d9;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.safari-result-snippet em, .safari-result-snippet b, .safari-result-snippet strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Safari Video Carousel / Spotlight in Search */
+.safari-video-spotlight {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 4px 0 10px 0;
+}
+
+.safari-video-spotlight-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.safari-video-cards-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.safari-search-vcard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.safari-search-vcard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.safari-search-vcard-thumb {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #111;
+}
+
+.safari-search-vcard-thumb img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.safari-search-vcard-info {
+    padding: 8px 10px;
+}
+
+.safari-search-vcard-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.safari-search-vcard-channel {
+    font-size: 10.5px;
+    color: #8e8e93;
+}
+
+/* Safari "People Also Ask" FAQ */
+.safari-faq-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 4px 0 10px 0;
+}
+
+.safari-faq-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f5f5f7;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.safari-faq-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.safari-faq-item:last-child {
+    border-bottom: none;
+}
+
+.safari-faq-question {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e5e5ea;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+}
+
+.safari-faq-question:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.safari-faq-answer {
+    padding: 0 16px 14px 16px;
+    font-size: 12.5px;
+    color: #aaa;
+    line-height: 1.55;
+    display: none;
+}
+
+.safari-faq-item.open .safari-faq-answer {
+    display: block;
+}
+
+.safari-faq-item.open .safari-faq-chevron {
+    transform: rotate(180deg);
+}
+
+.safari-faq-chevron {
+    transition: transform 0.2s;
+    font-size: 11px;
+    color: #8e8e93;
+}
+
+/* Related Searches Chips */
+.safari-related-section {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.safari-related-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.safari-related-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.safari-related-chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #e5e5ea;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.safari-related-chip:hover {
+    background: rgba(41, 151, 255, 0.15);
+    border-color: #2997ff;
+    color: #fff;
 }
 
 /* ==========================================================================
