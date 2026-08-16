@@ -128,7 +128,7 @@ function minimizeWindow(windowId) {
 function maximizeWindow(windowId) {
     const win = document.getElementById(windowId);
     if (win) {
-        if (win.style.width === '100vw') {
+        if (win.style.width === '100%' || win.style.width === '100vw' || win.style.width === '100dvw') {
             // Restore
             win.style.width = win.getAttribute('data-width') || '650px';
             win.style.height = win.getAttribute('data-height') || '400px';
@@ -143,8 +143,8 @@ function maximizeWindow(windowId) {
             
             win.style.top = '28px'; // Below menu bar
             win.style.left = '0';
-            win.style.width = '100vw';
-            win.style.height = 'calc(100vh - 28px)';
+            win.style.width = '100%';
+            win.style.height = 'calc(100% - 28px)';
         }
     }
 }
@@ -356,7 +356,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-const SYSTEM_WIFI_STATUS = 'Wi-Fi Connected';
 let SYSTEM_BATTERY_STATUS = window.SYSTEM_BATTERY_STATUS || 'Battery status unavailable in browser';
 let SYSTEM_BATTERY_LEVEL = typeof window.SYSTEM_BATTERY_LEVEL === 'number' ? window.SYSTEM_BATTERY_LEVEL : null;
 let SYSTEM_BATTERY_CHARGING = typeof window.SYSTEM_BATTERY_CHARGING === 'boolean' ? window.SYSTEM_BATTERY_CHARGING : false;
@@ -371,16 +370,13 @@ function updateWifiStatus() {
     const wifiIcon = document.getElementById('wifi-icon');
     if (!wifiIcon) return;
 
-    if (SYSTEM_WIFI_STATUS) {
-        setMenuIconTooltip(wifiIcon, SYSTEM_WIFI_STATUS);
-        return;
-    }
-
     if (!navigator.onLine) {
         setMenuIconTooltip(wifiIcon, 'Wi-Fi: Offline');
+        wifiIcon.style.opacity = '0.5';
         return;
     }
 
+    wifiIcon.style.opacity = '1';
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     const connectionType = connection && connection.type ? connection.type.toLowerCase() : '';
     const effectiveType = connection && connection.effectiveType ? connection.effectiveType.toUpperCase() : '';
@@ -390,9 +386,9 @@ function updateWifiStatus() {
     } else if (connectionType) {
         setMenuIconTooltip(wifiIcon, `Network: ${connectionType.toUpperCase()}`);
     } else if (effectiveType) {
-        setMenuIconTooltip(wifiIcon, `Network: ${effectiveType}`);
+        setMenuIconTooltip(wifiIcon, `Wi-Fi: Connected (${effectiveType})`);
     } else {
-        setMenuIconTooltip(wifiIcon, 'Wi-Fi: Status unavailable in browser');
+        setMenuIconTooltip(wifiIcon, 'Wi-Fi: Connected');
     }
 }
 
@@ -475,13 +471,9 @@ if ('getBattery' in navigator) {
     syncSystemBatteryVariables();
     if (typeof SYSTEM_BATTERY_LEVEL === 'number') {
         applyBatteryStatus(SYSTEM_BATTERY_LEVEL, SYSTEM_BATTERY_CHARGING);
-        loadSystemBatteryFeed();
-        setInterval(loadSystemBatteryFeed, 15000);
     } else {
-        const batteryIcon = document.getElementById('battery-icon');
-        if (batteryIcon) {
-            setMenuIconTooltip(batteryIcon, SYSTEM_BATTERY_STATUS || 'Battery status unavailable in browser');
-        }
+        // Fallback for browsers without Battery API: load once, no wasteful interval polling
+        loadSystemBatteryFeed();
     }
 }
 
@@ -1011,8 +1003,24 @@ function loadSafariDestination(tab, dest) {
         tab.ytView = 'watch';
         tab.ytVideoId = videoId;
         tab.url = `https://www.youtube.com/watch?v=${videoId}`;
-        const found = youtubeVideoLibrary.find(v => v.id === videoId);
-        tab.title = found ? `${found.title} - YouTube` : `YouTube Watch (${videoId})`;
+        tab.title = 'YouTube Video';
+        tab.ytChannel = 'YouTube';
+
+        // Fetch official YouTube oEmbed metadata asynchronously without external proxies or API keys
+        getYouTubeOEmbedMeta(videoId).then(meta => {
+            if (meta && meta.title) {
+                tab.title = `${meta.title} - YouTube`;
+                tab.ytChannel = meta.author || 'YouTube';
+                const activeTab = safariTabs.find(t => t.id === activeSafariTabId);
+                if (activeTab && activeTab.id === tab.id) {
+                    renderSafariTabs();
+                    const titleEl = document.getElementById('yt-watch-title-text');
+                    if (titleEl) titleEl.textContent = meta.title;
+                    const chanEl = document.getElementById('yt-watch-channel-text');
+                    if (chanEl) chanEl.textContent = meta.author || 'YouTube';
+                }
+            }
+        });
     } else if (dest.startsWith('yt_search:')) {
         const query = dest.replace('yt_search:', '');
         tab.type = 'youtube';
@@ -1143,16 +1151,119 @@ function navigateSafariTo(queryOrUrl) {
 }
 
 // --------------------------------------------------------------------------
-// Safari Web Search Engine (macOS Safari Authentic UI)
+// Official Unauthenticated YouTube oEmbed Metadata Resolver
+// --------------------------------------------------------------------------
+async function getYouTubeOEmbedMeta(videoId) {
+    try {
+        const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+        if (!res.ok) throw new Error('oembed failed');
+        const data = await res.json();
+        return { title: data.title, author: data.author_name };
+    } catch (e) {
+        return null; // graceful fallback (never throws)
+    }
+}
+
+// --------------------------------------------------------------------------
+// Safe Recursive-Descent Expression Parser & Evaluator (No eval / new Function)
 // --------------------------------------------------------------------------
 function evaluateMathExpression(str) {
     try {
-        const clean = str.replace(/[^0-9+\-*/().%^]/g, '');
-        if (!clean || !/[0-9]/.test(clean)) return null;
-        const fn = new Function(`return (${clean})`);
-        const res = fn();
-        if (typeof res === 'number' && !isNaN(res) && isFinite(res)) {
-            return res;
+        if (!str || typeof str !== 'string') return null;
+        if (!/\d/.test(str) || /[^0-9+\-*/().%^\s]/.test(str)) return null;
+
+        const tokens = [];
+        let i = 0;
+        const s = str.replace(/\s+/g, '');
+        if (!s) return null;
+
+        while (i < s.length) {
+            const ch = s[i];
+            if (/\d/.test(ch) || ch === '.') {
+                let numStr = '';
+                while (i < s.length && (/\d/.test(s[i]) || s[i] === '.')) {
+                    numStr += s[i];
+                    i++;
+                }
+                const num = parseFloat(numStr);
+                if (isNaN(num)) return null;
+                tokens.push(num);
+            } else if ('+-*/%^()'.includes(ch)) {
+                tokens.push(ch);
+                i++;
+            } else {
+                return null;
+            }
+        }
+
+        if (tokens.length === 0) return null;
+
+        let pos = 0;
+        function peek() { return tokens[pos]; }
+        function consume() { return tokens[pos++]; }
+
+        function parseExpression() {
+            let val = parseTerm();
+            while (peek() === '+' || peek() === '-') {
+                const op = consume();
+                const right = parseTerm();
+                val = op === '+' ? val + right : val - right;
+            }
+            return val;
+        }
+
+        function parseTerm() {
+            let val = parsePower();
+            while (peek() === '*' || peek() === '/' || peek() === '%') {
+                const op = consume();
+                const right = parsePower();
+                if (op === '*') val = val * right;
+                else if (op === '/') {
+                    if (right === 0) return null;
+                    val = val / right;
+                } else if (op === '%') {
+                    if (right === 0) return null;
+                    val = val % right;
+                }
+            }
+            return val;
+        }
+
+        function parsePower() {
+            let val = parseFactor();
+            if (peek() === '^') {
+                consume();
+                const right = parsePower();
+                val = Math.pow(val, right);
+            }
+            return val;
+        }
+
+        function parseFactor() {
+            if (peek() === '+') {
+                consume();
+                return parseFactor();
+            }
+            if (peek() === '-') {
+                consume();
+                return -parseFactor();
+            }
+            if (peek() === '(') {
+                consume();
+                const val = parseExpression();
+                if (consume() !== ')') return null;
+                return val;
+            }
+            const token = consume();
+            if (typeof token === 'number') {
+                return token;
+            }
+            return null;
+        }
+
+        const result = parseExpression();
+        if (pos === tokens.length && typeof result === 'number' && isFinite(result) && !isNaN(result)) {
+            return Math.round(result * 1e8) / 1e8;
         }
     } catch(e) {}
     return null;
@@ -1163,68 +1274,9 @@ function toggleSafariFaq(el) {
 }
 
 // --------------------------------------------------------------------------
-// Real-Time Video Search for User Query (Piped API & Invidious)
+// Safari Web Search Engine (Wikipedia Search + Knowledge Card Chaining)
 // --------------------------------------------------------------------------
-async function fetchVideosForQuery(q, limit = 12) {
-    const endpoints = [
-        `https://api.piped.private.coffee/search?q=${encodeURIComponent(q)}&filter=videos`,
-        `https://piped.video/api/v1/search?q=${encodeURIComponent(q)}&filter=videos`,
-        `https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(q)}&type=video`
-    ];
-
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3500);
-            const res = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (res.ok) {
-                const data = await res.json();
-                // Handle Piped JSON schema
-                if (data && Array.isArray(data.items) && data.items.length > 0) {
-                    const valid = data.items
-                        .filter(item => item.url && item.title)
-                        .slice(0, limit)
-                        .map(item => {
-                            const vidId = item.url.replace('/watch?v=', '').replace('&', '').split('?')[0].split('&')[0];
-                            const thumb = item.thumbnail || `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
-                            return {
-                                id: vidId,
-                                title: item.title,
-                                channel: item.uploaderName || 'YouTube Creator',
-                                views: typeof item.views === 'number' ? `${item.views.toLocaleString()} views` : (item.views || 'YouTube'),
-                                thumb: thumb
-                            };
-                        });
-                    if (valid.length > 0) return valid;
-                }
-                // Handle Invidious JSON schema
-                if (Array.isArray(data) && data.length > 0) {
-                    const valid = data
-                        .filter(item => item.videoId && item.title)
-                        .slice(0, limit)
-                        .map(item => {
-                            const vidId = item.videoId;
-                            const thumb = item.videoThumbnails && item.videoThumbnails[0] ? item.videoThumbnails[0].url : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
-                            return {
-                                id: vidId,
-                                title: item.title,
-                                channel: item.author || 'YouTube Creator',
-                                views: typeof item.viewCount === 'number' ? `${item.viewCount.toLocaleString()} views` : 'YouTube',
-                                thumb: thumb
-                            };
-                        });
-                    if (valid.length > 0) return valid;
-                }
-            }
-        } catch(e) {
-            // try next endpoint
-        }
-    }
-    return [];
-}
-
-function renderDuckDuckGoSearch(tab, renderArea) {
+async function renderDuckDuckGoSearch(tab, renderArea) {
     const q = tab.searchQuery || 'macOS';
     const mathResult = evaluateMathExpression(q);
 
@@ -1264,53 +1316,43 @@ function renderDuckDuckGoSearch(tab, renderArea) {
         </div>
     `;
 
-    // Fetch APIs: Wikipedia Search, Wikipedia Summary, Invidious Video Search, DuckDuckGo Instant Answer
-    const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&utf8=&format=json&origin=*`;
-    const wikiSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
-    const ddgApiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=1`;
+    const organicSlot = document.getElementById('safari-organic-slot');
+    const knowledgeSlot = document.getElementById('safari-knowledge-slot');
+    if (!organicSlot) return;
 
-    Promise.allSettled([
-        fetch(wikiSearchUrl).then(r => r.json()),
-        fetch(wikiSummaryUrl).then(r => r.json()),
-        fetchVideosForQuery(q),
-        fetch(ddgApiUrl).then(r => r.json())
-    ]).then(([searchRes, summaryRes, videoRes, ddgRes]) => {
-        const organicSlot = document.getElementById('safari-organic-slot');
-        const knowledgeSlot = document.getElementById('safari-knowledge-slot');
-        if (!organicSlot) return;
+    // Primary path: Templated, query-accurate related searches
+    const relatedSearches = [
+        `${q} overview`,
+        `${q} guide`,
+        `${q} tutorial`,
+        `${q} examples`,
+        `best ${q} tips`,
+        `${q} latest news`
+    ];
 
+    try {
+        // Step 1: Query Wikipedia Search API for user query
+        const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&utf8=&format=json&origin=*`;
+        const searchRes = await fetch(wikiSearchUrl);
+        const searchData = await searchRes.json();
+        const searchArticles = (searchData.query && searchData.query.search) ? searchData.query.search : [];
+
+        // Step 2: If we have search results, chain to Wikipedia REST summary using the EXACT top article title
         let summaryData = null;
-        if (summaryRes.status === 'fulfilled' && summaryRes.value && summaryRes.value.title && summaryRes.value.extract) {
-            summaryData = summaryRes.value;
-        }
-
-        let searchArticles = [];
-        if (searchRes.status === 'fulfilled' && searchRes.value && searchRes.value.query && searchRes.value.query.search) {
-            searchArticles = searchRes.value.query.search;
-        }
-
-        let matchedVideos = [];
-        if (videoRes.status === 'fulfilled' && Array.isArray(videoRes.value)) {
-            matchedVideos = videoRes.value;
-        }
-
-        let ddgData = null;
-        let relatedTopics = [];
-        if (ddgRes.status === 'fulfilled' && ddgRes.value) {
-            ddgData = ddgRes.value;
-            if (ddgData.RelatedTopics && Array.isArray(ddgData.RelatedTopics)) {
-                ddgData.RelatedTopics.slice(0, 8).forEach(t => {
-                    if (t.Text) {
-                        const cleanT = t.Text.split(' - ')[0].trim();
-                        if (cleanT && cleanT.toLowerCase().includes(q.toLowerCase())) {
-                            relatedTopics.push(cleanT);
-                        }
+        if (searchArticles.length > 0) {
+            try {
+                const topTitle = searchArticles[0].title;
+                const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topTitle)}`);
+                if (summaryRes.ok) {
+                    const sData = await summaryRes.json();
+                    if (sData && sData.title && sData.extract) {
+                        summaryData = sData;
                     }
-                });
-            }
+                }
+            } catch(err) {}
         }
 
-        // Render Knowledge Card on the right
+        // Render Knowledge Card if summary was retrieved
         if (summaryData && knowledgeSlot) {
             const thumbSrc = summaryData.thumbnail ? summaryData.thumbnail.source : '';
             const pageUrl = summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`;
@@ -1338,10 +1380,10 @@ function renderDuckDuckGoSearch(tab, renderArea) {
         // Build Organic Results List
         let organicHtml = '';
 
-        // 1. If we have Wikipedia search articles, render top 2
+        // 1. Render top Wikipedia results
         const firstBatch = searchArticles.slice(0, 2);
         firstBatch.forEach(art => {
-            const cleanSnippet = art.snippet.replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+            const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
             const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
             organicHtml += `
                 <div class="safari-result-item">
@@ -1358,37 +1400,16 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             `;
         });
 
-        // 2. Video Spotlight Carousel (Strictly Relevant to User Query!)
-        if (matchedVideos.length > 0) {
-            organicHtml += `
-                <div class="safari-video-spotlight">
-                    <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
-                    <div class="safari-video-cards-row">
-                        ${matchedVideos.map(vid => `
-                            <div class="safari-search-vcard" onclick="selectYouTubeVideo('${vid.id}', '${vid.title.replace(/'/g, "\\'")}', '${vid.channel.replace(/'/g, "\\'")}')">
-                                <div class="safari-search-vcard-thumb">
-                                    <img src="${vid.thumb}" alt="${vid.title}" onerror="this.src='https://img.youtube.com/vi/${vid.id}/hqdefault.jpg'">
-                                </div>
-                                <div class="safari-search-vcard-info">
-                                    <div class="safari-search-vcard-title">${vid.title}</div>
-                                    <div class="safari-search-vcard-channel"><i class="fab fa-youtube" style="color:#ff0000;"></i> ${vid.channel}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            organicHtml += `
-                <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
-                    <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
-                    <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch trending demonstrations, tutorials, and community videos for <strong>${q}</strong>.</div>
-                    <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
-                </div>
-            `;
-        }
+        // 2. Video Spotlight Direct YouTube CTA
+        organicHtml += `
+            <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+                <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
+                <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch live demonstrations, tutorials, and community videos for <strong>${q}</strong> on YouTube.</div>
+                <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
+            </div>
+        `;
 
-        // 3. "People Also Ask" Interactive Accordion (Strictly about User Query)
+        // 3. "People Also Ask" Interactive Accordion
         organicHtml += `
             <div class="safari-faq-card">
                 <div class="safari-faq-header">People also ask</div>
@@ -1413,10 +1434,10 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             </div>
         `;
 
-        // 4. Remaining Wikipedia Search Articles (3-6)
+        // 4. Remaining Wikipedia articles (3-6)
         const remainingBatch = searchArticles.slice(2, 6);
         remainingBatch.forEach(art => {
-            const cleanSnippet = art.snippet.replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
+            const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
             const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
             organicHtml += `
                 <div class="safari-result-item">
@@ -1433,7 +1454,7 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             `;
         });
 
-        // 5. Fallback Web result if search was minimal
+        // 5. Fallback Web result if search was empty
         if (searchArticles.length === 0) {
             organicHtml += `
                 <div class="safari-result-item">
@@ -1450,16 +1471,12 @@ function renderDuckDuckGoSearch(tab, renderArea) {
             `;
         }
 
-        // 6. Related Searches Chips (Strictly Query Recommendations)
-        const sampleRelated = relatedTopics.length > 0 
-            ? relatedTopics 
-            : [`${q} overview`, `${q} guide`, `${q} tutorial`, `${q} examples`, `best ${q} tips`, `${q} news`];
-
+        // 6. Related Searches Chips
         organicHtml += `
             <div class="safari-related-section">
                 <div class="safari-related-title">Related searches</div>
                 <div class="safari-related-chips">
-                    ${sampleRelated.slice(0, 6).map(term => `
+                    ${relatedSearches.map(term => `
                         <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
                             <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
                         </div>
@@ -1469,28 +1486,35 @@ function renderDuckDuckGoSearch(tab, renderArea) {
         `;
 
         organicSlot.innerHTML = organicHtml;
-    }).catch(() => {
-        const organicSlot = document.getElementById('safari-organic-slot');
-        if (organicSlot) {
-            organicSlot.innerHTML = `
-                <div class="safari-result-item">
-                    <div class="safari-result-source-row">
-                        <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
-                        <div class="safari-result-source-info">
-                            <span class="safari-result-site-name">Web Search</span>
-                            <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
-                        </div>
+    } catch (e) {
+        organicSlot.innerHTML = `
+            <div class="safari-result-item">
+                <div class="safari-result-source-row">
+                    <img src="https://www.google.com/s2/favicons?domain=google.com&sz=32" class="safari-result-favicon" alt="Web">
+                    <div class="safari-result-source-info">
+                        <span class="safari-result-site-name">Web Search</span>
+                        <span class="safari-result-url">https://www.google.com/search?q=${encodeURIComponent(q)}</span>
                     </div>
-                    <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
-                    <p class="safari-result-snippet">Access live search results for ${q}.</p>
                 </div>
-            `;
-        }
-    });
+                <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" class="safari-result-title">Search Web for "${q}" ↗</a>
+                <p class="safari-result-snippet">Access live web search results for ${q}.</p>
+            </div>
+            <div class="safari-related-section">
+                <div class="safari-related-title">Related searches</div>
+                <div class="safari-related-chips">
+                    ${relatedSearches.map(term => `
+                        <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
 }
 
 // --------------------------------------------------------------------------
-// Search-Agnostic YouTube In-Browser Player Engine
+// Search-Agnostic YouTube In-Browser Player Engine (Official Key-less Embeds)
 // --------------------------------------------------------------------------
 function renderYouTubeEngine(tab, renderArea) {
     if (tab.ytView === 'watch' && tab.ytVideoId) {
@@ -1519,6 +1543,12 @@ function renderYouTubeFeedPage(tab, renderArea) {
         `${query} official`
     ] : [];
 
+    const targetQuery = query || activeYouTubeCategory;
+
+    // Build the official unauthenticated YouTube search results playlist embed URL
+    const embedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(targetQuery)}&autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+    const fullResultsUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(targetQuery)}`;
+
     renderArea.innerHTML = `
         <div class="yt-engine-container">
             <div class="yt-top-bar">
@@ -1543,19 +1573,28 @@ function renderYouTubeFeedPage(tab, renderArea) {
                 </div>
             ` : ''}
 
-            <!-- Real YouTube Active Video Player Box -->
-            <div class="yt-main-player-box" id="yt-feed-player-box">
-                <div class="yt-iframe-responsive" id="yt-iframe-slot">
-                    <div class="yt-player-loading" style="height: 380px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
-                        <i class="fas fa-spinner fa-spin fa-2x" style="color:#ff0000;"></i>
-                        <span style="font-size:13px;color:#aaa;">Loading ${query ? `videos for "${query}"` : `${activeYouTubeCategory} videos`}...</span>
-                    </div>
+            <!-- Official YouTube Live Search Results Embed Player -->
+            <div class="yt-main-player-box">
+                <div class="yt-iframe-responsive">
+                    <iframe 
+                        id="yt-active-iframe"
+                        src="${embedUrl}" 
+                        title="${targetQuery} - YouTube Player" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
                 </div>
-                <div class="yt-player-details" id="yt-player-details-slot">
-                    <div class="yt-active-title" id="yt-player-title-text">${query ? `Search: "${query}"` : `YouTube ${activeYouTubeCategory}`}</div>
-                    <div class="yt-active-meta" id="yt-player-meta-text">
-                        <div class="yt-channel-badge"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube</div>
-                        <div>Loading video stream...</div>
+                <div class="yt-player-details">
+                    <div class="yt-active-title">${query ? `Search: "${query}"` : `YouTube ${activeYouTubeCategory} Stream`}</div>
+                    <div class="yt-active-meta">
+                        <div class="yt-channel-badge"><i class="fab fa-youtube" style="color:#ff0000;"></i> Live Search Playlist</div>
+                        <div>Playing top search results • Use player controls for next/previous</div>
+                    </div>
+                    <div class="yt-action-pills" style="margin-top:12px;">
+                        <a href="${fullResultsUrl}" target="_blank" class="yt-action-pill" style="background:rgba(255,0,0,0.15);color:#fff;border-color:rgba(255,0,0,0.3);">
+                            <i class="fab fa-youtube" style="color:#ff0000;"></i> Open full results on YouTube ↗
+                        </a>
+                        <span class="yt-action-pill" onclick="copyCurrentSafariUrl()"><i class="fas fa-share"></i> Share Search</span>
                     </div>
                 </div>
             </div>
@@ -1579,78 +1618,8 @@ function renderYouTubeFeedPage(tab, renderArea) {
                     `).join('')}
                 </div>
             `}
-
-            <div class="yt-grid-title">${query ? 'Top Video Matches' : `${activeYouTubeCategory} Videos`}</div>
-            <div class="yt-videos-grid" id="yt-videos-grid-slot">
-                <div class="yt-player-loading" style="grid-column: 1 / -1;">
-                    <i class="fas fa-spinner fa-spin"></i> Fetching video catalog...
-                </div>
-            </div>
         </div>
     `;
-
-    const targetQuery = query || activeYouTubeCategory;
-    const iframeSlot = document.getElementById('yt-iframe-slot');
-    const playerTitle = document.getElementById('yt-player-title-text');
-    const playerMeta = document.getElementById('yt-player-meta-text');
-    const gridSlot = document.getElementById('yt-videos-grid-slot');
-
-    fetchVideosForQuery(targetQuery, 12).then(videos => {
-        if (videos && videos.length > 0) {
-            const first = videos[0];
-            if (iframeSlot) {
-                iframeSlot.innerHTML = `
-                    <iframe 
-                        id="yt-active-iframe"
-                        src="https://www.youtube-nocookie.com/embed/${first.id}?autoplay=1&rel=0&modestbranding=1" 
-                        title="${first.title}" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
-                `;
-            }
-            if (playerTitle) playerTitle.textContent = first.title;
-            if (playerMeta) {
-                playerMeta.innerHTML = `
-                    <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${first.channel}</div>
-                    <div>${first.views || 'Active Video Playback'}</div>
-                `;
-            }
-            if (gridSlot) {
-                gridSlot.innerHTML = videos.map((v, idx) => `
-                    <div class="yt-video-card" onclick="selectYouTubeVideo('${v.id}', '${v.title.replace(/'/g, "\\'")}', '${v.channel.replace(/'/g, "\\'")}')">
-                        <div class="yt-thumb-wrapper">
-                            <img src="${v.thumb}" alt="${v.title}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${v.id}/hqdefault.jpg'">
-                            <span class="yt-duration-tag">${idx === 0 ? '▶ Playing' : 'Video'}</span>
-                        </div>
-                        <div class="yt-card-info">
-                            <div class="yt-card-title">${v.title}</div>
-                            <div class="yt-card-channel">${v.channel}</div>
-                            <div class="yt-card-stats">${v.views || 'YouTube'}</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        } else {
-            if (iframeSlot) {
-                iframeSlot.innerHTML = `
-                    <div style="height:260px;display:flex;align-items:center;justify-content:center;color:#8e8e93;font-size:14px;flex-direction:column;gap:8px;">
-                        <i class="fab fa-youtube fa-3x" style="color:#ff0000;"></i>
-                        <span>No direct video results found for "${targetQuery}". Try another search above.</span>
-                    </div>
-                `;
-            }
-            if (gridSlot) gridSlot.innerHTML = '';
-        }
-    }).catch(() => {
-        if (iframeSlot) {
-            iframeSlot.innerHTML = `
-                <div style="height:260px;display:flex;align-items:center;justify-content:center;color:#8e8e93;font-size:14px;">
-                    <span>Unable to load videos. Please try again.</span>
-                </div>
-            `;
-        }
-    });
 }
 
 // 2. YouTube Watch Page
@@ -1658,6 +1627,8 @@ function renderYouTubeWatchPage(tab, renderArea) {
     const videoId = tab.ytVideoId;
     const title = tab.title.replace(' - YouTube', '') || 'YouTube Video';
     const channel = tab.ytChannel || 'YouTube';
+    const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
 
     renderArea.innerHTML = `
         <div class="yt-engine-container">
@@ -1678,21 +1649,21 @@ function renderYouTubeWatchPage(tab, renderArea) {
                 <div class="yt-iframe-responsive">
                     <iframe 
                         id="yt-active-iframe"
-                        src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
+                        src="${embedUrl}" 
                         title="${title}" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                         allowfullscreen>
                     </iframe>
                 </div>
                 <div class="yt-player-details">
-                    <div class="yt-active-title">${title}</div>
+                    <div class="yt-active-title" id="yt-watch-title-text">${title}</div>
                     <div class="yt-active-meta">
-                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${channel}</div>
+                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> <span id="yt-watch-channel-text">${channel}</span></div>
                         <div>Interactive Video Playback</div>
                     </div>
                     <div class="yt-action-pills">
                         <span class="yt-action-pill" onclick="copyCurrentSafariUrl()"><i class="fas fa-share"></i> Share / Copy Link</span>
-                        <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="yt-action-pill"><i class="fas fa-external-link-alt"></i> Open in YouTube ↗</a>
+                        <a href="${watchUrl}" target="_blank" class="yt-action-pill"><i class="fas fa-external-link-alt"></i> Open in YouTube ↗</a>
                         <span class="yt-action-pill" onclick="returnToYouTubeFeed()" style="margin-left:auto;"><i class="fas fa-home"></i> Home Feed</span>
                     </div>
                 </div>
@@ -1710,9 +1681,23 @@ function selectYouTubeVideo(videoId, title, channel) {
         currentTab.ytChannel = channel || 'YouTube';
         currentTab.ytQuery = null;
         currentTab.url = `https://www.youtube.com/watch?v=${videoId}`;
-        currentTab.title = title || 'YouTube';
+        currentTab.title = title || 'YouTube Video';
         pushSafariHistory(currentTab, `yt_watch:${videoId}`);
         switchSafariTab(currentTab.id);
+
+        if (!title) {
+            getYouTubeOEmbedMeta(videoId).then(meta => {
+                if (meta && meta.title) {
+                    currentTab.title = `${meta.title} - YouTube`;
+                    currentTab.ytChannel = meta.author || 'YouTube';
+                    renderSafariTabs();
+                    const titleEl = document.getElementById('yt-watch-title-text');
+                    if (titleEl) titleEl.textContent = meta.title;
+                    const chanEl = document.getElementById('yt-watch-channel-text');
+                    if (chanEl) chanEl.textContent = meta.author || 'YouTube';
+                }
+            });
+        }
     }
 }
 
@@ -1782,11 +1767,8 @@ function handleYouTubeSearchKey(e) {
 // Web Page Viewport Switcher
 // --------------------------------------------------------------------------
 function renderSafariWebPage(tab) {
-    const titleEl = document.getElementById('safari-current-page-title');
     const renderArea = document.getElementById('safari-page-render-area');
     if (!renderArea) return;
-
-    if (titleEl) titleEl.textContent = tab.title;
 
     if (tab.type === 'youtube') {
         renderYouTubeEngine(tab, renderArea);

@@ -27,9 +27,19 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     color: var(--text-primary);
+}
+
+.menu-bar, .dock-container, .window-header, .title-bar, .desktop-icon, .sidebar {
     user-select: none;
+    -webkit-user-select: none;
+}
+
+.finder-pane, .resume-item, .contact-card, .about-col, .content-pane, .mail-body, .notes-body, .settings-body, .safari-page-render-area, .safari-results-feed, .safari-knowledge-card, .contact-row, .experience-card, .education-card, .skills-category {
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 a {
@@ -84,6 +94,7 @@ a {
     transform: translateX(-50%);
     background: rgba(0,0,0,0.72);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     color: #fff;
     padding: 4px 8px;
     border-radius: 6px;
@@ -858,6 +869,7 @@ p {
     bottom: 30px;
     background: rgba(30, 30, 30, 0.95);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.6);
@@ -1350,6 +1362,7 @@ p {
     padding: 20px;
     margin-bottom: 35px;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .privacy-card-header {
@@ -1577,6 +1590,7 @@ p {
     border-radius: 14px;
     padding: 16px;
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
@@ -2287,6 +2301,7 @@ p {
 .appstore-get-btn {
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     color: #007aff;
     font-weight: 700;
     font-size: 12px;
@@ -2483,7 +2498,7 @@ p {
 }
 
 .dark-preview { background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); }
-.glass-preview { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+.glass-preview { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
 
 .accent-colors-row {
     display: flex;
