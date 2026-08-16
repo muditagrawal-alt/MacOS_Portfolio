@@ -829,101 +829,8 @@ function stopSafariMedia() {
     }
 }
 
-// Multi-Genre YouTube Library for Browse Feed
-const youtubeVideoLibrary = [
-    {
-        id: '1-SJGQ2HLp8',
-        title: 'How Italian Chefs Actually Make Pasta: Carbonara & Cacio e Pepe',
-        channel: 'Italia Squisita',
-        views: '14M views • 2 years ago',
-        category: 'Pasta & Cooking',
-        thumb: 'https://img.youtube.com/vi/1-SJGQ2HLp8/mqdefault.jpg',
-        duration: '14:22'
-    },
-    {
-        id: '7sZkF40e3wM',
-        title: 'Gordon Ramsay\'s Ultimate 5 Quick & Delicious Pasta Dishes',
-        channel: 'Gordon Ramsay',
-        views: '22M views • 3 years ago',
-        category: 'Pasta & Cooking',
-        thumb: 'https://img.youtube.com/vi/7sZkF40e3wM/mqdefault.jpg',
-        duration: '21:05'
-    },
-    {
-        id: 'aircAruvnKk',
-        title: 'But what is a neural network? | Chapter 1, Deep learning',
-        channel: '3Blue1Brown',
-        views: '16M views • 6 years ago',
-        category: 'AI & Deep Learning',
-        thumb: 'https://img.youtube.com/vi/aircAruvnKk/mqdefault.jpg',
-        duration: '19:13'
-    },
-    {
-        id: 'kCc8FmEb1nY',
-        title: 'Let\'s build GPT: from scratch, in code, spelled out.',
-        channel: 'Andrej Karpathy',
-        views: '4.8M views • 2 years ago',
-        category: 'AI & Deep Learning',
-        thumb: 'https://img.youtube.com/vi/kCc8FmEb1nY/mqdefault.jpg',
-        duration: '1:56:01'
-    },
-    {
-        id: 'jfKfPfyJRdk',
-        title: 'lofi hip hop radio 📚 - beats to relax/study to',
-        channel: 'Lofi Girl',
-        views: 'Live Stream • 35K Watching',
-        category: 'Music & Lofi',
-        thumb: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
-        duration: 'LIVE'
-    },
-    {
-        id: 'tPYj3fFJGjk',
-        title: 'Atlas Gets a Grip | Boston Dynamics Next-Gen Humanoid',
-        channel: 'Boston Dynamics',
-        views: '7.4M views • 1 year ago',
-        category: 'Robotics & Vision',
-        thumb: 'https://img.youtube.com/vi/tPYj3fFJGjk/mqdefault.jpg',
-        duration: '1:24'
-    },
-    {
-        id: 'V_xro1bcAuA',
-        title: 'Apple Vision Pro — Guided Tour & Spatial Computing',
-        channel: 'Apple',
-        views: '11M views • 1 year ago',
-        category: 'Robotics & Vision',
-        thumb: 'https://img.youtube.com/vi/V_xro1bcAuA/mqdefault.jpg',
-        duration: '9:53'
-    },
-    {
-        id: 'zjkBMFhNj_g',
-        title: 'Intro to Large Language Models - Full Deep Dive',
-        channel: 'Andrej Karpathy',
-        views: '3.9M views • 1 year ago',
-        category: 'AI & Deep Learning',
-        thumb: 'https://img.youtube.com/vi/zjkBMFhNj_g/mqdefault.jpg',
-        duration: '1:00:00'
-    },
-    {
-        id: 'Gv9_4yMHFhI',
-        title: 'Yann LeCun: Meta AI, Open Source, and Autonomous Machine Intelligence',
-        channel: 'Lex Fridman',
-        views: '1.2M views • 10 months ago',
-        category: 'Tech Talks',
-        thumb: 'https://img.youtube.com/vi/Gv9_4yMHFhI/mqdefault.jpg',
-        duration: '2:48:32'
-    },
-    {
-        id: 'lG4VkPoG3ko',
-        title: 'Starship\'s Flight Test Highlights & Orbital Mechanics',
-        channel: 'SpaceX',
-        views: '8.1M views • 10 months ago',
-        category: 'Science & Space',
-        thumb: 'https://img.youtube.com/vi/lG4VkPoG3ko/mqdefault.jpg',
-        duration: '4:15'
-    }
-];
-
-let activeYouTubeCategory = 'All';
+// Active YouTube Browse Category
+let activeYouTubeCategory = 'Trending';
 
 // Safari Tab State
 let safariTabs = [
@@ -1256,42 +1163,62 @@ function toggleSafariFaq(el) {
 }
 
 // --------------------------------------------------------------------------
-// Real-Time Video Search for User Query
+// Real-Time Video Search for User Query (Piped API & Invidious)
 // --------------------------------------------------------------------------
-async function fetchVideosForQuery(q) {
-    const instances = [
-        `https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(q)}&type=video`,
-        `https://invidious.nerdvpn.de/api/v1/search?q=${encodeURIComponent(q)}&type=video`,
-        `https://vid.priv.au/api/v1/search?q=${encodeURIComponent(q)}&type=video`
+async function fetchVideosForQuery(q, limit = 12) {
+    const endpoints = [
+        `https://api.piped.private.coffee/search?q=${encodeURIComponent(q)}&filter=videos`,
+        `https://piped.video/api/v1/search?q=${encodeURIComponent(q)}&filter=videos`,
+        `https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(q)}&type=video`
     ];
 
-    for (const url of instances) {
+    for (const url of endpoints) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
             const res = await fetch(url, { signal: controller.signal });
             clearTimeout(timeoutId);
             if (res.ok) {
                 const data = await res.json();
+                // Handle Piped JSON schema
+                if (data && Array.isArray(data.items) && data.items.length > 0) {
+                    const valid = data.items
+                        .filter(item => item.url && item.title)
+                        .slice(0, limit)
+                        .map(item => {
+                            const vidId = item.url.replace('/watch?v=', '').replace('&', '').split('?')[0].split('&')[0];
+                            const thumb = item.thumbnail || `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+                            return {
+                                id: vidId,
+                                title: item.title,
+                                channel: item.uploaderName || 'YouTube Creator',
+                                views: typeof item.views === 'number' ? `${item.views.toLocaleString()} views` : (item.views || 'YouTube'),
+                                thumb: thumb
+                            };
+                        });
+                    if (valid.length > 0) return valid;
+                }
+                // Handle Invidious JSON schema
                 if (Array.isArray(data) && data.length > 0) {
-                    const valid = data.filter(item => item.videoId && item.title).slice(0, 3).map(item => {
-                        const vidId = item.videoId;
-                        let thumb = vidId ? `https://img.youtube.com/vi/${vidId}/mqdefault.jpg` : '';
-                        if (item.videoThumbnails && item.videoThumbnails[0] && item.videoThumbnails[0].url) {
-                            thumb = item.videoThumbnails[0].url;
-                        }
-                        return {
-                            id: vidId,
-                            title: item.title,
-                            channel: item.author || 'YouTube',
-                            thumb: thumb
-                        };
-                    });
+                    const valid = data
+                        .filter(item => item.videoId && item.title)
+                        .slice(0, limit)
+                        .map(item => {
+                            const vidId = item.videoId;
+                            const thumb = item.videoThumbnails && item.videoThumbnails[0] ? item.videoThumbnails[0].url : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+                            return {
+                                id: vidId,
+                                title: item.title,
+                                channel: item.author || 'YouTube Creator',
+                                views: typeof item.viewCount === 'number' ? `${item.viewCount.toLocaleString()} views` : 'YouTube',
+                                thumb: thumb
+                            };
+                        });
                     if (valid.length > 0) return valid;
                 }
             }
         } catch(e) {
-            // try next instance
+            // try next endpoint
         }
     }
     return [];
@@ -1566,7 +1493,6 @@ function renderDuckDuckGoSearch(tab, renderArea) {
 // Search-Agnostic YouTube In-Browser Player Engine
 // --------------------------------------------------------------------------
 function renderYouTubeEngine(tab, renderArea) {
-    // Check if we are in Watch mode or Browse/Search mode
     if (tab.ytView === 'watch' && tab.ytVideoId) {
         renderYouTubeWatchPage(tab, renderArea);
     } else {
@@ -1577,12 +1503,21 @@ function renderYouTubeEngine(tab, renderArea) {
 // 1. YouTube Feed & Search Results Page
 function renderYouTubeFeedPage(tab, renderArea) {
     stopSafariMedia(); // Ensure any previously playing video stops
-    const query = tab.ytQuery || '';
-    const categories = ['All', 'Pasta & Cooking', 'AI & Deep Learning', 'Music & Lofi', 'Robotics & Vision', 'Tech Talks', 'Science & Space'];
+    const query = (tab.ytQuery || '').trim();
+    const categories = ['Trending', 'Music', 'Gaming', 'Podcasts', 'Technology', 'Science', 'News', 'Sports', 'Education'];
 
     let catChipsHtml = categories.map(cat => `
         <span class="yt-cat-chip ${cat === activeYouTubeCategory ? 'active' : ''}" onclick="selectYouTubeCategory('${cat}')">${cat}</span>
     `).join('');
+
+    const searchRefinements = query ? [
+        `${query} full video`,
+        `${query} live`,
+        `${query} podcast`,
+        `${query} highlights`,
+        `${query} tutorial`,
+        `${query} official`
+    ] : [];
 
     renderArea.innerHTML = `
         <div class="yt-engine-container">
@@ -1590,7 +1525,7 @@ function renderYouTubeFeedPage(tab, renderArea) {
                 <div class="yt-logo" onclick="returnToYouTubeFeed()" style="cursor:pointer;" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
                 <div class="yt-search-form">
                     <i class="fas fa-search" style="color:#888;margin-right:8px;font-size:12px;"></i>
-                    <input type="text" id="yt-search-input" placeholder="Search any YouTube video or paste URL..." value="${query}" onkeydown="handleYouTubeSearchKey(event)">
+                    <input type="text" id="yt-search-input" placeholder="Search any video, creator, or topic..." value="${query}" onkeydown="handleYouTubeSearchKey(event)">
                 </div>
                 <div class="yt-nav-actions">
                     <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Favorites</button>
@@ -1604,47 +1539,125 @@ function renderYouTubeFeedPage(tab, renderArea) {
             ${query ? `
                 <div class="yt-search-results-banner">
                     <div><i class="fas fa-search" style="color:#ff0000;margin-right:6px;"></i> Results for <strong>"${query}"</strong></div>
-                    <button type="button" class="yt-action-pill" onclick="playYouTubeSearchPlaylist('${query.replace(/'/g, "\\'")}')" style="background:#ff0000;color:#fff;border:none;">
-                        <i class="fas fa-play"></i> Play Search in Player
-                    </button>
+                    <button type="button" class="yt-action-pill" onclick="returnToYouTubeFeed()"><i class="fas fa-home"></i> Home</button>
                 </div>
             ` : ''}
 
-            <div class="yt-grid-title">${query ? 'Top Video Matches' : 'Explore & Trending Videos'}</div>
+            <!-- Real YouTube Active Video Player Box -->
+            <div class="yt-main-player-box" id="yt-feed-player-box">
+                <div class="yt-iframe-responsive" id="yt-iframe-slot">
+                    <div class="yt-player-loading" style="height: 380px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color:#ff0000;"></i>
+                        <span style="font-size:13px;color:#aaa;">Loading ${query ? `videos for "${query}"` : `${activeYouTubeCategory} videos`}...</span>
+                    </div>
+                </div>
+                <div class="yt-player-details" id="yt-player-details-slot">
+                    <div class="yt-active-title" id="yt-player-title-text">${query ? `Search: "${query}"` : `YouTube ${activeYouTubeCategory}`}</div>
+                    <div class="yt-active-meta" id="yt-player-meta-text">
+                        <div class="yt-channel-badge"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube</div>
+                        <div>Loading video stream...</div>
+                    </div>
+                </div>
+            </div>
+
+            ${query ? `
+                <div class="yt-grid-title">Related Search Refinements</div>
+                <div class="safari-related-chips" style="margin-bottom:24px;">
+                    ${searchRefinements.map(r => `
+                        <div class="safari-related-chip" onclick="searchYouTube('${r.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${r}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : `
+                <div class="yt-grid-title">Popular Categories</div>
+                <div class="safari-related-chips" style="margin-bottom:24px;">
+                    ${categories.map(c => `
+                        <div class="safari-related-chip" onclick="selectYouTubeCategory('${c}')">
+                            <i class="fab fa-youtube" style="font-size:11px;color:#ff0000;"></i> ${c}
+                        </div>
+                    `).join('')}
+                </div>
+            `}
+
+            <div class="yt-grid-title">${query ? 'Top Video Matches' : `${activeYouTubeCategory} Videos`}</div>
             <div class="yt-videos-grid" id="yt-videos-grid-slot">
-                <!-- Dynamically populated -->
+                <div class="yt-player-loading" style="grid-column: 1 / -1;">
+                    <i class="fas fa-spinner fa-spin"></i> Fetching video catalog...
+                </div>
             </div>
         </div>
     `;
 
+    const targetQuery = query || activeYouTubeCategory;
+    const iframeSlot = document.getElementById('yt-iframe-slot');
+    const playerTitle = document.getElementById('yt-player-title-text');
+    const playerMeta = document.getElementById('yt-player-meta-text');
     const gridSlot = document.getElementById('yt-videos-grid-slot');
-    if (!gridSlot) return;
 
-    if (query) {
-        // Perform search agnostic video query
-        performAgnosticYouTubeSearch(query, gridSlot);
-    } else {
-        // Render feed filtered by active category
-        const filteredVideos = activeYouTubeCategory === 'All' 
-            ? youtubeVideoLibrary 
-            : youtubeVideoLibrary.filter(v => v.category === activeYouTubeCategory);
-
-        gridSlot.innerHTML = filteredVideos.map(v => renderVideoCardHtml(v)).join('');
-    }
+    fetchVideosForQuery(targetQuery, 12).then(videos => {
+        if (videos && videos.length > 0) {
+            const first = videos[0];
+            if (iframeSlot) {
+                iframeSlot.innerHTML = `
+                    <iframe 
+                        id="yt-active-iframe"
+                        src="https://www.youtube-nocookie.com/embed/${first.id}?autoplay=1&rel=0&modestbranding=1" 
+                        title="${first.title}" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                `;
+            }
+            if (playerTitle) playerTitle.textContent = first.title;
+            if (playerMeta) {
+                playerMeta.innerHTML = `
+                    <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${first.channel}</div>
+                    <div>${first.views || 'Active Video Playback'}</div>
+                `;
+            }
+            if (gridSlot) {
+                gridSlot.innerHTML = videos.map((v, idx) => `
+                    <div class="yt-video-card" onclick="selectYouTubeVideo('${v.id}', '${v.title.replace(/'/g, "\\'")}', '${v.channel.replace(/'/g, "\\'")}')">
+                        <div class="yt-thumb-wrapper">
+                            <img src="${v.thumb}" alt="${v.title}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${v.id}/hqdefault.jpg'">
+                            <span class="yt-duration-tag">${idx === 0 ? '▶ Playing' : 'Video'}</span>
+                        </div>
+                        <div class="yt-card-info">
+                            <div class="yt-card-title">${v.title}</div>
+                            <div class="yt-card-channel">${v.channel}</div>
+                            <div class="yt-card-stats">${v.views || 'YouTube'}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            if (iframeSlot) {
+                iframeSlot.innerHTML = `
+                    <div style="height:260px;display:flex;align-items:center;justify-content:center;color:#8e8e93;font-size:14px;flex-direction:column;gap:8px;">
+                        <i class="fab fa-youtube fa-3x" style="color:#ff0000;"></i>
+                        <span>No direct video results found for "${targetQuery}". Try another search above.</span>
+                    </div>
+                `;
+            }
+            if (gridSlot) gridSlot.innerHTML = '';
+        }
+    }).catch(() => {
+        if (iframeSlot) {
+            iframeSlot.innerHTML = `
+                <div style="height:260px;display:flex;align-items:center;justify-content:center;color:#8e8e93;font-size:14px;">
+                    <span>Unable to load videos. Please try again.</span>
+                </div>
+            `;
+        }
+    });
 }
 
 // 2. YouTube Watch Page
 function renderYouTubeWatchPage(tab, renderArea) {
     const videoId = tab.ytVideoId;
-    const foundVideo = youtubeVideoLibrary.find(v => v.id === videoId) || {
-        id: videoId,
-        title: tab.title.replace(' - YouTube', ''),
-        channel: 'YouTube Creator',
-        views: 'Live Stream / Dynamic Playback'
-    };
-
-    // Filter suggested videos (excluding the current one)
-    const suggestedVideos = youtubeVideoLibrary.filter(v => v.id !== videoId);
+    const title = tab.title.replace(' - YouTube', '') || 'YouTube Video';
+    const channel = tab.ytChannel || 'YouTube';
 
     renderArea.innerHTML = `
         <div class="yt-engine-container">
@@ -1655,7 +1668,7 @@ function renderYouTubeWatchPage(tab, renderArea) {
                     <input type="text" id="yt-search-input" placeholder="Search any YouTube video or paste URL..." onkeydown="handleYouTubeSearchKey(event)">
                 </div>
                 <div class="yt-nav-actions">
-                    <button type="button" class="app-pill-btn" onclick="returnToYouTubeFeed()"><i class="fas fa-arrow-left"></i> YouTube Feed</button>
+                    <button type="button" class="app-pill-btn" onclick="returnToYouTubeFeed()"><i class="fas fa-arrow-left"></i> Feed</button>
                     <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Favorites</button>
                 </div>
             </div>
@@ -1666,198 +1679,23 @@ function renderYouTubeWatchPage(tab, renderArea) {
                     <iframe 
                         id="yt-active-iframe"
                         src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
-                        title="${foundVideo.title}" 
+                        title="${title}" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                         allowfullscreen>
                     </iframe>
                 </div>
                 <div class="yt-player-details">
-                    <div class="yt-active-title">${foundVideo.title}</div>
+                    <div class="yt-active-title">${title}</div>
                     <div class="yt-active-meta">
-                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${foundVideo.channel}</div>
-                        <div>${foundVideo.views}</div>
+                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${channel}</div>
+                        <div>Interactive Video Playback</div>
                     </div>
                     <div class="yt-action-pills">
-                        <span class="yt-action-pill" onclick="alert('Liked video!')"><i class="fas fa-thumbs-up"></i> Like</span>
                         <span class="yt-action-pill" onclick="copyCurrentSafariUrl()"><i class="fas fa-share"></i> Share / Copy Link</span>
                         <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="yt-action-pill"><i class="fas fa-external-link-alt"></i> Open in YouTube ↗</a>
                         <span class="yt-action-pill" onclick="returnToYouTubeFeed()" style="margin-left:auto;"><i class="fas fa-home"></i> Home Feed</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="yt-grid-title">Up Next & Related Videos</div>
-            <div class="yt-videos-grid">
-                ${suggestedVideos.map(v => renderVideoCardHtml(v)).join('')}
-            </div>
-        </div>
-    `;
-}
-
-function renderVideoCardHtml(v) {
-    const safeTitle = (v.title || '').replace(/'/g, "\\'");
-    const safeChannel = (v.channel || '').replace(/'/g, "\\'");
-    return `
-        <div class="yt-video-card" onclick="selectYouTubeVideo('${v.id}', '${safeTitle}', '${safeChannel}')">
-            <div class="yt-thumb-wrapper">
-                <img src="${v.thumb}" alt="${v.title}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${v.id}/mqdefault.jpg'">
-                <span class="yt-duration-tag">${v.duration || 'Video'}</span>
-            </div>
-            <div class="yt-card-info">
-                <div class="yt-card-title">${v.title}</div>
-                <div class="yt-card-channel">${v.channel}</div>
-                <div class="yt-card-stats">${v.views || 'YouTube'}</div>
-            </div>
-        </div>
-    `;
-}
-
-// 3. Search-Agnostic Query Pipeline (Fetches any video topic)
-function performAgnosticYouTubeSearch(query, container) {
-    container.innerHTML = `
-        <div class="yt-player-loading" style="grid-column: 1 / -1;">
-            <i class="fas fa-spinner fa-spin fa-2x" style="color:#ff0000;"></i> Searching YouTube videos for "${query}"...
-        </div>
-    `;
-
-    // Strategy 1: Search in local catalog first
-    const qLower = query.toLowerCase();
-    const localMatches = youtubeVideoLibrary.filter(v => 
-        v.title.toLowerCase().includes(qLower) || 
-        v.category.toLowerCase().includes(qLower) ||
-        v.channel.toLowerCase().includes(qLower)
-    );
-
-    // Strategy 2: Query public open CORS Invidious Search APIs
-    const invidiousEndpoints = [
-        `https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
-        `https://invidious.nerdvpn.de/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
-        `https://vid.priv.au/api/v1/search?q=${encodeURIComponent(query)}&type=video`
-    ];
-
-    // Fetch with timeout fallback
-    const fetchPromises = invidiousEndpoints.map(url => 
-        fetch(url, { signal: AbortSignal.timeout(3500) }).then(r => r.json())
-    );
-
-    Promise.any(fetchPromises).then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-            const apiVideos = data.slice(0, 12).map(item => {
-                let durationStr = 'Video';
-                if (item.lengthSeconds) {
-                    const mins = Math.floor(item.lengthSeconds / 60);
-                    const secs = item.lengthSeconds % 60;
-                    durationStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                }
-                const thumbUrl = item.videoThumbnails && item.videoThumbnails.length > 0 
-                    ? (item.videoThumbnails.find(t => t.quality === 'medium') || item.videoThumbnails[0]).url 
-                    : `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`;
-
-                return {
-                    id: item.videoId,
-                    title: item.title,
-                    channel: item.author,
-                    views: item.viewCountText || `${(item.viewCount || 0).toLocaleString()} views`,
-                    thumb: thumbUrl,
-                    duration: durationStr
-                };
-            });
-
-            container.innerHTML = apiVideos.map(v => renderVideoCardHtml(v)).join('');
-            return;
-        }
-        fallbackSearchDisplay(query, localMatches, container);
-    }).catch(() => {
-        fallbackSearchDisplay(query, localMatches, container);
-    });
-}
-
-function fallbackSearchDisplay(query, localMatches, container) {
-    let html = '';
-
-    if (localMatches.length > 0) {
-        html += localMatches.map(v => renderVideoCardHtml(v)).join('');
-    }
-
-    // Dynamic smart card generation for any query (e.g. "pasta", "physics", etc.)
-    const dynamicTopics = [
-        { suffix: 'Masterclass & Complete Recipe', duration: '18:40', channel: 'Culinary & Cooking World' },
-        { suffix: 'Full Tutorial & Step-by-Step Breakdown', duration: '24:15', channel: 'Pro Guide Channel' },
-        { suffix: 'Top 10 Secrets & Common Mistakes to Avoid', duration: '12:08', channel: 'Expert Insights' },
-        { suffix: 'Live Demonstration & Comprehensive Review', duration: '16:50', channel: 'Tech & Lifestyle Demos' }
-    ];
-
-    dynamicTopics.forEach((t, i) => {
-        const fakeTitle = `${query.charAt(0).toUpperCase() + query.slice(1)}: ${t.suffix}`;
-        html += `
-            <div class="yt-video-card" onclick="playYouTubeSearchPlaylist('${query.replace(/'/g, "\\'")}')">
-                <div class="yt-thumb-wrapper" style="background: linear-gradient(135deg, #1f1c2c, #928dab); display:flex; align-items:center; justify-content:center;">
-                    <div style="text-align:center;padding:10px;color:#fff;">
-                        <i class="fab fa-youtube fa-2x" style="color:#ff0000;margin-bottom:4px;"></i>
-                        <div style="font-size:11px;font-weight:700;">${query.toUpperCase()}</div>
-                    </div>
-                    <span class="yt-duration-tag">${t.duration}</span>
-                </div>
-                <div class="yt-card-info">
-                    <div class="yt-card-title">${fakeTitle}</div>
-                    <div class="yt-card-channel">${t.channel}</div>
-                    <div class="yt-card-stats">▶ Click to play in embedded player</div>
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-}
-
-function playYouTubeSearchPlaylist(query) {
-    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
-    if (!currentTab) return;
-
-    currentTab.type = 'youtube';
-    currentTab.ytView = 'watch_playlist';
-    currentTab.url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-    currentTab.title = `${query} - YouTube Search Player`;
-
-    const renderArea = document.getElementById('safari-page-render-area');
-    if (!renderArea) return;
-
-    renderArea.innerHTML = `
-        <div class="yt-engine-container">
-            <div class="yt-top-bar">
-                <div class="yt-logo" onclick="returnToYouTubeFeed()" style="cursor:pointer;" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
-                <div class="yt-search-form">
-                    <i class="fas fa-search" style="color:#888;margin-right:8px;font-size:12px;"></i>
-                    <input type="text" id="yt-search-input" placeholder="Search any YouTube video..." value="${query}" onkeydown="handleYouTubeSearchKey(event)">
-                </div>
-                <div class="yt-nav-actions">
-                    <button type="button" class="app-pill-btn" onclick="returnToYouTubeFeed()"><i class="fas fa-arrow-left"></i> YouTube Feed</button>
-                    <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Favorites</button>
-                </div>
-            </div>
-
-            <!-- YouTube Official Search Playlist Embed Player -->
-            <div class="yt-main-player-box">
-                <div class="yt-iframe-responsive">
-                    <iframe 
-                        src="https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=1" 
-                        title="YouTube Search Player - ${query}" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="yt-player-details">
-                    <div class="yt-active-title">YouTube Search Player: "${query}"</div>
-                    <div class="yt-active-meta">
-                        <div class="yt-channel-badge"><i class="fas fa-play-circle" style="color:#ff0000;"></i> Live Search Playlist Stream</div>
-                        <div>Continuous Auto-play</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="yt-grid-title">Explore More Channels</div>
-            <div class="yt-videos-grid">
-                ${youtubeVideoLibrary.slice(0, 6).map(v => renderVideoCardHtml(v)).join('')}
             </div>
         </div>
     `;
@@ -1869,10 +1707,10 @@ function selectYouTubeVideo(videoId, title, channel) {
         currentTab.type = 'youtube';
         currentTab.ytView = 'watch';
         currentTab.ytVideoId = videoId;
+        currentTab.ytChannel = channel || 'YouTube';
         currentTab.ytQuery = null;
         currentTab.url = `https://www.youtube.com/watch?v=${videoId}`;
-        const found = youtubeVideoLibrary.find(v => v.id === videoId);
-        currentTab.title = title || (found ? found.title : 'YouTube');
+        currentTab.title = title || 'YouTube';
         pushSafariHistory(currentTab, `yt_watch:${videoId}`);
         switchSafariTab(currentTab.id);
     }
