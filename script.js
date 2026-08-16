@@ -59,6 +59,11 @@ function openWindow(windowId) {
         win.classList.remove('minimized');
         bringToFront(windowId);
         updateDockRunningIndicators();
+        
+        if (windowId === 'safari-window') {
+            renderSafariTabs();
+            switchSafariTab(activeSafariTabId);
+        }
     }
 }
 
@@ -700,64 +705,509 @@ function addNewNotePrompt() {
 }
 
 // ==========================================================================
-// Safari.app Controller Logic
+// Safari.app Full-Featured Browser Engine
 // ==========================================================================
-const safariUrls = {
-    'blog': 'https://muditagrawal03.blogspot.com',
-    'github': 'https://github.com/muditagrawal-alt',
-    'huggingface': 'https://huggingface.co/muditagrawal03'
+const safariShortcuts = {
+    'github': {
+        title: 'GitHub — @muditagrawal-alt',
+        url: 'https://github.com/muditagrawal-alt',
+        icon: 'fab fa-github',
+        domain: 'github.com/muditagrawal-alt',
+        category: 'Code & Open Source',
+        desc: 'Explore 8+ production & research AI/ML repositories authored by Mudit Agrawal including OmniDoc, Sliver.Ai, and Project S.W.O.R.D.',
+        pinnedRepos: [
+            { name: 'OmniDoc', desc: 'Multimodal RAG Document Intelligence System with Mistral-7B & BLIP.', stars: 'Featured', lang: 'Python' },
+            { name: 'Sliver-Smart-Video-Clipping-Tool', desc: 'AI highlight clipping pipeline using YOLOv8 & YOLO11.', stars: 'Featured', lang: 'Python' },
+            { name: 'Project-S.W.O.R.D', desc: 'Surveillance for Weapon Observation with Real-Time Deep Learning.', stars: 'Defense', lang: 'Python' },
+            { name: 'Helix-Compiler', desc: 'C-based parsing, AST generation and systems compiler.', stars: 'Systems', lang: 'C' }
+        ]
+    },
+    'huggingface': {
+        title: 'Hugging Face — @muditagrawal03',
+        url: 'https://huggingface.co/muditagrawal03',
+        icon: 'fas fa-robot',
+        domain: 'huggingface.co/muditagrawal03',
+        category: 'AI Models & Spaces',
+        desc: 'Model checkpoints, pipelines, and interactive spaces for Speech Synthesis, Multimodal VQA, and LLM fine-tunes.',
+        pinnedRepos: [
+            { name: 'Speech-Synthesis-Hub', desc: 'Coqui XTTS-v2 and Whisper pipeline experiments.', stars: 'Models', lang: 'PyTorch' },
+            { name: 'Multimodal-VQA-Space', desc: 'Visual document reasoning with BLIP & Mistral.', stars: 'Spaces', lang: 'Gradio' }
+        ]
+    },
+    'linkedin': {
+        title: 'LinkedIn — Mudit Agrawal',
+        url: 'https://www.linkedin.com/in/mudit-agrawal-167610318',
+        icon: 'fab fa-linkedin',
+        domain: 'linkedin.com/in/mudit-agrawal-167610318',
+        category: 'Professional Network',
+        desc: 'Computer Science (AI/ML) Undergraduate at IILM University • Former ML Intern at Zee Tech Innovation & WESEE (Indian Navy).',
+        pinnedRepos: [
+            { name: 'Experience', desc: 'Zee Tech & Innovation Centre (Dec 2025 - Jan 2026)', stars: 'Internship', lang: 'AI/ML' },
+            { name: 'Defense R&D', desc: 'WESEE, Indian Navy (June 2025 - July 2025)', stars: 'Naval AI', lang: 'Defense' }
+        ]
+    },
+    'blog': {
+        title: "Mudit's Tech Blog",
+        url: 'https://muditagrawal03.blogspot.com/',
+        icon: 'fab fa-blogger',
+        domain: 'muditagrawal03.blogspot.com',
+        category: 'Engineering Blog',
+        desc: 'Technical deep-dives on RAG architectures, computer vision benchmarking, and production ML pipelines.',
+        pinnedRepos: [
+            { name: 'Building Multimodal RAG with Mistral-7B & BLIP', desc: 'Full architecture walkthrough from PDF chunking to grounded synthesis.', stars: 'Article', lang: 'RAG' },
+            { name: 'Real-Time Video Analytics with YOLOv8 & YOLO11', desc: 'Sub-second highlight generation with multi-cue tracking.', stars: 'Article', lang: 'Vision' }
+        ]
+    },
+    'medium': {
+        title: 'Medium — @muditagrawal',
+        url: 'https://medium.com/@muditagrawal',
+        icon: 'fab fa-medium',
+        domain: 'medium.com/@muditagrawal',
+        category: 'Articles & Tutorials',
+        desc: 'Thought leadership articles on practical AI engineering, avoiding hallucination traps, and real-world system resilience.',
+        pinnedRepos: [
+            { name: 'Evaluating LLMs for Mission-Critical Defense Systems', desc: 'Naval R&D insights and reliability testing.', stars: 'Article', lang: 'Safety' },
+            { name: 'Beyond Theory: What College Doesn’t Teach About Machine Learning', desc: 'Practical lessons from deployment bottlenecks.', stars: 'Guide', lang: 'Career' }
+        ]
+    },
+    'instagram': {
+        title: 'Instagram — @muditagrawal_',
+        url: 'https://www.instagram.com',
+        icon: 'fab fa-instagram',
+        domain: 'instagram.com/muditagrawal_',
+        category: 'Social & Behind the Scenes',
+        desc: 'Campus life at IILM University, hackathon sprints, photography, robotics lab snapshots, and tech journey moments.',
+        pinnedRepos: [
+            { name: 'Hackathon Highlights', desc: 'Late night debugging, caffeine fuel, and demo pitches.', stars: 'Posts', lang: 'Photos' },
+            { name: 'Campus & Navy Life', desc: 'Naval base memories and university campus perspectives.', stars: 'Stories', lang: 'Highlights' }
+        ]
+    },
+    'x': {
+        title: 'X / Twitter — @muditagrawal03',
+        url: 'https://x.com/muditagrawal03',
+        icon: 'fab fa-x-twitter',
+        domain: 'x.com/muditagrawal03',
+        category: 'Tech Discussions & Updates',
+        desc: 'Sharing daily thoughts on open-source AI weights, research papers from arXiv, and builder updates.',
+        pinnedRepos: [
+            { name: 'Paper Takeaways', desc: 'Bite-sized threads breaking down new CV and LLM releases.', stars: 'Threads', lang: 'AI' },
+            { name: 'Build In Public', desc: 'Weekly progress snapshots on OmniDoc and Sliver.Ai.', stars: 'Updates', lang: 'Dev' }
+        ]
+    },
+    'kaggle': {
+        title: 'Kaggle — muditagrawal03',
+        url: 'https://www.kaggle.com',
+        icon: 'fab fa-kaggle',
+        domain: 'kaggle.com/muditagrawal03',
+        category: 'Data Science & Competitions',
+        desc: 'Machine Learning notebooks, exploratory data analysis, and competitive computer vision models.',
+        pinnedRepos: [
+            { name: 'YOLOv8 Object Detection Benchmark', desc: 'Comparative latency and mAP evaluation notebook.', stars: 'Notebook', lang: 'Python' },
+            { name: 'Multimodal Embeddings Space', desc: 'Nomic + BLIP embedding clustering on custom datasets.', stars: 'Dataset', lang: 'Data' }
+        ]
+    },
+    'leetcode': {
+        title: 'LeetCode — muditagrawal03',
+        url: 'https://leetcode.com',
+        icon: 'fas fa-code',
+        domain: 'leetcode.com/u/muditagrawal03',
+        category: 'Algorithms & Data Structures',
+        desc: 'Problem solving across Trees, Dynamic Programming, Graphs, and Systems Optimization in C and Python.',
+        pinnedRepos: [
+            { name: 'Data Structures & Algorithms', desc: '200+ problems solved across arrays, DP, and graphs.', stars: 'Profile', lang: 'Algorithms' },
+            { name: 'Contest Rankings', desc: 'Consistent competitive programming participant.', stars: 'Contests', lang: 'Problem Solving' }
+        ]
+    },
+    'arxiv': {
+        title: 'arXiv & Academic Research',
+        url: 'https://arxiv.org',
+        icon: 'fas fa-graduation-cap',
+        domain: 'arxiv.org',
+        category: 'Research Papers & Preprints',
+        desc: 'Tracking state-of-the-art literature in Multimodal Representation Learning, Quantization, and Video Understanding.',
+        pinnedRepos: [
+            { name: 'Multimodal RAG Architectures', desc: 'Cross-attention mechanisms and dense retrieval.', stars: 'Reading', lang: 'Research' },
+            { name: 'Real-time Object Detectors', desc: 'Evolution from YOLOv8 to YOLO11 in inference speed.', stars: 'Reading', lang: 'Vision' }
+        ]
+    },
+    'youtube': {
+        title: 'YouTube — AI Demos & Talks',
+        url: 'https://youtube.com',
+        icon: 'fab fa-youtube',
+        domain: 'youtube.com/@muditagrawal-ai',
+        category: 'Video Walkthroughs & Demos',
+        desc: 'Watch live video demonstrations of OmniDoc parsing complex PDFs, and Sliver.Ai extracting highlights.',
+        pinnedRepos: [
+            { name: 'OmniDoc Live Demo', desc: 'Visual Q&A with Mistral-7B and BLIP in real time.', stars: 'Video', lang: 'Demo' },
+            { name: 'Sliver.Ai Video Clipping', desc: 'Automated facial cue tracking & highlight clipping.', stars: 'Video', lang: 'Demo' }
+        ]
+    },
+    'devto': {
+        title: 'Dev.to — Technical Community',
+        url: 'https://dev.to',
+        icon: 'fab fa-dev',
+        domain: 'dev.to/muditagrawal',
+        category: 'Developer Community Articles',
+        desc: 'Practical software engineering guides, C compiler internals, and full-stack ML application setup.',
+        pinnedRepos: [
+            { name: 'Writing a C Compiler from Scratch', desc: 'Lexing, AST generation, and assembly emission basics.', stars: 'Series', lang: 'C' },
+            { name: 'Deploying Local AI with Fast API & Ollama', desc: 'Production-ready local inference guide.', stars: 'Guide', lang: 'DevOps' }
+        ]
+    }
 };
 
-let currentSafariTab = 'blog';
+// Safari Tab State
+let safariTabs = [
+    {
+        id: 1,
+        title: 'Start Page',
+        url: '',
+        type: 'start',
+        history: ['start'],
+        historyIndex: 0
+    }
+];
 
-function switchSafariTab(tabName) {
-    currentSafariTab = tabName;
+let activeSafariTabId = 1;
 
-    // Tabs active state
-    document.querySelectorAll('.safari-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+function renderSafariTabs() {
+    const container = document.getElementById('safari-tab-bar-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    safariTabs.forEach(tab => {
+        const item = document.createElement('div');
+        item.className = `safari-tab-item ${tab.id === activeSafariTabId ? 'active' : ''}`;
+        item.onclick = function(e) {
+            if (!e.target.classList.contains('safari-tab-close')) {
+                switchSafariTab(tab.id);
+            }
+        };
+
+        const iconClass = tab.type === 'start' ? 'fas fa-compass' : (tab.icon || 'fas fa-globe');
+        item.innerHTML = `
+            <i class="${iconClass}" style="font-size:12px;opacity:0.85;"></i>
+            <span class="safari-tab-title">${tab.title}</span>
+            <span class="safari-tab-close" onclick="closeSafariTab(${tab.id}, event)">&times;</span>
+        `;
+        container.appendChild(item);
     });
 
-    // URL bar
+    // Update Nav buttons state
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    const backBtn = document.getElementById('safari-btn-back');
+    const fwdBtn = document.getElementById('safari-btn-forward');
+    if (currentTab && backBtn && fwdBtn) {
+        backBtn.disabled = currentTab.historyIndex <= 0;
+        fwdBtn.disabled = currentTab.historyIndex >= currentTab.history.length - 1;
+    }
+}
+
+function switchSafariTab(tabId) {
+    activeSafariTabId = tabId;
+    const tab = safariTabs.find(t => t.id === tabId);
+    if (!tab) return;
+
+    renderSafariTabs();
+
     const urlInput = document.getElementById('safari-url-input');
-    if (urlInput && safariUrls[tabName]) {
-        urlInput.value = safariUrls[tabName];
+    const startView = document.getElementById('safari-start-page-view');
+    const pageView = document.getElementById('safari-web-page-view');
+
+    if (tab.type === 'start') {
+        if (urlInput) urlInput.value = '';
+        if (startView) startView.classList.remove('hidden');
+        if (pageView) pageView.classList.add('hidden');
+    } else {
+        if (urlInput) urlInput.value = tab.url;
+        if (startView) startView.classList.add('hidden');
+        if (pageView) pageView.classList.remove('hidden');
+        renderSafariWebPage(tab);
+    }
+}
+
+function createSafariTab(url, title, type = 'page', icon = 'fas fa-globe') {
+    const newId = Date.now();
+    const newTab = {
+        id: newId,
+        title: title || 'New Tab',
+        url: type === 'start' ? '' : (url || ''),
+        type: type,
+        icon: icon,
+        history: [type === 'start' ? 'start' : url],
+        historyIndex: 0
+    };
+    safariTabs.push(newTab);
+    switchSafariTab(newId);
+}
+
+function closeSafariTab(tabId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
 
-    // Panes
-    document.querySelectorAll('.safari-pane').forEach(pane => pane.classList.add('hidden'));
-    const activePane = document.getElementById(`safari-pane-${tabName}`);
-    if (activePane) activePane.classList.remove('hidden');
-}
-
-function safariBack() {
-    if (currentSafariTab === 'huggingface') switchSafariTab('github');
-    else if (currentSafariTab === 'github') switchSafariTab('blog');
-}
-
-function safariForward() {
-    if (currentSafariTab === 'blog') switchSafariTab('github');
-    else if (currentSafariTab === 'github') switchSafariTab('huggingface');
-}
-
-function reloadSafariTab(e) {
-    if (e) e.stopPropagation();
-    const input = document.getElementById('safari-url-input');
-    if (input) {
-        input.style.opacity = '0.4';
-        setTimeout(() => { input.style.opacity = '1'; }, 300);
+    if (safariTabs.length === 1) {
+        // Reset single tab to Start Page
+        safariTabs[0] = {
+            id: Date.now(),
+            title: 'Start Page',
+            url: '',
+            type: 'start',
+            history: ['start'],
+            historyIndex: 0
+        };
+        switchSafariTab(safariTabs[0].id);
+        return;
     }
+
+    const index = safariTabs.findIndex(t => t.id === tabId);
+    safariTabs = safariTabs.filter(t => t.id !== tabId);
+
+    if (activeSafariTabId === tabId) {
+        const nextIndex = Math.max(0, index - 1);
+        activeSafariTabId = safariTabs[nextIndex].id;
+    }
+
+    switchSafariTab(activeSafariTabId);
+}
+
+function loadSafariDestination(tab, dest) {
+    if (dest === 'start') {
+        tab.type = 'start';
+        tab.title = 'Start Page';
+        tab.url = '';
+        tab.shortcutKey = null;
+        tab.searchQuery = null;
+    } else if (safariShortcuts[dest]) {
+        const sc = safariShortcuts[dest];
+        tab.type = 'page';
+        tab.title = sc.title;
+        tab.url = sc.url;
+        tab.icon = sc.icon;
+        tab.shortcutKey = dest;
+        tab.searchQuery = null;
+    } else if (dest.startsWith('search:')) {
+        const q = dest.replace('search:', '');
+        tab.type = 'search';
+        tab.title = `Search: ${q}`;
+        tab.url = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+        tab.searchQuery = q;
+        tab.icon = 'fas fa-search';
+        tab.shortcutKey = null;
+    } else {
+        tab.type = 'web';
+        tab.title = dest.replace(/^https?:\/\//, '');
+        tab.url = dest;
+        tab.icon = 'fas fa-globe';
+        tab.shortcutKey = null;
+        tab.searchQuery = null;
+    }
+}
+
+function pushSafariHistory(tab, dest) {
+    if (tab.historyIndex < tab.history.length - 1) {
+        tab.history = tab.history.slice(0, tab.historyIndex + 1);
+    }
+    tab.history.push(dest);
+    tab.historyIndex = tab.history.length - 1;
+}
+
+function openSafariStartPage() {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab) {
+        loadSafariDestination(currentTab, 'start');
+        pushSafariHistory(currentTab, 'start');
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function openSafariShortcut(key) {
+    const shortcut = safariShortcuts[key];
+    if (!shortcut) return;
+
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab) {
+        loadSafariDestination(currentTab, key);
+        pushSafariHistory(currentTab, key);
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function handleSafariUrlKey(e) {
+    if (e.key === 'Enter') {
+        const input = document.getElementById('safari-url-input');
+        const value = (input.value || '').trim();
+        if (!value) return;
+
+        navigateSafariTo(value);
+    }
+}
+
+function navigateSafariTo(queryOrUrl) {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (!currentTab) return;
+
+    // Check if matching shortcut
+    const lower = queryOrUrl.toLowerCase();
+    for (const key of Object.keys(safariShortcuts)) {
+        if (lower.includes(key) || lower.includes(safariShortcuts[key].domain)) {
+            openSafariShortcut(key);
+            return;
+        }
+    }
+
+    const isUrl = queryOrUrl.startsWith('http://') || queryOrUrl.startsWith('https://') || queryOrUrl.includes('.com') || queryOrUrl.includes('.org') || queryOrUrl.includes('.dev') || queryOrUrl.includes('.io') || queryOrUrl.includes('.net');
+
+    if (isUrl) {
+        const formattedUrl = queryOrUrl.startsWith('http') ? queryOrUrl : `https://${queryOrUrl}`;
+        loadSafariDestination(currentTab, formattedUrl);
+        pushSafariHistory(currentTab, formattedUrl);
+        switchSafariTab(currentTab.id);
+    } else {
+        const dest = `search:${queryOrUrl}`;
+        loadSafariDestination(currentTab, dest);
+        pushSafariHistory(currentTab, dest);
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function renderSafariWebPage(tab) {
+    const titleEl = document.getElementById('safari-current-page-title');
+    const renderArea = document.getElementById('safari-page-render-area');
+    if (!renderArea) return;
+
+    if (titleEl) titleEl.textContent = tab.title;
+
+    if (tab.type === 'search') {
+        const q = tab.searchQuery || 'Mudit Agrawal AI';
+        renderArea.innerHTML = `
+            <div class="safari-search-results">
+                <div class="search-header-query">About 84,200 results for <strong>"${q}"</strong></div>
+
+                <div class="search-result-card">
+                    <div class="search-result-site"><i class="fab fa-github"></i> github.com &gt; muditagrawal-alt</div>
+                    <a href="https://github.com/muditagrawal-alt" target="_blank" class="search-result-title">Mudit Agrawal (muditagrawal-alt) • GitHub</a>
+                    <div class="search-result-snippet">B.Tech Computer Science (AI/ML) student at IILM University. Author of OmniDoc (Multimodal RAG), Sliver.Ai (AI Video Clipping Tool), and Project S.W.O.R.D.</div>
+                </div>
+
+                <div class="search-result-card">
+                    <div class="search-result-site"><i class="fab fa-blogger"></i> muditagrawal03.blogspot.com</div>
+                    <a href="https://muditagrawal03.blogspot.com/" target="_blank" class="search-result-title">Mudit Agrawal's Engineering Blog — Deep Learning & Systems</a>
+                    <div class="search-result-snippet">Deep dives into Multimodal RAG with Mistral-7B and BLIP, YOLOv8 object detection latency optimization, and defense-grade LLM evaluation.</div>
+                </div>
+
+                <div class="search-result-card">
+                    <div class="search-result-site"><i class="fab fa-linkedin"></i> linkedin.com &gt; in &gt; mudit-agrawal</div>
+                    <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="search-result-title">Mudit Agrawal — Machine Learning Engineer & Undergraduate</a>
+                    <div class="search-result-snippet">Machine Learning Intern at Zee Tech & Innovation Centre. Summer Intern at WESEE, Indian Navy. Specializing in applied AI, CV, and LLM infrastructure.</div>
+                </div>
+
+                <div class="search-result-card">
+                    <div class="search-result-site"><i class="fas fa-robot"></i> huggingface.co &gt; muditagrawal03</div>
+                    <a href="https://huggingface.co/muditagrawal03" target="_blank" class="search-result-title">@muditagrawal03 on Hugging Face — Open Models & Spaces</a>
+                    <div class="search-result-snippet">Speech synthesis pipelines with Whisper & Coqui XTTS, multilingual translation, and multimodal document reasoning spaces.</div>
+                </div>
+            </div>
+        `;
+    } else if (tab.shortcutKey && safariShortcuts[tab.shortcutKey]) {
+        const sc = safariShortcuts[tab.shortcutKey];
+        let itemsHtml = '';
+        (sc.pinnedRepos || []).forEach(repo => {
+            itemsHtml += `
+                <div class="gh-repo-card" onclick="window.open('${sc.url}', '_blank')">
+                    <div class="gh-repo-title"><i class="${sc.icon}"></i> ${repo.name} <span class="gh-badge">${repo.stars}</span></div>
+                    <p>${repo.desc}</p>
+                    <div class="gh-meta"><span class="lang-dot python"></span> ${repo.lang} <span style="margin-left:auto;color:#007aff;">Open ↗</span></div>
+                </div>
+            `;
+        });
+
+        renderArea.innerHTML = `
+            <div class="platform-hero-view">
+                <div class="fav-icon-box bg-fav-${tab.shortcutKey}" style="width:72px;height:72px;font-size:32px;margin:0 auto 12px auto;">
+                    <i class="${sc.icon}"></i>
+                </div>
+                <h2>${sc.title}</h2>
+                <p>${sc.desc}</p>
+                <div style="display:flex;justify-content:center;gap:12px;margin-bottom:28px;">
+                    <a href="${sc.url}" target="_blank" class="app-pill-btn primary"><i class="fas fa-external-link-alt"></i> Visit Live Platform</a>
+                    <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> All Favorites</button>
+                </div>
+                <div class="github-repos-grid" style="text-align:left;">
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+    } else {
+        renderArea.innerHTML = `
+            <div style="text-align:center;padding:40px 20px;">
+                <i class="fas fa-globe fa-4x" style="color:#007aff;margin-bottom:16px;"></i>
+                <h2>${tab.title}</h2>
+                <p style="color:#aaa;font-size:13px;max-width:480px;margin:0 auto 20px auto;">You are visiting <strong>${tab.url}</strong> in Safari for macOS.</p>
+                <a href="${tab.url}" target="_blank" class="app-pill-btn primary" style="font-size:13px;padding:8px 18px;"><i class="fas fa-external-link-alt"></i> Open in Full Browser Tab</a>
+            </div>
+        `;
+    }
+}
+
+function safariHistoryBack() {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab && currentTab.historyIndex > 0) {
+        currentTab.historyIndex--;
+        const dest = currentTab.history[currentTab.historyIndex];
+        loadSafariDestination(currentTab, dest);
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function safariHistoryForward() {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab && currentTab.historyIndex < currentTab.history.length - 1) {
+        currentTab.historyIndex++;
+        const dest = currentTab.history[currentTab.historyIndex];
+        loadSafariDestination(currentTab, dest);
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function safariReload() {
+    const icon = document.querySelector('.safari-reload-icon');
+    if (icon) {
+        icon.style.transform = 'rotate(360deg)';
+        setTimeout(() => { icon.style.transform = ''; }, 400);
+    }
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab) switchSafariTab(currentTab.id);
 }
 
 function openCurrentSafariLink() {
-    if (safariUrls[currentSafariTab]) {
-        window.open(safariUrls[currentSafariTab], '_blank');
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab && currentTab.url) {
+        window.open(currentTab.url, '_blank');
+    } else {
+        window.open('https://github.com/muditagrawal-alt', '_blank');
     }
 }
 
-function focusSafariUrl() {
-    const input = document.getElementById('safari-url-input');
-    if (input) input.select();
+function copyCurrentSafariUrl() {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    const url = currentTab && currentTab.url ? currentTab.url : 'https://github.com/muditagrawal-alt';
+    navigator.clipboard.writeText(url).then(() => {
+        alert("Link copied to clipboard: " + url);
+    }).catch(() => {
+        prompt("Copy page link:", url);
+    });
+}
+
+function shareCurrentSafariUrl() {
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    const url = currentTab && currentTab.url ? currentTab.url : 'https://github.com/muditagrawal-alt';
+    if (navigator.share) {
+        navigator.share({ title: currentTab ? currentTab.title : 'Mudit Agrawal', url: url });
+    } else {
+        copyCurrentSafariUrl();
+    }
 }
 
 // ==========================================================================
@@ -983,3 +1433,14 @@ function handleTerminalInput(e) {
         if (contentDiv) contentDiv.scrollTop = contentDiv.scrollHeight;
     }
 }
+
+// Initial setup
+document.addEventListener('DOMContentLoaded', () => {
+    renderSafariTabs();
+    switchSafariTab(activeSafariTabId);
+    updateDockRunningIndicators();
+});
+
+// Run once immediately
+renderSafariTabs();
+updateDockRunningIndicators();

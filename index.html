@@ -580,113 +580,195 @@
             </div>
         </div>
 
-        <!-- Safari.app Window -->
-        <div class="window hidden" id="safari-window" style="top: 10%; left: 12%; width: 820px; height: 500px;">
+        <!-- Safari.app Window (Full-Featured macOS Safari Browser) -->
+        <div class="window hidden" id="safari-window" style="top: 10%; left: 12%; width: 860px; height: 530px;">
+            <!-- Safari Title Bar & Navigation Controls -->
             <div class="title-bar safari-title-bar" onmousedown="dragMouseDown(event, 'safari-window')">
                 <div class="window-controls">
                     <div class="control close" onclick="closeWindow('safari-window')"></div>
                     <div class="control minimize" onclick="minimizeWindow('safari-window')"></div>
                     <div class="control maximize" onclick="maximizeWindow('safari-window')"></div>
                 </div>
-                <div class="safari-nav-buttons">
-                    <button type="button" class="safari-btn" title="Back" onclick="safariBack()"><i class="fas fa-chevron-left"></i></button>
-                    <button type="button" class="safari-btn" title="Forward" onclick="safariForward()"><i class="fas fa-chevron-right"></i></button>
+                
+                <div class="safari-nav-cluster">
+                    <button type="button" class="safari-btn" title="Toggle Start Page / Bookmarks" onclick="openSafariStartPage()"><i class="fas fa-th"></i></button>
+                    <button type="button" class="safari-btn" id="safari-btn-back" title="Back" onclick="safariHistoryBack()"><i class="fas fa-chevron-left"></i></button>
+                    <button type="button" class="safari-btn" id="safari-btn-forward" title="Forward" onclick="safariHistoryForward()"><i class="fas fa-chevron-right"></i></button>
                 </div>
-                <div class="safari-url-bar" onclick="focusSafariUrl()">
-                    <i class="fas fa-lock" style="font-size:11px;color:#27c93f;margin-right:6px;"></i>
-                    <input type="text" id="safari-url-input" value="https://muditagrawal03.blogspot.com" readonly spellcheck="false">
-                    <i class="fas fa-redo-alt safari-reload-icon" onclick="reloadSafariTab(event)"></i>
+                
+                <div class="safari-url-bar" id="safari-url-container">
+                    <i class="fas fa-shield-alt safari-privacy-icon" title="Privacy Protected"></i>
+                    <input type="text" id="safari-url-input" placeholder="Search or enter website name" spellcheck="false" autocomplete="off" onkeydown="handleSafariUrlKey(event)">
+                    <i class="fas fa-redo-alt safari-reload-icon" title="Reload Page" onclick="safariReload()"></i>
                 </div>
-                <div class="safari-extra-actions">
-                    <button type="button" class="safari-btn" title="Open in New Tab" onclick="openCurrentSafariLink()"><i class="fas fa-external-link-alt"></i></button>
+                
+                <div class="safari-action-cluster">
+                    <button type="button" class="safari-btn" title="Share Page" onclick="shareCurrentSafariUrl()"><i class="fas fa-share-square"></i></button>
+                    <button type="button" class="safari-btn" title="New Tab" onclick="createSafariTab('start', 'Start Page', 'start')"><i class="fas fa-plus"></i></button>
+                    <button type="button" class="safari-btn" title="Open in External Browser" onclick="openCurrentSafariLink()"><i class="fas fa-external-link-alt"></i></button>
                 </div>
             </div>
+
             <!-- Safari Tab Bar -->
-            <div class="safari-tab-bar">
-                <div class="safari-tab active" data-tab="blog" onclick="switchSafariTab('blog')">
-                    <i class="fab fa-blogger" style="color:#f57c00;"></i> Mudit's Tech Blog
-                </div>
-                <div class="safari-tab" data-tab="github" onclick="switchSafariTab('github')">
-                    <i class="fab fa-github"></i> GitHub Repositories
-                </div>
-                <div class="safari-tab" data-tab="huggingface" onclick="switchSafariTab('huggingface')">
-                    <i class="fas fa-robot" style="color:#ffcc00;"></i> Hugging Face Hub
-                </div>
+            <div class="safari-tab-bar" id="safari-tab-bar-container">
+                <!-- Dynamically populated via JS -->
             </div>
-            <!-- Safari Web Viewport -->
+
+            <!-- Safari Quick Favorites / Bookmarks Bar -->
+            <div class="safari-bookmarks-bar">
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('github')"><i class="fab fa-github"></i> GitHub</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('huggingface')"><i class="fas fa-robot" style="color:#ffcc00;"></i> HuggingFace</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('linkedin')"><i class="fab fa-linkedin" style="color:#0a66c2;"></i> LinkedIn</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('blog')"><i class="fab fa-blogger" style="color:#f57c00;"></i> Blog</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('medium')"><i class="fab fa-medium"></i> Medium</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('instagram')"><i class="fab fa-instagram" style="color:#e1306c;"></i> Instagram</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('x')"><i class="fab fa-x-twitter"></i> X (Twitter)</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('kaggle')"><i class="fab fa-kaggle" style="color:#20beff;"></i> Kaggle</div>
+                <div class="safari-bookmark-item" onclick="openSafariShortcut('leetcode')"><i class="fas fa-code" style="color:#ffa116;"></i> LeetCode</div>
+            </div>
+
+            <!-- Safari Viewport -->
             <div class="window-content safari-viewport" id="safari-viewport-content">
-                <!-- Blog Tab View -->
-                <div class="safari-pane" id="safari-pane-blog">
-                    <div class="safari-web-header">
-                        <h2>Mudit Agrawal's Engineering Blog</h2>
-                        <p>Deep-dives into AI/ML architectures, computer vision benchmarks, and systems programming.</p>
-                        <a href="https://muditagrawal03.blogspot.com/" target="_blank" class="app-pill-btn primary"><i class="fas fa-external-link-alt"></i> Open Live Blog</a>
+                <!-- Safari Start Page View -->
+                <div class="safari-start-page" id="safari-start-page-view">
+                    <div class="start-page-hero">
+                        <div class="safari-compass-icon"><i class="fas fa-compass"></i></div>
+                        <h1>Favorites</h1>
                     </div>
-                    <div class="blog-articles-grid">
-                        <div class="blog-card" onclick="window.open('https://muditagrawal03.blogspot.com/', '_blank')">
-                            <div class="blog-tag">RAG & LLMs</div>
-                            <h3>Building Multimodal Document Intelligence with Mistral-7B & BLIP</h3>
-                            <p>How we designed OmniDoc to seamlessly parse PDFs, extract diagrammatic metadata, and synthesize grounded answers.</p>
-                            <span class="blog-read-link">Read Article &rarr;</span>
+
+                    <!-- 12 Platform Shortcuts Grid -->
+                    <div class="favorites-grid">
+                        <!-- 1. GitHub -->
+                        <div class="favorite-item" onclick="openSafariShortcut('github')">
+                            <div class="fav-icon-box bg-fav-github"><i class="fab fa-github"></i></div>
+                            <span class="fav-title">GitHub</span>
+                            <span class="fav-domain">@muditagrawal-alt</span>
                         </div>
-                        <div class="blog-card" onclick="window.open('https://muditagrawal03.blogspot.com/', '_blank')">
-                            <div class="blog-tag">Computer Vision</div>
-                            <h3>Real-Time Automated Highlight Pipeline with YOLOv8 & YOLO11</h3>
-                            <p>Optimizing multi-object tracking and facial emotion cues to generate automated cinematic video highlights in sub-second latency.</p>
-                            <span class="blog-read-link">Read Article &rarr;</span>
+                        <!-- 2. Hugging Face -->
+                        <div class="favorite-item" onclick="openSafariShortcut('huggingface')">
+                            <div class="fav-icon-box bg-fav-hf"><i class="fas fa-robot"></i></div>
+                            <span class="fav-title">Hugging Face</span>
+                            <span class="fav-domain">@muditagrawal03</span>
                         </div>
-                        <div class="blog-card" onclick="window.open('https://muditagrawal03.blogspot.com/', '_blank')">
-                            <div class="blog-tag">Systems & Defense</div>
-                            <h3>Evaluating In-House LLMs for High-Stakes Defense Operations</h3>
-                            <p>Lessons learned while stress-testing model consistency, hallucination boundaries, and security specs at WESEE (Indian Navy).</p>
-                            <span class="blog-read-link">Read Article &rarr;</span>
+                        <!-- 3. LinkedIn -->
+                        <div class="favorite-item" onclick="openSafariShortcut('linkedin')">
+                            <div class="fav-icon-box bg-fav-linkedin"><i class="fab fa-linkedin-in"></i></div>
+                            <span class="fav-title">LinkedIn</span>
+                            <span class="fav-domain">Mudit Agrawal</span>
+                        </div>
+                        <!-- 4. Tech Blog -->
+                        <div class="favorite-item" onclick="openSafariShortcut('blog')">
+                            <div class="fav-icon-box bg-fav-blog"><i class="fab fa-blogger-b"></i></div>
+                            <span class="fav-title">Tech Blog</span>
+                            <span class="fav-domain">muditagrawal03</span>
+                        </div>
+                        <!-- 5. Medium -->
+                        <div class="favorite-item" onclick="openSafariShortcut('medium')">
+                            <div class="fav-icon-box bg-fav-medium"><i class="fab fa-medium-m"></i></div>
+                            <span class="fav-title">Medium</span>
+                            <span class="fav-domain">@muditagrawal</span>
+                        </div>
+                        <!-- 6. Instagram -->
+                        <div class="favorite-item" onclick="openSafariShortcut('instagram')">
+                            <div class="fav-icon-box bg-fav-instagram"><i class="fab fa-instagram"></i></div>
+                            <span class="fav-title">Instagram</span>
+                            <span class="fav-domain">@muditagrawal_</span>
+                        </div>
+                        <!-- 7. X (Twitter) -->
+                        <div class="favorite-item" onclick="openSafariShortcut('x')">
+                            <div class="fav-icon-box bg-fav-x"><i class="fab fa-x-twitter"></i></div>
+                            <span class="fav-title">X (Twitter)</span>
+                            <span class="fav-domain">@muditagrawal03</span>
+                        </div>
+                        <!-- 8. Kaggle -->
+                        <div class="favorite-item" onclick="openSafariShortcut('kaggle')">
+                            <div class="fav-icon-box bg-fav-kaggle"><i class="fab fa-kaggle"></i></div>
+                            <span class="fav-title">Kaggle</span>
+                            <span class="fav-domain">muditagrawal03</span>
+                        </div>
+                        <!-- 9. LeetCode -->
+                        <div class="favorite-item" onclick="openSafariShortcut('leetcode')">
+                            <div class="fav-icon-box bg-fav-leetcode"><i class="fas fa-code"></i></div>
+                            <span class="fav-title">LeetCode</span>
+                            <span class="fav-domain">muditagrawal03</span>
+                        </div>
+                        <!-- 10. arXiv / Research -->
+                        <div class="favorite-item" onclick="openSafariShortcut('arxiv')">
+                            <div class="fav-icon-box bg-fav-arxiv"><i class="fas fa-graduation-cap"></i></div>
+                            <span class="fav-title">Research</span>
+                            <span class="fav-domain">arXiv & Papers</span>
+                        </div>
+                        <!-- 11. YouTube -->
+                        <div class="favorite-item" onclick="openSafariShortcut('youtube')">
+                            <div class="fav-icon-box bg-fav-youtube"><i class="fab fa-youtube"></i></div>
+                            <span class="fav-title">YouTube</span>
+                            <span class="fav-domain">AI Demos & Tech</span>
+                        </div>
+                        <!-- 12. Dev.to -->
+                        <div class="favorite-item" onclick="openSafariShortcut('devto')">
+                            <div class="fav-icon-box bg-fav-devto"><i class="fab fa-dev"></i></div>
+                            <span class="fav-title">Dev.to</span>
+                            <span class="fav-domain">Articles & Guides</span>
+                        </div>
+                    </div>
+
+                    <!-- Safari Privacy Report Card -->
+                    <div class="safari-privacy-card">
+                        <div class="privacy-card-header">
+                            <div class="privacy-icon-circle"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <h3>Privacy Report</h3>
+                                <p>In the last 30 days, Safari has prevented <strong>42 trackers</strong> from profiling you across your browsing sessions.</p>
+                            </div>
+                        </div>
+                        <div class="privacy-stats-row">
+                            <div class="privacy-stat"><span class="stat-num">78%</span> <span class="stat-lbl">Websites Protected</span></div>
+                            <div class="privacy-stat"><span class="stat-num">0</span> <span class="stat-lbl">Data Breaches</span></div>
+                            <div class="privacy-stat"><span class="stat-num">100%</span> <span class="stat-lbl">Encrypted Handshakes</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Reading List & Articles -->
+                    <div class="safari-reading-section">
+                        <h2>Reading List & Pinned Articles</h2>
+                        <div class="reading-grid">
+                            <div class="reading-card" onclick="openSafariShortcut('blog')">
+                                <div class="reading-badge">RAG & LLMs</div>
+                                <h4>Building Multimodal Document Intelligence with Mistral-7B & BLIP</h4>
+                                <p>Deep dive into architecture parsing, embeddings, and real-time grounded QA in OmniDoc.</p>
+                                <span class="reading-meta"><i class="far fa-clock"></i> 6 min read • muditagrawal03.blogspot.com</span>
+                            </div>
+                            <div class="reading-card" onclick="openSafariShortcut('blog')">
+                                <div class="reading-badge">Computer Vision</div>
+                                <h4>Real-Time Automated Highlight Pipeline with YOLOv8 & YOLO11</h4>
+                                <p>Facial analysis, emotion scoring, and sub-second video chunking with FFmpeg.</p>
+                                <span class="reading-meta"><i class="far fa-clock"></i> 8 min read • muditagrawal03.blogspot.com</span>
+                            </div>
+                            <div class="reading-card" onclick="openSafariShortcut('medium')">
+                                <div class="reading-badge">AI Systems</div>
+                                <h4>Evaluating LLMs for Mission-Critical Defense Systems</h4>
+                                <p>Lessons learned stress-testing hallucination boundaries and logic consistency at WESEE.</p>
+                                <span class="reading-meta"><i class="far fa-clock"></i> 5 min read • medium.com</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- GitHub Tab View -->
-                <div class="safari-pane hidden" id="safari-pane-github">
-                    <div class="safari-web-header">
-                        <h2>GitHub Profile & Open Source</h2>
-                        <p>Explore 8+ production and research repositories authored by Mudit Agrawal (@muditagrawal-alt).</p>
-                        <a href="https://github.com/muditagrawal-alt" target="_blank" class="app-pill-btn primary"><i class="fab fa-github"></i> Visit GitHub Profile</a>
-                    </div>
-                    <div class="github-repos-grid">
-                        <div class="gh-repo-card" onclick="window.open('https://github.com/muditagrawal-alt/OmniDoc', '_blank')">
-                            <div class="gh-repo-title"><i class="fas fa-book-open"></i> OmniDoc <span class="gh-badge">Public</span></div>
-                            <p>RAG based LLM Document Intelligence System leveraging Mistral 7B and BLIP embeddings.</p>
-                            <div class="gh-meta"><span class="lang-dot python"></span> Python <span style="margin-left:12px;">⭐ Featured</span></div>
+                <!-- Dynamic In-Browser Webpage View -->
+                <div class="safari-web-page hidden" id="safari-web-page-view">
+                    <div class="safari-page-top-bar">
+                        <div class="page-top-info">
+                            <i class="fas fa-globe"></i>
+                            <span id="safari-current-page-title">Page Title</span>
+                            <span class="safari-live-badge">Live Web View</span>
                         </div>
-                        <div class="gh-repo-card" onclick="window.open('https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', '_blank')">
-                            <div class="gh-repo-title"><i class="fas fa-book-open"></i> Sliver.Ai <span class="gh-badge">Public</span></div>
-                            <p>Smart Video Clipping and AI highlight generator using YOLOv8 and YOLO11m models.</p>
-                            <div class="gh-meta"><span class="lang-dot python"></span> Python <span style="margin-left:12px;">⭐ Featured</span></div>
-                        </div>
-                        <div class="gh-repo-card" onclick="window.open('https://github.com/muditagrawal-alt/Project-S.W.O.R.D', '_blank')">
-                            <div class="gh-repo-title"><i class="fas fa-book-open"></i> Project-S.W.O.R.D <span class="gh-badge">Public</span></div>
-                            <p>Surveillance for Weapon Observation using Real-Time Deep Learning (YOLOv8).</p>
-                            <div class="gh-meta"><span class="lang-dot python"></span> Python <span style="margin-left:12px;">⭐ Defense Tech</span></div>
-                        </div>
-                        <div class="gh-repo-card" onclick="window.open('https://github.com/muditagrawal-alt/Helix-Compiler', '_blank')">
-                            <div class="gh-repo-title"><i class="fas fa-book-open"></i> Helix-Compiler <span class="gh-badge">Public</span></div>
-                            <p>C-based compiler implementation exploring lexing, syntax trees, and code generation.</p>
-                            <div class="gh-meta"><span class="lang-dot c-lang"></span> C <span style="margin-left:12px;">⭐ Systems</span></div>
+                        <div class="page-top-actions">
+                            <button type="button" class="app-pill-btn" onclick="copyCurrentSafariUrl()"><i class="fas fa-copy"></i> Copy Link</button>
+                            <button type="button" class="app-pill-btn primary" onclick="openCurrentSafariLink()"><i class="fas fa-external-link-alt"></i> Open Live Site</button>
                         </div>
                     </div>
-                </div>
-
-                <!-- HuggingFace Tab View -->
-                <div class="safari-pane hidden" id="safari-pane-huggingface">
-                    <div class="safari-web-header">
-                        <h2>Hugging Face Models & Spaces</h2>
-                        <p>Check out machine learning model checkpoints, pipelines, and interactive demos.</p>
-                        <a href="https://huggingface.co/muditagrawal03" target="_blank" class="app-pill-btn primary"><i class="fas fa-robot"></i> Open HuggingFace Profile</a>
-                    </div>
-                    <div class="hf-showcase-card">
-                        <div class="hf-icon-circle"><i class="fas fa-robot fa-3x" style="color:#ffcc00;"></i></div>
-                        <h3>@muditagrawal03 on Hugging Face</h3>
-                        <p>Explore experiments in speech synthesis (XTTS, Whisper), multilingual translation (FB-NLLB), and visual question answering.</p>
-                        <a href="https://huggingface.co/muditagrawal03" target="_blank" class="app-pill-btn primary" style="display:inline-block;margin-top:10px;">View HF Hub &rarr;</a>
+                    <div class="safari-page-render-area" id="safari-page-render-area">
+                        <!-- Dynamically rendered content / search results -->
                     </div>
                 </div>
             </div>
