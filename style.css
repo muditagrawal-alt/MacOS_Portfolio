@@ -228,8 +228,12 @@ a {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .window.hidden {
-    display: none;
+    display: none !important;
 }
 
 .window.minimized {
@@ -1199,42 +1203,33 @@ p {
     color: #fff;
 }
 
-/* Bookmarks Quick Bar */
-.safari-bookmarks-bar {
-    height: 26px;
-    background: rgba(20, 20, 20, 0.75);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    gap: 12px;
-    overflow-x: auto;
-}
-
-.safari-bookmark-item {
-    font-size: 11px;
-    color: #bbb;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-    transition: all 0.15s;
-}
-
-.safari-bookmark-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
 /* Safari Viewport */
 .safari-viewport {
     flex: 1;
     background: rgba(14, 14, 14, 0.7);
     overflow-y: auto;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#safari-start-page-view {
+    width: 100%;
+    flex: 1;
+    display: block;
+}
+
+#safari-web-page-view {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#safari-start-page-view.hidden,
+#safari-web-page-view.hidden {
+    display: none !important;
 }
 
 /* ==========================================================================
@@ -1242,7 +1237,7 @@ p {
    ========================================================================== */
 .safari-start-page {
     padding: 30px 40px;
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -1265,12 +1260,18 @@ p {
     margin: 0;
 }
 
-/* 12-Item Favorites Grid */
+/* 8-Item Favorites Grid */
 .favorites-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 20px 14px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px 16px;
     margin-bottom: 35px;
+}
+
+@media (max-width: 650px) {
+    .favorites-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .favorite-item {
@@ -1287,13 +1288,13 @@ p {
 }
 
 .fav-icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
+    font-size: 28px;
     color: #fff;
     box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.3);
     margin-bottom: 8px;
@@ -1302,7 +1303,7 @@ p {
 
 .favorite-item:hover .fav-icon-box {
     box-shadow: 0 12px 24px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.4);
-    transform: scale(1.04);
+    transform: scale(1.05);
 }
 
 /* Brand Background Gradients */
@@ -1313,11 +1314,7 @@ p {
 .bg-fav-medium { background: linear-gradient(135deg, #12100e 0%, #2b4141 100%); border: 1px solid rgba(255,255,255,0.15); }
 .bg-fav-instagram { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
 .bg-fav-x { background: linear-gradient(135deg, #14171a 0%, #000000 100%); border: 1px solid rgba(255,255,255,0.15); }
-.bg-fav-kaggle { background: linear-gradient(135deg, #20beff 0%, #008ecc 100%); }
 .bg-fav-leetcode { background: linear-gradient(135deg, #ffa116 0%, #c47600 100%); }
-.bg-fav-arxiv { background: linear-gradient(135deg, #b31b1b 0%, #7d1010 100%); }
-.bg-fav-youtube { background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); }
-.bg-fav-devto { background: linear-gradient(135deg, #0a0a0a 0%, #222222 100%); border: 1px solid rgba(255,255,255,0.15); }
 
 .fav-icon-box svg {
     width: 28px;
@@ -1421,7 +1418,7 @@ p {
 
 .reading-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 14px;
 }
 
@@ -1451,7 +1448,7 @@ p {
 }
 
 .reading-card h4 {
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
     color: #fff;
     margin-bottom: 6px;
@@ -1467,7 +1464,7 @@ p {
 }
 
 .reading-meta {
-    font-size: 10.5px;
+    font-size: 10px;
     color: #777;
 }
 
@@ -1514,66 +1511,379 @@ p {
     background: rgba(18, 18, 18, 0.5);
 }
 
-/* Search Engine Results Layout */
-.safari-search-results {
-    max-width: 700px;
+/* ==========================================================================
+   DuckDuckGo Live Search Engine Layout
+   ========================================================================== */
+.ddg-search-container {
+    max-width: 780px;
+    margin: 0 auto;
 }
 
-.search-header-query {
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 18px;
-}
-
-.search-result-card {
-    margin-bottom: 22px;
-}
-
-.search-result-site {
-    font-size: 11px;
-    color: #aaa;
+.ddg-search-header-bar {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 3px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.search-result-title {
+.ddg-brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #de5833;
+}
+
+.ddg-tabs-bar {
+    display: flex;
+    gap: 16px;
+    font-size: 12.5px;
+    color: #888;
+}
+
+.ddg-tab-item {
+    cursor: pointer;
+    padding-bottom: 4px;
+    transition: color 0.15s;
+}
+
+.ddg-tab-item:hover, .ddg-tab-item.active {
+    color: #fff;
+    border-bottom: 2px solid #de5833;
+    font-weight: 500;
+}
+
+/* Instant Answer / Knowledge Panel Card */
+.ddg-instant-card {
+    background: rgba(222, 88, 51, 0.08);
+    border: 1px solid rgba(222, 88, 51, 0.25);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+}
+
+.ddg-instant-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #de5833;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.ddg-instant-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.ddg-instant-abstract {
+    font-size: 13.5px;
+    color: #ddd;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.ddg-instant-source {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.ddg-calc-result {
+    font-size: 32px;
+    font-weight: 700;
+    color: #4facfe;
+    margin: 8px 0;
+}
+
+/* Related Topics Chips */
+.ddg-topics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.ddg-topic-chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ddg-topic-chip:hover {
+    background: rgba(222, 88, 51, 0.2);
+    border-color: #de5833;
+    color: #fff;
+}
+
+/* Web Result Items */
+.ddg-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.ddg-result-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.ddg-result-cite {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ddg-result-title {
     font-size: 16px;
     font-weight: 600;
-    color: #4facfe;
-    cursor: pointer;
+    color: #58a6ff;
     text-decoration: none;
-    display: inline-block;
+    cursor: pointer;
     margin-bottom: 4px;
 }
 
-.search-result-title:hover { text-decoration: underline; }
+.ddg-result-title:hover {
+    text-decoration: underline;
+}
 
-.search-result-snippet {
-    font-size: 12.5px;
-    color: #ccc;
+.ddg-result-snippet {
+    font-size: 13px;
+    color: #bbb;
     line-height: 1.5;
 }
 
-/* Rich Platform Web View Layout */
-.platform-hero-view {
-    text-align: center;
-    padding: 20px 0 30px 0;
+/* ==========================================================================
+   YouTube In-Browser Player Engine Layout
+   ========================================================================== */
+.yt-engine-container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.platform-hero-view h2 {
-    font-size: 24px;
+.yt-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.yt-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
     font-weight: 700;
     color: #fff;
-    margin: 12px 0 6px 0;
+    letter-spacing: -0.5px;
 }
 
-.platform-hero-view p {
-    font-size: 13px;
+.yt-logo i {
+    color: #ff0000;
+    font-size: 22px;
+}
+
+.yt-search-form {
+    flex: 1;
+    max-width: 440px;
+    display: flex;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 0 12px;
+    align-items: center;
+}
+
+.yt-search-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 12.5px;
+    outline: none;
+}
+
+.yt-categories-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+.yt-cat-chip {
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ddd;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.yt-cat-chip.active, .yt-cat-chip:hover {
+    background: #fff;
+    color: #111;
+    font-weight: 600;
+}
+
+/* Hero Player Box */
+.yt-main-player-box {
+    margin-bottom: 24px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+.yt-iframe-responsive {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.yt-iframe-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.yt-player-details {
+    padding: 16px 20px;
+    background: rgba(25, 25, 25, 0.9);
+}
+
+.yt-active-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.yt-active-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
     color: #aaa;
-    max-width: 500px;
-    margin: 0 auto 18px auto;
+}
+
+.yt-channel-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #eee;
+}
+
+/* Video Grid Layout */
+.yt-grid-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 14px;
+}
+
+.yt-videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.yt-video-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.yt-video-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.yt-thumb-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #111;
+    overflow: hidden;
+}
+
+.yt-thumb-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.yt-duration-tag {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.yt-card-info {
+    padding: 12px;
+}
+
+.yt-card-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.yt-card-channel {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 2px;
+}
+
+.yt-card-stats {
+    font-size: 10.5px;
+    color: #777;
 }
 
 /* ==========================================================================

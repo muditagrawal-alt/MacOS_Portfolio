@@ -705,7 +705,7 @@ function addNewNotePrompt() {
 }
 
 // ==========================================================================
-// Safari.app Full-Featured Browser Engine
+// Safari.app Full-Featured Browser Engine (DuckDuckGo + YouTube + Shortcuts)
 // ==========================================================================
 const safariShortcuts = {
     'github': {
@@ -795,18 +795,6 @@ const safariShortcuts = {
             { name: 'Build In Public', desc: 'Weekly progress snapshots on OmniDoc and Sliver.Ai.', stars: 'Updates', lang: 'Dev' }
         ]
     },
-    'kaggle': {
-        title: 'Kaggle — muditagrawal03',
-        url: 'https://www.kaggle.com',
-        icon: 'fab fa-kaggle',
-        domain: 'kaggle.com/muditagrawal03',
-        category: 'Data Science & Competitions',
-        desc: 'Machine Learning notebooks, exploratory data analysis, and competitive computer vision models.',
-        pinnedRepos: [
-            { name: 'YOLOv8 Object Detection Benchmark', desc: 'Comparative latency and mAP evaluation notebook.', stars: 'Notebook', lang: 'Python' },
-            { name: 'Multimodal Embeddings Space', desc: 'Nomic + BLIP embedding clustering on custom datasets.', stars: 'Dataset', lang: 'Data' }
-        ]
-    },
     'leetcode': {
         title: 'LeetCode — @muditagrawal03',
         url: 'https://leetcode.com/u/muditagrawal03/',
@@ -819,44 +807,87 @@ const safariShortcuts = {
             { name: 'Data Structures & Algorithms', desc: '200+ problems solved across arrays, DP, and graphs.', stars: 'Profile', lang: 'Algorithms' },
             { name: 'Contest Rankings', desc: 'Consistent competitive programming participant.', stars: 'Contests', lang: 'Problem Solving' }
         ]
-    },
-    'arxiv': {
-        title: 'arXiv & Academic Research',
-        url: 'https://arxiv.org',
-        icon: 'fas fa-graduation-cap',
-        domain: 'arxiv.org',
-        category: 'Research Papers & Preprints',
-        desc: 'Tracking state-of-the-art literature in Multimodal Representation Learning, Quantization, and Video Understanding.',
-        pinnedRepos: [
-            { name: 'Multimodal RAG Architectures', desc: 'Cross-attention mechanisms and dense retrieval.', stars: 'Reading', lang: 'Research' },
-            { name: 'Real-time Object Detectors', desc: 'Evolution from YOLOv8 to YOLO11 in inference speed.', stars: 'Reading', lang: 'Vision' }
-        ]
-    },
-    'youtube': {
-        title: 'YouTube — AI Demos & Talks',
-        url: 'https://youtube.com',
-        icon: 'fab fa-youtube',
-        domain: 'youtube.com/@muditagrawal-ai',
-        category: 'Video Walkthroughs & Demos',
-        desc: 'Watch live video demonstrations of OmniDoc parsing complex PDFs, and Sliver.Ai extracting highlights.',
-        pinnedRepos: [
-            { name: 'OmniDoc Live Demo', desc: 'Visual Q&A with Mistral-7B and BLIP in real time.', stars: 'Video', lang: 'Demo' },
-            { name: 'Sliver.Ai Video Clipping', desc: 'Automated facial cue tracking & highlight clipping.', stars: 'Video', lang: 'Demo' }
-        ]
-    },
-    'devto': {
-        title: 'Dev.to — Technical Community',
-        url: 'https://dev.to',
-        icon: 'fab fa-dev',
-        domain: 'dev.to/muditagrawal',
-        category: 'Developer Community Articles',
-        desc: 'Practical software engineering guides, C compiler internals, and full-stack ML application setup.',
-        pinnedRepos: [
-            { name: 'Writing a C Compiler from Scratch', desc: 'Lexing, AST generation, and assembly emission basics.', stars: 'Series', lang: 'C' },
-            { name: 'Deploying Local AI with Fast API & Ollama', desc: 'Production-ready local inference guide.', stars: 'Guide', lang: 'DevOps' }
-        ]
     }
 };
+
+// YouTube Video Database for In-Browser Player Engine
+const youtubeVideoLibrary = [
+    {
+        id: 'aircAruvnKk',
+        title: 'But what is a neural network? | Chapter 1, Deep learning',
+        channel: '3Blue1Brown',
+        views: '16M views • 6 years ago',
+        category: 'AI & Neural Networks',
+        thumb: 'https://img.youtube.com/vi/aircAruvnKk/mqdefault.jpg',
+        duration: '19:13'
+    },
+    {
+        id: 'kCc8FmEb1nY',
+        title: 'Let\'s build GPT: from scratch, in code, spelled out.',
+        channel: 'Andrej Karpathy',
+        views: '4.8M views • 2 years ago',
+        category: 'AI & Neural Networks',
+        thumb: 'https://img.youtube.com/vi/kCc8FmEb1nY/mqdefault.jpg',
+        duration: '1:56:01'
+    },
+    {
+        id: 'jGwO_EiCahm',
+        title: 'Stanford CS229: Machine Learning - Lecture 1 (Linear Regression)',
+        channel: 'Stanford Online',
+        views: '3.1M views • 5 years ago',
+        category: 'Machine Learning',
+        thumb: 'https://img.youtube.com/vi/jGwO_EiCahm/mqdefault.jpg',
+        duration: '1:19:40'
+    },
+    {
+        id: 'tPYj3fFJGjk',
+        title: 'Atlas Gets a Grip | Boston Dynamics Next-Gen Humanoid',
+        channel: 'Boston Dynamics',
+        views: '7.4M views • 1 year ago',
+        category: 'Robotics & Vision',
+        thumb: 'https://img.youtube.com/vi/tPYj3fFJGjk/mqdefault.jpg',
+        duration: '1:24'
+    },
+    {
+        id: 'jfKfPfyJRdk',
+        title: 'lofi hip hop radio 📚 - beats to relax/study to',
+        channel: 'Lofi Girl',
+        views: 'Live Stream • 35K Watching',
+        category: 'Lofi Music',
+        thumb: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
+        duration: 'LIVE'
+    },
+    {
+        id: 'V_xro1bcAuA',
+        title: 'Apple Vision Pro — Guided Tour & Spatial Computing',
+        channel: 'Apple',
+        views: '11M views • 1 year ago',
+        category: 'Tech Demos',
+        thumb: 'https://img.youtube.com/vi/V_xro1bcAuA/mqdefault.jpg',
+        duration: '9:53'
+    },
+    {
+        id: 'zjkBMFhNj_g',
+        title: 'Intro to Large Language Models - Full Deep Dive',
+        channel: 'Andrej Karpathy',
+        views: '3.9M views • 1 year ago',
+        category: 'AI & Neural Networks',
+        thumb: 'https://img.youtube.com/vi/zjkBMFhNj_g/mqdefault.jpg',
+        duration: '1:00:00'
+    },
+    {
+        id: 'Gv9_4yMHFhI',
+        title: 'Yann LeCun: Meta AI, Open Source, and Autonomous Machine Intelligence',
+        channel: 'Lex Fridman',
+        views: '1.2M views • 10 months ago',
+        category: 'Tech Talks',
+        thumb: 'https://img.youtube.com/vi/Gv9_4yMHFhI/mqdefault.jpg',
+        duration: '2:48:32'
+    }
+];
+
+let activeYouTubeVideoId = 'aircAruvnKk';
+let activeYouTubeCategory = 'All';
 
 // Safari Tab State
 let safariTabs = [
@@ -889,6 +920,8 @@ function renderSafariTabs() {
         let iconMarkup = '';
         if (tab.type === 'start') {
             iconMarkup = '<i class="fas fa-compass" style="font-size:12px;opacity:0.85;"></i>';
+        } else if (tab.type === 'youtube') {
+            iconMarkup = '<i class="fab fa-youtube" style="font-size:12px;color:#ff0000;"></i>';
         } else if (tab.shortcutKey && safariShortcuts[tab.shortcutKey]?.iconSvg) {
             iconMarkup = safariShortcuts[tab.shortcutKey].iconSvg.replace('width="28" height="28"', 'width="13" height="13"');
         } else {
@@ -927,21 +960,33 @@ function switchSafariTab(tabId) {
 
     if (tab.type === 'start') {
         if (urlInput) urlInput.value = '';
-        if (startView) startView.classList.remove('hidden');
-        if (pageView) pageView.classList.add('hidden');
+        if (startView) {
+            startView.style.display = 'block';
+            startView.classList.remove('hidden');
+        }
+        if (pageView) {
+            pageView.style.display = 'none';
+            pageView.classList.add('hidden');
+        }
     } else {
         if (urlInput) urlInput.value = tab.url;
-        if (startView) startView.classList.add('hidden');
-        if (pageView) pageView.classList.remove('hidden');
+        if (startView) {
+            startView.style.display = 'none';
+            startView.classList.add('hidden');
+        }
+        if (pageView) {
+            pageView.style.display = 'flex';
+            pageView.classList.remove('hidden');
+        }
         renderSafariWebPage(tab);
     }
 }
 
-function createSafariTab(url, title, type = 'page', icon = 'fas fa-globe') {
+function createSafariTab(url, title, type = 'start', icon = 'fas fa-compass') {
     const newId = Date.now();
     const newTab = {
         id: newId,
-        title: title || 'New Tab',
+        title: title || 'Start Page',
         url: type === 'start' ? '' : (url || ''),
         type: type,
         icon: icon,
@@ -959,7 +1004,6 @@ function closeSafariTab(tabId, event) {
     }
 
     if (safariTabs.length === 1) {
-        // Reset single tab to Start Page
         safariTabs[0] = {
             id: Date.now(),
             title: 'Start Page',
@@ -990,6 +1034,13 @@ function loadSafariDestination(tab, dest) {
         tab.url = '';
         tab.shortcutKey = null;
         tab.searchQuery = null;
+    } else if (dest === 'youtube' || dest.includes('youtube.com')) {
+        tab.type = 'youtube';
+        tab.title = 'YouTube';
+        tab.url = 'https://www.youtube.com';
+        tab.icon = 'fab fa-youtube';
+        tab.shortcutKey = null;
+        tab.searchQuery = null;
     } else if (safariShortcuts[dest]) {
         const sc = safariShortcuts[dest];
         tab.type = 'page';
@@ -1000,9 +1051,9 @@ function loadSafariDestination(tab, dest) {
         tab.searchQuery = null;
     } else if (dest.startsWith('search:')) {
         const q = dest.replace('search:', '');
-        tab.type = 'search';
-        tab.title = `Search: ${q}`;
-        tab.url = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+        tab.type = 'ddg_search';
+        tab.title = `DuckDuckGo: ${q}`;
+        tab.url = `https://duckduckgo.com/?q=${encodeURIComponent(q)}`;
         tab.searchQuery = q;
         tab.icon = 'fas fa-search';
         tab.shortcutKey = null;
@@ -1059,16 +1110,25 @@ function navigateSafariTo(queryOrUrl) {
     const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
     if (!currentTab) return;
 
-    // Check if matching shortcut
     const lower = queryOrUrl.toLowerCase();
+
+    // Check if YouTube
+    if (lower === 'youtube' || lower === 'yt' || lower.includes('youtube.com') || lower.startsWith('yt:')) {
+        loadSafariDestination(currentTab, 'youtube');
+        pushSafariHistory(currentTab, 'youtube');
+        switchSafariTab(currentTab.id);
+        return;
+    }
+
+    // Check if matching shortcut
     for (const key of Object.keys(safariShortcuts)) {
-        if (lower.includes(key) || lower.includes(safariShortcuts[key].domain)) {
+        if (lower === key || lower.includes(safariShortcuts[key].domain)) {
             openSafariShortcut(key);
             return;
         }
     }
 
-    const isUrl = queryOrUrl.startsWith('http://') || queryOrUrl.startsWith('https://') || queryOrUrl.includes('.com') || queryOrUrl.includes('.org') || queryOrUrl.includes('.dev') || queryOrUrl.includes('.io') || queryOrUrl.includes('.net');
+    const isUrl = queryOrUrl.startsWith('http://') || queryOrUrl.startsWith('https://') || (queryOrUrl.includes('.') && !queryOrUrl.includes(' '));
 
     if (isUrl) {
         const formattedUrl = queryOrUrl.startsWith('http') ? queryOrUrl : `https://${queryOrUrl}`;
@@ -1083,6 +1143,277 @@ function navigateSafariTo(queryOrUrl) {
     }
 }
 
+// --------------------------------------------------------------------------
+// DuckDuckGo Live Search & Research Engine
+// --------------------------------------------------------------------------
+function evaluateMathExpression(str) {
+    try {
+        const clean = str.replace(/[^0-9+\-*/().%^]/g, '');
+        if (!clean || !/[0-9]/.test(clean)) return null;
+        const fn = new Function(`return (${clean})`);
+        const res = fn();
+        if (typeof res === 'number' && !isNaN(res) && isFinite(res)) {
+            return res;
+        }
+    } catch(e) {}
+    return null;
+}
+
+function renderDuckDuckGoSearch(tab, renderArea) {
+    const q = tab.searchQuery || 'Artificial Intelligence';
+    const mathResult = evaluateMathExpression(q);
+
+    // Initial Loading Skeleton
+    renderArea.innerHTML = `
+        <div class="ddg-search-container">
+            <div class="ddg-search-header-bar">
+                <div class="ddg-brand-badge"><i class="fas fa-shield-alt"></i> DuckDuckGo Privacy Search</div>
+                <div class="ddg-tabs-bar">
+                    <span class="ddg-tab-item active">All</span>
+                    <span class="ddg-tab-item" onclick="navigateSafariTo('youtube')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos</span>
+                    <span class="ddg-tab-item">News</span>
+                    <span class="ddg-tab-item">Images</span>
+                </div>
+            </div>
+
+            ${mathResult !== null ? `
+                <div class="ddg-instant-card">
+                    <div class="ddg-instant-header"><i class="fas fa-calculator"></i> Calculation Result</div>
+                    <div class="ddg-calc-result">${mathResult}</div>
+                    <div class="ddg-instant-source">${q} = ${mathResult}</div>
+                </div>
+            ` : ''}
+
+            <div id="ddg-instant-slot">
+                <div class="ddg-instant-card" style="opacity:0.7;">
+                    <div class="ddg-instant-header"><i class="fas fa-spinner fa-spin"></i> Researching live web...</div>
+                    <div class="ddg-instant-title">${q}</div>
+                    <div class="ddg-instant-abstract">Fetching verified answers, knowledge facts, and related topics from DuckDuckGo and open knowledge engines...</div>
+                </div>
+            </div>
+
+            <div class="ddg-results-list" id="ddg-results-slot">
+                <!-- Web Results List -->
+            </div>
+        </div>
+    `;
+
+    // Fetch DuckDuckGo Open Instant Answer API
+    const ddgApiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&pretty=1`;
+    const wikiApiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
+
+    Promise.allSettled([
+        fetch(ddgApiUrl).then(r => r.json()),
+        fetch(wikiApiUrl).then(r => r.json())
+    ]).then(([ddgRes, wikiRes]) => {
+        const instantSlot = document.getElementById('ddg-instant-slot');
+        const resultsSlot = document.getElementById('ddg-results-slot');
+        if (!resultsSlot) return;
+
+        let abstractText = '';
+        let abstractSource = '';
+        let abstractUrl = '';
+        let relatedTopics = [];
+
+        if (ddgRes.status === 'fulfilled' && ddgRes.value) {
+            const data = ddgRes.value;
+            if (data.AbstractText) {
+                abstractText = data.AbstractText;
+                abstractSource = data.AbstractSource || 'DuckDuckGo Instant Answers';
+                abstractUrl = data.AbstractURL;
+            }
+            if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
+                data.RelatedTopics.slice(0, 8).forEach(t => {
+                    if (t.Text) relatedTopics.push({ text: t.Text, url: t.FirstURL });
+                    else if (t.Topics) {
+                        t.Topics.slice(0, 3).forEach(st => {
+                            if (st.Text) relatedTopics.push({ text: st.Text, url: st.FirstURL });
+                        });
+                    }
+                });
+            }
+        }
+
+        if (!abstractText && wikiRes.status === 'fulfilled' && wikiRes.value && wikiRes.value.extract) {
+            abstractText = wikiRes.value.extract;
+            abstractSource = 'Wikipedia Reference';
+            abstractUrl = wikiRes.value.content_urls ? wikiRes.value.content_urls.desktop.page : '';
+        }
+
+        // Render Instant Knowledge Card
+        if (abstractText && instantSlot) {
+            instantSlot.innerHTML = `
+                <div class="ddg-instant-card">
+                    <div class="ddg-instant-header"><i class="fas fa-bolt"></i> Instant Answer • ${abstractSource}</div>
+                    <div class="ddg-instant-title">${q}</div>
+                    <div class="ddg-instant-abstract">${abstractText}</div>
+                    ${abstractUrl ? `<div class="ddg-instant-source"><a href="${abstractUrl}" target="_blank" style="color:#de5833;text-decoration:none;">Read full documentation ↗</a></div>` : ''}
+                </div>
+            `;
+        } else if (instantSlot && mathResult === null) {
+            instantSlot.innerHTML = '';
+        }
+
+        // Render Related Topics Chips
+        let topicsHtml = '';
+        if (relatedTopics.length > 0) {
+            topicsHtml = `
+                <div style="font-size:12px;font-weight:600;color:#aaa;margin-bottom:8px;">Related Topics:</div>
+                <div class="ddg-topics-row">
+                    ${relatedTopics.map(t => `<div class="ddg-topic-chip" onclick="navigateSafariTo('${t.text.replace(/'/g, "\\'")}')">${t.text.split(' - ')[0]}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        // Render Web Results
+        let webItemsHtml = `
+            ${topicsHtml}
+            <div class="ddg-result-item">
+                <div class="ddg-result-cite">https://en.wikipedia.org/wiki/${encodeURIComponent(q.replace(/\s+/g, '_'))}</div>
+                <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(q.replace(/\s+/g, '_'))}" target="_blank" class="ddg-result-title">${q} - Comprehensive Overview & Research</a>
+                <div class="ddg-result-snippet">In-depth technical breakdown, history, architecture, mathematical foundations, and contemporary breakthroughs regarding ${q}.</div>
+            </div>
+
+            <div class="ddg-result-item">
+                <div class="ddg-result-cite">https://github.com/topics/${encodeURIComponent(q.toLowerCase().replace(/\s+/g, '-'))}</div>
+                <a href="https://github.com/topics/${encodeURIComponent(q.toLowerCase().replace(/\s+/g, '-'))}" target="_blank" class="ddg-result-title">Open Source Repositories & Implementations for #${q}</a>
+                <div class="ddg-result-snippet">Explore trending open-source algorithms, PyTorch libraries, benchmarks, and production implementations on GitHub.</div>
+            </div>
+
+            <div class="ddg-result-item">
+                <div class="ddg-result-cite">https://arxiv.org/search/?query=${encodeURIComponent(q)}</div>
+                <a href="https://arxiv.org/search/?query=${encodeURIComponent(q)}" target="_blank" class="ddg-result-title">arXiv.org: Research Papers and Preprints on ${q}</a>
+                <div class="ddg-result-snippet">State-of-the-art scholarly preprints and peer-reviewed computer science literature on ${q}.</div>
+            </div>
+        `;
+
+        resultsSlot.innerHTML = webItemsHtml;
+    }).catch(() => {
+        const resultsSlot = document.getElementById('ddg-results-slot');
+        if (resultsSlot) {
+            resultsSlot.innerHTML = `
+                <div class="ddg-result-item">
+                    <div class="ddg-result-cite">https://duckduckgo.com/?q=${encodeURIComponent(q)}</div>
+                    <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" class="ddg-result-title">Search DuckDuckGo for "${q}"</a>
+                    <div class="ddg-result-snippet">Access live privacy-protected search results for ${q}.</div>
+                </div>
+            `;
+        }
+    });
+}
+
+// --------------------------------------------------------------------------
+// YouTube In-Browser Player Engine
+// --------------------------------------------------------------------------
+function renderYouTubeEngine(tab, renderArea) {
+    const activeVideo = youtubeVideoLibrary.find(v => v.id === activeYouTubeVideoId) || youtubeVideoLibrary[0];
+    const categories = ['All', 'AI & Neural Networks', 'Machine Learning', 'Robotics & Vision', 'Lofi Music', 'Tech Demos', 'Tech Talks'];
+
+    const filteredVideos = activeYouTubeCategory === 'All' 
+        ? youtubeVideoLibrary 
+        : youtubeVideoLibrary.filter(v => v.category === activeYouTubeCategory);
+
+    let catChipsHtml = categories.map(cat => `
+        <span class="yt-cat-chip ${cat === activeYouTubeCategory ? 'active' : ''}" onclick="selectYouTubeCategory('${cat}')">${cat}</span>
+    `).join('');
+
+    let videosGridHtml = filteredVideos.map(v => `
+        <div class="yt-video-card" onclick="selectYouTubeVideo('${v.id}')">
+            <div class="yt-thumb-wrapper">
+                <img src="${v.thumb}" alt="${v.title}" loading="lazy">
+                <span class="yt-duration-tag">${v.duration}</span>
+            </div>
+            <div class="yt-card-info">
+                <div class="yt-card-title">${v.title}</div>
+                <div class="yt-card-channel">${v.channel}</div>
+                <div class="yt-card-stats">${v.views}</div>
+            </div>
+        </div>
+    `).join('');
+
+    renderArea.innerHTML = `
+        <div class="yt-engine-container">
+            <div class="yt-top-bar">
+                <div class="yt-logo"><i class="fab fa-youtube"></i> YouTube</div>
+                <div class="yt-search-form">
+                    <i class="fas fa-search" style="color:#888;margin-right:8px;font-size:12px;"></i>
+                    <input type="text" id="yt-search-input" placeholder="Search YouTube or paste video URL..." onkeydown="handleYouTubeSearchKey(event)">
+                </div>
+                <button type="button" class="app-pill-btn" onclick="openSafariStartPage()" style="margin-left:auto;"><i class="fas fa-th"></i> Favorites</button>
+            </div>
+
+            <div class="yt-categories-bar">
+                ${catChipsHtml}
+            </div>
+
+            <!-- Featured Live Player -->
+            <div class="yt-main-player-box">
+                <div class="yt-iframe-responsive">
+                    <iframe 
+                        src="https://www.youtube-nocookie.com/embed/${activeVideo.id}?autoplay=1&rel=0&modestbranding=1" 
+                        title="${activeVideo.title}" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="yt-player-details">
+                    <div class="yt-active-title">${activeVideo.title}</div>
+                    <div class="yt-active-meta">
+                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> ${activeVideo.channel}</div>
+                        <div>${activeVideo.views}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="yt-grid-title">Suggested & Trending Videos</div>
+            <div class="yt-videos-grid">
+                ${videosGridHtml}
+            </div>
+        </div>
+    `;
+}
+
+function selectYouTubeVideo(videoId) {
+    activeYouTubeVideoId = videoId;
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab) {
+        currentTab.type = 'youtube';
+        currentTab.url = `https://www.youtube.com/watch?v=${videoId}`;
+        const found = youtubeVideoLibrary.find(v => v.id === videoId);
+        if (found) currentTab.title = found.title;
+        switchSafariTab(currentTab.id);
+    }
+}
+
+function selectYouTubeCategory(cat) {
+    activeYouTubeCategory = cat;
+    const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
+    if (currentTab) switchSafariTab(currentTab.id);
+}
+
+function handleYouTubeSearchKey(e) {
+    if (e.key === 'Enter') {
+        const input = document.getElementById('yt-search-input');
+        const q = (input.value || '').trim();
+        if (!q) return;
+
+        // Check if full YouTube URL pasted
+        if (q.includes('youtube.com/watch?v=') || q.includes('youtu.be/')) {
+            const match = q.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+            if (match && match[1]) {
+                selectYouTubeVideo(match[1]);
+                return;
+            }
+        }
+
+        // Filter or navigate search
+        navigateSafariTo(`search:${q}`);
+    }
+}
+
+// --------------------------------------------------------------------------
+// Web Page Viewport Switcher
+// --------------------------------------------------------------------------
 function renderSafariWebPage(tab) {
     const titleEl = document.getElementById('safari-current-page-title');
     const renderArea = document.getElementById('safari-page-render-area');
@@ -1090,37 +1421,10 @@ function renderSafariWebPage(tab) {
 
     if (titleEl) titleEl.textContent = tab.title;
 
-    if (tab.type === 'search') {
-        const q = tab.searchQuery || 'Mudit Agrawal AI';
-        renderArea.innerHTML = `
-            <div class="safari-search-results">
-                <div class="search-header-query">About 84,200 results for <strong>"${q}"</strong></div>
-
-                <div class="search-result-card">
-                    <div class="search-result-site"><i class="fab fa-github"></i> github.com &gt; muditagrawal-alt</div>
-                    <a href="https://github.com/muditagrawal-alt" target="_blank" class="search-result-title">Mudit Agrawal (muditagrawal-alt) • GitHub</a>
-                    <div class="search-result-snippet">B.Tech Computer Science (AI/ML) student at IILM University. Author of OmniDoc (Multimodal RAG), Sliver.Ai (AI Video Clipping Tool), and Project S.W.O.R.D.</div>
-                </div>
-
-                <div class="search-result-card">
-                    <div class="search-result-site"><svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6719" style="vertical-align:middle;margin-right:4px;"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg> substack.com &gt; @standardissuemudit</div>
-                    <a href="https://substack.com/@standardissuemudit" target="_blank" class="search-result-title">Mudit Agrawal on Substack — Deep Learning & Systems Engineering</a>
-                    <div class="search-result-snippet">Deep dives into Multimodal RAG with Mistral-7B and BLIP, YOLOv8 object detection latency optimization, and defense-grade LLM evaluation.</div>
-                </div>
-
-                <div class="search-result-card">
-                    <div class="search-result-site"><i class="fab fa-linkedin"></i> linkedin.com &gt; in &gt; mudit-agrawal</div>
-                    <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="search-result-title">Mudit Agrawal — Machine Learning Engineer & Undergraduate</a>
-                    <div class="search-result-snippet">Machine Learning Intern at Zee Tech & Innovation Centre. Summer Intern at WESEE, Indian Navy. Specializing in applied AI, CV, and LLM infrastructure.</div>
-                </div>
-
-                <div class="search-result-card">
-                    <div class="search-result-site"><i class="fas fa-robot"></i> huggingface.co &gt; muditagrawal03</div>
-                    <a href="https://huggingface.co/muditagrawal03" target="_blank" class="search-result-title">@muditagrawal03 on Hugging Face — Open Models & Spaces</a>
-                    <div class="search-result-snippet">Speech synthesis pipelines with Whisper & Coqui XTTS, multilingual translation, and multimodal document reasoning spaces.</div>
-                </div>
-            </div>
-        `;
+    if (tab.type === 'youtube') {
+        renderYouTubeEngine(tab, renderArea);
+    } else if (tab.type === 'ddg_search') {
+        renderDuckDuckGoSearch(tab, renderArea);
     } else if (tab.shortcutKey && safariShortcuts[tab.shortcutKey]) {
         const sc = safariShortcuts[tab.shortcutKey];
         let itemsHtml = '';
@@ -1162,7 +1466,10 @@ function renderSafariWebPage(tab) {
                 <i class="fas fa-globe fa-4x" style="color:#007aff;margin-bottom:16px;"></i>
                 <h2>${tab.title}</h2>
                 <p style="color:#aaa;font-size:13px;max-width:480px;margin:0 auto 20px auto;">You are visiting <strong>${tab.url}</strong> in Safari for macOS.</p>
-                <a href="${tab.url}" target="_blank" class="app-pill-btn primary" style="font-size:13px;padding:8px 18px;"><i class="fas fa-external-link-alt"></i> Open in Full Browser Tab</a>
+                <div style="display:flex;justify-content:center;gap:12px;">
+                    <a href="${tab.url}" target="_blank" class="app-pill-btn primary" style="font-size:13px;padding:8px 18px;"><i class="fas fa-external-link-alt"></i> Open in Live Browser Tab</a>
+                    <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Start Page</button>
+                </div>
             </div>
         `;
     }
@@ -1226,6 +1533,8 @@ function shareCurrentSafariUrl() {
         copyCurrentSafariUrl();
     }
 }
+
+
 
 // ==========================================================================
 // App Store.app Controller Logic
