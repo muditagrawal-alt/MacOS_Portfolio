@@ -13,6 +13,9 @@ dist/
 build/
 
 *.log
-../.DS_Store
-~$*.docxfinder_portfolio_core.zip
-finder_portfolio.zip
+
+# Zip archives
+*.zip
+
+# Temp Word files
+~$*.docx
