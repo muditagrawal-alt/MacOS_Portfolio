@@ -1886,6 +1886,73 @@ p {
     color: #777;
 }
 
+/* YouTube Watch & Feed Extras */
+.yt-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.yt-watch-back-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.yt-action-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.yt-action-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #eee;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+
+.yt-action-pill:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+.yt-search-results-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: rgba(255, 0, 0, 0.08);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #fff;
+}
+
+.yt-player-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #aaa;
+    gap: 10px;
+    font-size: 13.5px;
+}
+
 /* ==========================================================================
    App Store.app Styling
    ========================================================================== */
