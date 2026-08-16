@@ -31,12 +31,12 @@
             <div class="menu-dropdown-container">
                 <span class="menu-item bold" onclick="toggleMenu('finder-menu')">Finder</span>
                 <div class="menu-dropdown hidden" id="finder-menu">
-                    <div class="dropdown-item" onclick="openWindow('about-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> About Me</div>
-                    <div class="dropdown-item" onclick="openWindow('experience-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Experience</div>
-                    <div class="dropdown-item" onclick="openWindow('education-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Education</div>
-                    <div class="dropdown-item" onclick="openWindow('projects-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Projects</div>
-                    <div class="dropdown-item" onclick="openWindow('skills-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Skills</div>
-                    <div class="dropdown-item" onclick="openWindow('contact-window')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Contact</div>
+                    <div class="dropdown-item" onclick="openFinderPane('about')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> About Me</div>
+                    <div class="dropdown-item" onclick="openFinderPane('experience')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Experience</div>
+                    <div class="dropdown-item" onclick="openFinderPane('education')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Education</div>
+                    <div class="dropdown-item" onclick="openFinderPane('projects')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Projects</div>
+                    <div class="dropdown-item" onclick="openFinderPane('skills')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Skills</div>
+                    <div class="dropdown-item" onclick="openFinderPane('contact')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Contact</div>
                 </div>
             </div>
 
@@ -103,87 +103,65 @@
     <div class="desktop" id="desktop">
         
         <!-- Desktop Icons -->
-        <div class="desktop-icon" ondblclick="openWindow('about-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('about')">
             <img src="https://github.com/muditagrawal-alt.png" alt="About Me" style="border-radius: 50%;">
             <span>About Me</span>
         </div>
-        <div class="desktop-icon" ondblclick="openWindow('experience-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('experience')">
             <i class="fas fa-briefcase icon-color-blue"></i>
             <span>Experience</span>
         </div>
-        <div class="desktop-icon" ondblclick="openWindow('education-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('education')">
             <i class="fas fa-graduation-cap icon-color-green"></i>
             <span>Education</span>
         </div>
-        <div class="desktop-icon" ondblclick="openWindow('projects-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('projects')">
             <i class="fas fa-folder-open icon-color-folder"></i>
             <span>Projects</span>
         </div>
-        <div class="desktop-icon" ondblclick="openWindow('skills-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('skills')">
             <i class="fas fa-code icon-color-purple"></i>
             <span>Skills</span>
         </div>
-        <div class="desktop-icon" ondblclick="openWindow('contact-window')">
+        <div class="desktop-icon" ondblclick="openFinderPane('contact')">
             <i class="fas fa-envelope icon-color-yellow"></i>
             <span>Contact</span>
         </div>
 
-        <!-- Windows Template -->
-        
-        <!-- About Window -->
-        <div class="window" id="about-window" style="top: 10%; left: 10%; z-index: 10;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'about-window')">
+        <!-- Unified Finder Window -->
+        <div class="window" id="finder-window" style="top: 10%; left: 10%; width: 700px; height: 450px; z-index: 10;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'finder-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('about-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('about-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('about-window')"></div>
+                    <div class="control close" onclick="closeWindow('finder-window')"></div>
+                    <div class="control minimize" onclick="minimizeWindow('finder-window')"></div>
+                    <div class="control maximize" onclick="maximizeWindow('finder-window')"></div>
                 </div>
-                <div class="window-title">About Me</div>
+                <div class="window-title" id="finder-window-title">About Me</div>
             </div>
             <div class="window-content">
                 <div class="sidebar">
                     <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item active" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
+                    <div class="sidebar-item active" data-pane="about" onclick="switchFinderPane('about')"><i class="fas fa-user"></i> About Me</div>
+                    <div class="sidebar-item" data-pane="experience" onclick="switchFinderPane('experience')"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="sidebar-item" data-pane="education" onclick="switchFinderPane('education')"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <div class="sidebar-item" data-pane="projects" onclick="switchFinderPane('projects')"><i class="fas fa-folder"></i> Projects</div>
+                    <div class="sidebar-item" data-pane="skills" onclick="switchFinderPane('skills')"><i class="fas fa-code"></i> Skills</div>
+                    <div class="sidebar-item" data-pane="contact" onclick="switchFinderPane('contact')"><i class="fas fa-envelope"></i> Contact</div>
                 </div>
-                <div class="main-area content-padding">
+
+                <!-- About Pane -->
+                <div class="finder-pane main-area content-padding" data-pane="about">
                     <h1>Mudit Agrawal</h1>
                     <h2>Computer Science (AI/ML) Undergraduate</h2>
-                    <p>I’m a Computer Science student interested in how technology works in real-world environments, beyond theory and coursework.</p>
-                    <p>Through internships and hands-on projects, I’ve been gradually building an understanding of software systems, data, and applied AI/ML, with a focus on learning by doing rather than just studying concepts. I value practical exposure, problem-solving, and understanding how technology supports large-scale operations.</p>
-                    <p>I’m especially interested in roles and projects at the intersection of technology, data, and real-world impact, and I enjoy working on things that require both technical thinking and context awareness.</p>
+                    <p>I'm a Computer Science student interested in how technology works in real-world environments, beyond theory and coursework.</p>
+                    <p>Through internships and hands-on projects, I've been gradually building an understanding of software systems, data, and applied AI/ML, with a focus on learning by doing rather than just studying concepts. I value practical exposure, problem-solving, and understanding how technology supports large-scale operations.</p>
+                    <p>I'm especially interested in roles and projects at the intersection of technology, data, and real-world impact, and I enjoy working on things that require both technical thinking and context awareness.</p>
                     <p>Currently focused on strengthening fundamentals, gaining industry exposure, and building projects that actually hold up outside the classroom.</p>
                     <p>Double click the folders on the desktop or use the sidebar to explore my portfolio!</p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Experience Window -->
-        <div class="window hidden" id="experience-window" style="top: 15%; left: 15%;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'experience-window')">
-                <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('experience-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('experience-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('experience-window')"></div>
-                </div>
-                <div class="window-title">Experience</div>
-            </div>
-            <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item active" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-                <div class="main-area content-padding list-view">
-                    
+                <!-- Experience Pane -->
+                <div class="finder-pane main-area content-padding list-view" data-pane="experience" style="display:none;">
                     <div class="resume-item">
                         <div class="resume-header">
                             <h3>Machine Learning Intern</h3>
@@ -211,33 +189,10 @@
                             <li>Gained hands-on experience with Python, ML workflows, CV modules, and REST API integrations.</li>
                         </ul>
                     </div>
+                </div>
 
-                </div>
-            </div>
-        </div>
-
-        <!-- Education Window -->
-        <div class="window hidden" id="education-window" style="top: 20%; left: 20%;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'education-window')">
-                <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('education-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('education-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('education-window')"></div>
-                </div>
-                <div class="window-title">Education & Certifications</div>
-            </div>
-            <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item active" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-                <div class="main-area content-padding list-view">
-                    
+                <!-- Education Pane -->
+                <div class="finder-pane main-area content-padding list-view" data-pane="education" style="display:none;">
                     <h2>Education</h2>
                     <div class="resume-item">
                         <div class="resume-header">
@@ -273,32 +228,10 @@
                         <li><strong>Technology Job Simulation</strong> — Deloitte</li>
                         <li><strong>Java Programming and OOP</strong> — Duke University</li>
                     </ul>
+                </div>
 
-                </div>
-            </div>
-        </div>
-
-        <!-- Projects Window -->
-        <div class="window hidden" id="projects-window" style="top: 25%; left: 25%; width: 700px; height: 450px;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'projects-window')">
-                <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('projects-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('projects-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('projects-window')"></div>
-                </div>
-                <div class="window-title">Projects</div>
-            </div>
-            <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item active" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-                <div class="main-area projects-grid content-padding">
+                <!-- Projects Pane -->
+                <div class="finder-pane main-area projects-grid content-padding" data-pane="projects" style="display:none;">
                     <!-- Project 1 -->
                     <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" rel="noopener noreferrer" class="project-card">
                         <div class="project-icon"><i class="fas fa-brain"></i></div>
@@ -356,31 +289,9 @@
                         <div class="tags"><span class="tag">AI</span><span class="tag">Creative Tech</span></div>
                     </a>
                 </div>
-            </div>
-        </div>
 
-        <!-- Skills Window -->
-        <div class="window hidden" id="skills-window" style="top: 30%; left: 30%;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'skills-window')">
-                <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('skills-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('skills-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('skills-window')"></div>
-                </div>
-                <div class="window-title">Skills & Stacks</div>
-            </div>
-            <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item active" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-                <div class="main-area content-padding list-view">
-                    
+                <!-- Skills Pane -->
+                <div class="finder-pane main-area content-padding list-view" data-pane="skills" style="display:none;">
                     <div class="skill-category">
                         <h3>Programming</h3>
                         <div class="tags large-tags">
@@ -439,33 +350,10 @@
                             <span class="tag">Colab</span>
                         </div>
                     </div>
+                </div>
 
-                </div>
-            </div>
-        </div>
-
-        <!-- Contact Window -->
-        <div class="window hidden" id="contact-window" style="top: 35%; left: 35%;">
-            <div class="title-bar" onmousedown="dragMouseDown(event, 'contact-window')">
-                <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('contact-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('contact-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('contact-window')"></div>
-                </div>
-                <div class="window-title">Contact</div>
-            </div>
-            <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item" onclick="openWindow('about-window')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" onclick="openWindow('experience-window')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" onclick="openWindow('education-window')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" onclick="openWindow('projects-window')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" onclick="openWindow('skills-window')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item active" onclick="openWindow('contact-window')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-                <div class="main-area content-padding contact-grid">
-                    
+                <!-- Contact Pane -->
+                <div class="finder-pane main-area content-padding contact-grid" data-pane="contact" style="display:none;">
                     <a href="mailto:muditagrawal03@gmail.com" class="contact-card">
                         <i class="fas fa-envelope fa-2x"></i>
                         <h3>Email</h3>
@@ -501,7 +389,6 @@
                         <h3>Phone</h3>
                         <p>+91-7289887349</p>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -548,23 +435,23 @@
     <!-- Dock -->
     <div class="dock-container">
         <div class="dock">
-            <div class="dock-item" onclick="openWindow('about-window')" data-tooltip="Finder">
+            <div class="dock-item" onclick="openFinderPane('about')" data-tooltip="Finder">
                 <img src="assets/FINDER.jpeg" alt="Finder" style="width:100%;height:100%;object-fit:contain;">
             </div>
-            <div class="dock-item" onclick="openWindow('experience-window')" data-tooltip="Experience">
+            <div class="dock-item" onclick="openFinderPane('experience')" data-tooltip="Experience">
                 <img src="assets/experience.jpeg" alt="Experience" style="width:100%;height:100%;object-fit:contain;">
             </div>
-            <div class="dock-item" onclick="openWindow('education-window')" data-tooltip="Education">
+            <div class="dock-item" onclick="openFinderPane('education')" data-tooltip="Education">
                 <img src="assets/education.png" alt="Education" style="width:100%;height:100%;object-fit:contain;">
             </div>
-            <div class="dock-item" onclick="openWindow('projects-window')" data-tooltip="Projects">
+            <div class="dock-item" onclick="openFinderPane('projects')" data-tooltip="Projects">
                 <img src="assets/PROJECTS.jpeg" alt="Projects" style="width:100%;height:100%;object-fit:contain;">
             </div>
-            <div class="dock-item" onclick="openWindow('skills-window')" data-tooltip="Skills">
+            <div class="dock-item" onclick="openFinderPane('skills')" data-tooltip="Skills">
                 <img src="assets/SKILLS.jpeg" alt="Skills" style="width:100%;height:100%;object-fit:contain;">
             </div>
             <div class="dock-divider"></div>
-            <div class="dock-item" onclick="openWindow('contact-window')" data-tooltip="Contact">
+            <div class="dock-item" onclick="openFinderPane('contact')" data-tooltip="Contact">
                 <img src="assets/CONTACT.jpeg" alt="Contact" style="width:100%;height:100%;object-fit:contain;">
             </div>
         </div>

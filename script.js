@@ -30,16 +30,6 @@ function openWindow(windowId) {
         win.classList.remove('hidden');
         win.classList.remove('minimized');
         bringToFront(windowId);
-        
-        // Update sidebar active states if needed
-        const sidebars = win.querySelectorAll('.sidebar-item');
-        sidebars.forEach(item => {
-            if(item.getAttribute('onclick').includes(windowId)) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
     }
 }
 
@@ -173,14 +163,58 @@ document.querySelectorAll('.window').forEach(win => {
     });
 });
 
+// Pane titles for the unified Finder window
+const finderPaneTitles = {
+    'about': 'About Me',
+    'experience': 'Experience',
+    'education': 'Education & Certifications',
+    'projects': 'Projects',
+    'skills': 'Skills & Stacks',
+    'contact': 'Contact'
+};
+
+// Switch content pane within the unified Finder window (like real macOS Finder)
+function switchFinderPane(paneName) {
+    const finderWindow = document.getElementById('finder-window');
+    if (!finderWindow) return;
+
+    // Hide all panes
+    finderWindow.querySelectorAll('.finder-pane').forEach(pane => {
+        pane.style.display = 'none';
+    });
+
+    // Show the target pane
+    const targetPane = finderWindow.querySelector(`.finder-pane[data-pane="${paneName}"]`);
+    if (targetPane) {
+        targetPane.style.display = '';
+    }
+
+    // Update sidebar active state
+    finderWindow.querySelectorAll('.sidebar-item[data-pane]').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-pane') === paneName);
+    });
+
+    // Update window title
+    const titleEl = document.getElementById('finder-window-title');
+    if (titleEl && finderPaneTitles[paneName]) {
+        titleEl.textContent = finderPaneTitles[paneName];
+    }
+}
+
+// Open the Finder window and switch to a specific pane
+function openFinderPane(paneName) {
+    const finderWindow = document.getElementById('finder-window');
+    if (finderWindow) {
+        finderWindow.classList.remove('hidden');
+        finderWindow.classList.remove('minimized');
+        bringToFront('finder-window');
+        switchFinderPane(paneName);
+    }
+}
+
 // // Menu Bar Dropdown Logic
 const windowNames = {
-    'about-window': 'About Me',
-    'experience-window': 'Experience',
-    'education-window': 'Education',
-    'projects-window': 'Projects',
-    'skills-window': 'Skills',
-    'contact-window': 'Contact',
+    'finder-window': 'Finder',
     'resume-window': 'Resume PDF',
     'terminal-window': 'Terminal'
 };

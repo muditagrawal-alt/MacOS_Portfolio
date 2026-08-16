@@ -332,6 +332,8 @@ a {
     user-select: text;
 }
 
+/* Active finder pane — shown via JS removing display:none */
+
 .content-padding {
     padding: 30px;
 }
