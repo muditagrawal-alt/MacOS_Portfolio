@@ -260,7 +260,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - LinkedIn: [Mudit Agrawal](https://www.linkedin.com/in/mudit-agrawal-167610318)
 - GitHub: [@muditagrawal-alt](https://github.com/muditagrawal-alt)
 - HuggingFace: [muditagrawal03](https://huggingface.co/muditagrawal03)
-- Blog: [muditagrawal03.blogspot.com](https://muditagrawal03.blogspot.com/)
+- Substack: [standardissuemudit](https://substack.com/@standardissuemudit)
+- Medium: [@muditagrawal03](https://medium.com/@muditagrawal03)
+- X (Twitter): [@muditag52751860](https://x.com/muditag52751860)
+- LeetCode: [muditagrawal03](https://leetcode.com/u/muditagrawal03/)
 
 ---
 

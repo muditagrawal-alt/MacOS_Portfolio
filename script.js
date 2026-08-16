@@ -560,7 +560,7 @@ const emailData = {
             <strong>Phone:</strong> +91-7289887349<br>
             <strong>LinkedIn:</strong> linkedin.com/in/mudit-agrawal-167610318<br>
             <strong>Hugging Face:</strong> huggingface.co/muditagrawal03<br>
-            <strong>Blog:</strong> muditagrawal03.blogspot.com</p>
+            <strong>Substack:</strong> substack.com/@standardissuemudit</p>
             <div class="mail-action-buttons">
                 <a href="mailto:muditagrawal03@gmail.com" class="mail-action-btn primary"><i class="fas fa-envelope"></i> Send Direct Email</a>
                 <button type="button" class="mail-action-btn" onclick="openResumeWindow()"><i class="fas fa-file-pdf"></i> View Resume</button>
@@ -746,23 +746,24 @@ const safariShortcuts = {
             { name: 'Defense R&D', desc: 'WESEE, Indian Navy (June 2025 - July 2025)', stars: 'Naval AI', lang: 'Defense' }
         ]
     },
-    'blog': {
-        title: "Mudit's Tech Blog",
-        url: 'https://muditagrawal03.blogspot.com/',
-        icon: 'fab fa-blogger',
-        domain: 'muditagrawal03.blogspot.com',
-        category: 'Engineering Blog',
-        desc: 'Technical deep-dives on RAG architectures, computer vision benchmarking, and production ML pipelines.',
+    'substack': {
+        title: 'Substack — @standardissuemudit',
+        url: 'https://substack.com/@standardissuemudit',
+        icon: 'fas fa-bookmark',
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>',
+        domain: 'substack.com/@standardissuemudit',
+        category: 'Tech & AI Newsletter',
+        desc: 'Deep dives on multimodal RAG architectures, computer vision benchmarks, and AI engineering notes.',
         pinnedRepos: [
             { name: 'Building Multimodal RAG with Mistral-7B & BLIP', desc: 'Full architecture walkthrough from PDF chunking to grounded synthesis.', stars: 'Article', lang: 'RAG' },
             { name: 'Real-Time Video Analytics with YOLOv8 & YOLO11', desc: 'Sub-second highlight generation with multi-cue tracking.', stars: 'Article', lang: 'Vision' }
         ]
     },
     'medium': {
-        title: 'Medium — @muditagrawal',
-        url: 'https://medium.com/@muditagrawal',
+        title: 'Medium — @muditagrawal03',
+        url: 'https://medium.com/@muditagrawal03',
         icon: 'fab fa-medium',
-        domain: 'medium.com/@muditagrawal',
+        domain: 'medium.com/@muditagrawal03',
         category: 'Articles & Tutorials',
         desc: 'Thought leadership articles on practical AI engineering, avoiding hallucination traps, and real-world system resilience.',
         pinnedRepos: [
@@ -783,10 +784,10 @@ const safariShortcuts = {
         ]
     },
     'x': {
-        title: 'X / Twitter — @muditagrawal03',
-        url: 'https://x.com/muditagrawal03',
+        title: 'X (Twitter) — @muditag52751860',
+        url: 'https://x.com/muditag52751860',
         icon: 'fab fa-x-twitter',
-        domain: 'x.com/muditagrawal03',
+        domain: 'x.com/muditag52751860',
         category: 'Tech Discussions & Updates',
         desc: 'Sharing daily thoughts on open-source AI weights, research papers from arXiv, and builder updates.',
         pinnedRepos: [
@@ -807,9 +808,10 @@ const safariShortcuts = {
         ]
     },
     'leetcode': {
-        title: 'LeetCode — muditagrawal03',
-        url: 'https://leetcode.com',
+        title: 'LeetCode — @muditagrawal03',
+        url: 'https://leetcode.com/u/muditagrawal03/',
         icon: 'fas fa-code',
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .666-1.795l3.86-4.133 5.304-5.694a1.376 1.376 0 0 0-.96-2.352zm3.896 9.615c-.76 0-1.378.618-1.378 1.378v4.973c0 .76.618 1.378 1.378 1.378h5.243c.76 0 1.378-.618 1.378-1.378v-4.973c0-.76-.618-1.378-1.378-1.378h-5.243z"/></svg>',
         domain: 'leetcode.com/u/muditagrawal03',
         category: 'Algorithms & Data Structures',
         desc: 'Problem solving across Trees, Dynamic Programming, Graphs, and Systems Optimization in C and Python.',
@@ -884,9 +886,18 @@ function renderSafariTabs() {
             }
         };
 
-        const iconClass = tab.type === 'start' ? 'fas fa-compass' : (tab.icon || 'fas fa-globe');
+        let iconMarkup = '';
+        if (tab.type === 'start') {
+            iconMarkup = '<i class="fas fa-compass" style="font-size:12px;opacity:0.85;"></i>';
+        } else if (tab.shortcutKey && safariShortcuts[tab.shortcutKey]?.iconSvg) {
+            iconMarkup = safariShortcuts[tab.shortcutKey].iconSvg.replace('width="28" height="28"', 'width="13" height="13"');
+        } else {
+            const iconClass = tab.icon || 'fas fa-globe';
+            iconMarkup = `<i class="${iconClass}" style="font-size:12px;opacity:0.85;"></i>`;
+        }
+
         item.innerHTML = `
-            <i class="${iconClass}" style="font-size:12px;opacity:0.85;"></i>
+            ${iconMarkup}
             <span class="safari-tab-title">${tab.title}</span>
             <span class="safari-tab-close" onclick="closeSafariTab(${tab.id}, event)">&times;</span>
         `;
@@ -1092,8 +1103,8 @@ function renderSafariWebPage(tab) {
                 </div>
 
                 <div class="search-result-card">
-                    <div class="search-result-site"><i class="fab fa-blogger"></i> muditagrawal03.blogspot.com</div>
-                    <a href="https://muditagrawal03.blogspot.com/" target="_blank" class="search-result-title">Mudit Agrawal's Engineering Blog — Deep Learning & Systems</a>
+                    <div class="search-result-site"><svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6719" style="vertical-align:middle;margin-right:4px;"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg> substack.com &gt; @standardissuemudit</div>
+                    <a href="https://substack.com/@standardissuemudit" target="_blank" class="search-result-title">Mudit Agrawal on Substack — Deep Learning & Systems Engineering</a>
                     <div class="search-result-snippet">Deep dives into Multimodal RAG with Mistral-7B and BLIP, YOLOv8 object detection latency optimization, and defense-grade LLM evaluation.</div>
                 </div>
 
@@ -1114,19 +1125,25 @@ function renderSafariWebPage(tab) {
         const sc = safariShortcuts[tab.shortcutKey];
         let itemsHtml = '';
         (sc.pinnedRepos || []).forEach(repo => {
+            let itemIcon = `<i class="${sc.icon}"></i>`;
+            if (sc.iconSvg) {
+                itemIcon = sc.iconSvg.replace('width="28" height="28"', 'width="16" height="16"');
+            }
             itemsHtml += `
                 <div class="gh-repo-card" onclick="window.open('${sc.url}', '_blank')">
-                    <div class="gh-repo-title"><i class="${sc.icon}"></i> ${repo.name} <span class="gh-badge">${repo.stars}</span></div>
+                    <div class="gh-repo-title" style="display:flex;align-items:center;gap:6px;">${itemIcon} ${repo.name} <span class="gh-badge">${repo.stars}</span></div>
                     <p>${repo.desc}</p>
                     <div class="gh-meta"><span class="lang-dot python"></span> ${repo.lang} <span style="margin-left:auto;color:#007aff;">Open ↗</span></div>
                 </div>
             `;
         });
 
+        const heroIcon = sc.iconSvg || `<i class="${sc.icon}"></i>`;
+
         renderArea.innerHTML = `
             <div class="platform-hero-view">
-                <div class="fav-icon-box bg-fav-${tab.shortcutKey}" style="width:72px;height:72px;font-size:32px;margin:0 auto 12px auto;">
-                    <i class="${sc.icon}"></i>
+                <div class="fav-icon-box bg-fav-${tab.shortcutKey}" style="width:72px;height:72px;font-size:32px;margin:0 auto 12px auto;display:flex;align-items:center;justify-content:center;">
+                    ${heroIcon}
                 </div>
                 <h2>${sc.title}</h2>
                 <p>${sc.desc}</p>

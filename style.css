@@ -1309,7 +1309,7 @@ p {
 .bg-fav-github { background: linear-gradient(135deg, #24292e 0%, #0d1117 100%); border: 1px solid rgba(255,255,255,0.15); }
 .bg-fav-hf { background: linear-gradient(135deg, #ffd21e 0%, #ff9d00 100%); color: #111 !important; }
 .bg-fav-linkedin { background: linear-gradient(135deg, #0a66c2 0%, #004182 100%); }
-.bg-fav-blog { background: linear-gradient(135deg, #ff7700 0%, #e64a19 100%); }
+.bg-fav-substack { background: linear-gradient(135deg, #FF6719 0%, #d84300 100%); }
 .bg-fav-medium { background: linear-gradient(135deg, #12100e 0%, #2b4141 100%); border: 1px solid rgba(255,255,255,0.15); }
 .bg-fav-instagram { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
 .bg-fav-x { background: linear-gradient(135deg, #14171a 0%, #000000 100%); border: 1px solid rgba(255,255,255,0.15); }
@@ -1318,6 +1318,12 @@ p {
 .bg-fav-arxiv { background: linear-gradient(135deg, #b31b1b 0%, #7d1010 100%); }
 .bg-fav-youtube { background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); }
 .bg-fav-devto { background: linear-gradient(135deg, #0a0a0a 0%, #222222 100%); border: 1px solid rgba(255,255,255,0.15); }
+
+.fav-icon-box svg {
+    width: 28px;
+    height: 28px;
+    fill: #ffffff;
+}
 
 .fav-title {
     font-size: 12px;
