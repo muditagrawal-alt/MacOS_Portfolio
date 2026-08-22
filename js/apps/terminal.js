@@ -219,9 +219,12 @@ ${expText}
   • Multiva.Ai       - Multilingual AI Voice Cloning & Speech Synthesis (Whisper, XTTS)
 
 [ TECHNICAL SKILLS ]
-  • Languages: Python, C, Java, JavaScript, HTML5, CSS3, SQL, Bash
-  • Frameworks: PyTorch, TensorFlow, OpenCV, Hugging Face, Scikit-Learn, FastAPI, Flask
-  • AI Domains: Multimodal RAG, Computer Vision (YOLOv8/11), LLM Agents, Media Forensics
+  • Programming: Python, Java, C, SQL
+  • Frameworks: LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
+  • Models: YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings, BGE-M3 ReRanker, SentenceTransformers
+  • Databases: PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
+  • Evaluation: RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
+  • Tools: Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
 
 [ ACTIONS ]
   • Type 'open resume' or double-click Resume.pdf on desktop to view/download full PDF!
@@ -247,7 +250,17 @@ PHILOSOPHY & CORE PRINCIPLES
             } else if (file === 'contact' || file === 'contact.txt') {
                 response = `Email: ${p.contact?.email || 'muditagrawal03@gmail.com'}<br>Phone: ${p.contact?.phone || '+91-7289887349'}<br>LinkedIn: ${p.contact?.linkedin || ''}<br>GitHub: ${p.contact?.github || ''}`;
             } else if (file === 'skills' || file === 'skills.txt') {
-                response = 'Python, C, Java, HTML, CSS, PyTorch, TensorFlow, OpenCV, YOLOv8/11, Whisper, Mistral-7B, BLIP, Nomic, XTTS, FastAPI.';
+                response = `
+<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
+TECHNICAL SKILLS (From Resume)
+--------------------------------------------------------------------------------
+• Programming : Python, Java, C, SQL
+• Frameworks  : LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
+• Models      : YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3, SentenceTransformers
+• Databases   : PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
+• Evaluation  : RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
+• Tools       : Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
+</pre>`;
             } else if (file === '' || file === 'cat') {
                 response = 'cat: specify a file name. Example: <em>cat resume.txt</em> or <em>cat README.txt</em>';
             } else {
@@ -287,11 +300,13 @@ drwxr-xr-x  4 muditagrawal  staff  128B  Jun 01 09:00  <span style="color:#4facf
             } else if (args === 'skills' || args === 'skills/' || args.includes('skills')) {
                 response = `
 <pre style="font-family:inherit;margin:0;line-height:1.45;">
-total 4 categories
-drwxr-xr-x  6 muditagrawal  staff  192B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Languages</span>/    <span style="color:#888;"># Python, C, Java, JavaScript, SQL, Bash</span>
-drwxr-xr-x  8 muditagrawal  staff  256B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Frameworks</span>/   <span style="color:#888;"># PyTorch, TensorFlow, OpenCV, Hugging Face, Scikit-Learn</span>
-drwxr-xr-x  5 muditagrawal  staff  160B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Domains</span>/      <span style="color:#888;"># Multimodal RAG, Computer Vision (YOLOv8/11), Agents</span>
-drwxr-xr-x  5 muditagrawal  staff  160B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Tools</span>/        <span style="color:#888;"># Git, Docker, Linux, FastAPI, Weights & Biases</span>
+total 6 categories
+drwxr-xr-x   6 muditagrawal  staff   192B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Programming</span>/   <span style="color:#888;"># Python, Java, C, SQL</span>
+drwxr-xr-x  17 muditagrawal  staff   544B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Frameworks</span>/    <span style="color:#888;"># LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, FastAPI</span>
+drwxr-xr-x  15 muditagrawal  staff   480B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Models</span>/        <span style="color:#888;"># YOLOv8/11/26, Whisper, Coqui XTTS, BLIP, Mistral-7B, Qwen 2.5, BGE-M3</span>
+drwxr-xr-x   8 muditagrawal  staff   256B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Databases</span>/     <span style="color:#888;"># PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB</span>
+drwxr-xr-x   8 muditagrawal  staff   256B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Evaluation</span>/    <span style="color:#888;"># RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA</span>
+drwxr-xr-x  18 muditagrawal  staff   576B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Tools</span>/         <span style="color:#888;"># Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Airflow, Spark</span>
 </pre>
 `;
             } else {
@@ -507,7 +522,7 @@ To initiate collaboration:<br>
                     response = '• <strong style="color:#4facfe;">OmniDoc</strong> — Multimodal RAG Document Intelligence System<br>• <strong style="color:#4facfe;">Sliver.Ai</strong> — Smart Video Clipping & Facial Highlights<br>• <strong style="color:#4facfe;">Project S.W.O.R.D</strong> — Real-Time Weapon Surveillance System<br>• <strong style="color:#4facfe;">Deepfake Detector</strong> — Media Forensics & Fake News Detection<br>• <strong style="color:#4facfe;">Helix-Compiler</strong> — C-Based Language Compiler<br>• <strong style="color:#4facfe;">Multiva.Ai</strong> — Multilingual AI Voice Cloning<br>• <strong style="color:#4facfe;">Inflx AutoStream</strong> — Autonomous AI Workflow Agent<br>• <strong style="color:#4facfe;">Artifex</strong> — Generative AI Creative Design Platform<br><span style="color:#888;">Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <em>open omnidoc</em>) to visit repo!</span>';
                     break;
                 case 'skills':
-                    response = '<strong>Languages:</strong> Python, C, Java, JavaScript, HTML5, CSS3, SQL, Bash<br><strong>Frameworks:</strong> PyTorch, TensorFlow, OpenCV, Hugging Face, Scikit-Learn, FastAPI<br><strong>AI/ML:</strong> Multimodal RAG, YOLOv8/11, Whisper, Mistral-7B, BLIP, Nomic, Coqui XTTS';
+                    response = `<strong>Programming:</strong> Python, Java, C, SQL<br><strong>Frameworks:</strong> LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy<br><strong>Models:</strong> YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings/ReRanker, SentenceTransformers<br><strong>Databases:</strong> PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB<br><strong>Evaluation:</strong> RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA<br><strong>Tools:</strong> Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude`;
                     break;
                 case 'contact': {
                     const p = window.PROFILE_DATA || {};
