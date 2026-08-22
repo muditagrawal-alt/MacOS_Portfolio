@@ -1,7 +1,10 @@
 const TERMINAL_COMMANDS = [
-    'help', 'whoami', 'clear', 'ls', 'ls projects/', 'pwd', 'date', 'uname',
+    'help', 'neofetch', 'whoami', 'clear', 'ls', 'ls projects/', 'pwd', 'cd', 'date', 'uname',
     'echo', 'about me', 'experience', 'education', 'projects', 'skills',
-    'contact', 'cat resume.txt', 'cat README.txt'
+    'contact', 'cat resume.txt', 'cat README.txt', 'iris', 'open finder',
+    'open safari', 'open mail', 'open notes', 'open appstore', 'open settings',
+    'open trash', 'open resume', 'open iris', 'open omnidoc', 'open sliver',
+    'open sword', 'open deepfake', 'open helix', 'open multiva', 'open inflx', 'open artifex'
 ];
 
 /* ==========================================================================
@@ -19,6 +22,35 @@ function printTerminalLine(html, style) {
 
 const terminalHistory = [];
 let terminalHistoryIndex = -1;
+
+/* Project repository lookup registry */
+const PROJECT_REPOS = {
+    'omnidoc': { name: 'OmniDoc', url: 'https://github.com/muditagrawal-alt/OmniDoc', desc: 'Multimodal RAG Document Intelligence System' },
+    'sliver': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
+    'sliver.ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
+    'sliver-ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
+    'sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
+    'project-sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
+    'project sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
+    'project-s.w.o.r.d': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
+    's.w.o.r.d': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
+    'deepfake': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
+    'deepfake-detector': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
+    'deepfake detector': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
+    'helix': { name: 'Helix-Compiler', url: 'https://github.com/muditagrawal-alt/Helix-Compiler', desc: 'C-Based Language Compiler' },
+    'helix-compiler': { name: 'Helix-Compiler', url: 'https://github.com/muditagrawal-alt/Helix-Compiler', desc: 'C-Based Language Compiler' },
+    'multiva': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
+    'multiva.ai': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
+    'multiva-ai': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
+    'inflx': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
+    'inflx-autostream': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
+    'inflx autostream': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
+    'artifex': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
+    'artifex.ai': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
+    'artifex-ai': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
+    'github': { name: 'Mudit Agrawal GitHub', url: 'https://github.com/muditagrawal-alt', desc: 'GitHub Profile' },
+    'linkedin': { name: 'Mudit Agrawal LinkedIn', url: 'https://www.linkedin.com/in/mudit-agrawal-167610318', desc: 'LinkedIn Profile' }
+};
 
 function handleTerminalInput(e) {
     const inputEl = document.getElementById('terminal-input');
@@ -77,7 +109,63 @@ function handleTerminalInput(e) {
         
         let response = '';
         
-        if (cmd.startsWith('cat ') || cmd === 'cat') {
+        if (cmd.startsWith('open ')) {
+            const rawTarget = rawCmd.slice(5).trim();
+            const target = cmd.slice(5).trim();
+            const winMap = {
+                'finder': 'finder-window',
+                'safari': 'safari-window',
+                'mail': 'mail-window',
+                'notes': 'notes-window',
+                'app store': 'appstore-window',
+                'appstore': 'appstore-window',
+                'settings': 'settings-window',
+                'system settings': 'settings-window',
+                'trash': 'trash-window',
+                'resume': 'resume-window',
+                'terminal': 'terminal-window'
+            };
+            
+            if (target === 'iris' || target === 'siri' || target === 'hey iris' || target === 'hey siri') {
+                if (typeof openIris === 'function') openIris();
+                response = '<span style="color:#af52de;font-weight:600;">Opening Iris AI Assistant... ✨</span>';
+            } else if (winMap[target]) {
+                openWindow(winMap[target]);
+                response = `Opening ${escapeHtml(rawTarget)}...`;
+            } else if (target === 'resume.pdf' || target === 'resume.txt' || target === 'muditagrawalresume.pdf' || target === 'cv') {
+                if (typeof openResumeWindow === 'function') openResumeWindow();
+                else openWindow('resume-window');
+                response = 'Opening MuditAgrawalResume.pdf... 📄';
+            } else {
+                const cleanKey = target.replace(/^projects\//, '').replace(/^proj-/, '').replace(/\/$/, '').trim();
+                const proj = PROJECT_REPOS[cleanKey];
+                if (proj) {
+                    window.open(proj.url, '_blank', 'noopener,noreferrer');
+                    response = `<span style="color:#27c93f;">→ Opened <strong>${escapeHtml(proj.name)}</strong> on GitHub:</span> <a href="${escapeHtml(proj.url)}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;text-decoration:underline;">${escapeHtml(proj.url)}</a> 🚀`;
+                } else if (target.startsWith('http://') || target.startsWith('https://')) {
+                    window.open(rawTarget, '_blank', 'noopener,noreferrer');
+                    response = `Opening external URL: ${escapeHtml(rawTarget)}...`;
+                } else {
+                    response = `open: Application or project '${escapeHtml(rawTarget)}' not found.<br><span style="color:#888;">Try apps: <em>finder, safari, mail, notes, appstore, settings, resume, iris</em><br>Or projects: <em>omnidoc, sliver, sword, deepfake, helix, multiva, inflx, artifex</em></span>`;
+                }
+            }
+        } else if (cmd.startsWith('cd ') || cmd === 'cd') {
+            const dest = cmd.replace(/^cd\s*/, '').replace(/\/$/, '').trim();
+            const folders = {
+                'projects': 'projects', 'projects/': 'projects',
+                'experience': 'experience', 'experience/': 'experience',
+                'education': 'education', 'education/': 'education',
+                'skills': 'skills', 'skills/': 'skills',
+                'documents': 'documents', 'documents/': 'documents',
+                '~': 'home', '': 'home', '..': 'home', '/': 'home'
+            };
+            if (folders[dest] !== undefined) {
+                if (typeof openFinderPane === 'function') openFinderPane(folders[dest]);
+                response = `<span style="color:#888;">→ opened <strong>${escapeHtml(dest || '~')}</strong> in Finder</span>`;
+            } else {
+                response = `cd: no such file or directory: ${escapeHtml(dest)}`;
+            }
+        } else if (cmd.startsWith('cat ') || cmd === 'cat') {
             const file = cmd.replace(/^cat\s*/, '').trim();
             const p = window.PROFILE_DATA || {};
             const e = p.education || {};
@@ -170,6 +258,31 @@ drwxr-xr-x   5 muditagrawal  staff   160B  Sep 05 12:00  <span style="color:#4fa
             }
         } else {
             switch(cmd) {
+                case 'neofetch': {
+                    const p = window.PROFILE_DATA || {};
+                    const eduStr = p.education ? `${p.education.degree} @ ${p.education.university}` : 'B.Tech CSE (AI/ML) @ IILM University';
+                    const expStr = (p.experience || []).map(e => e.org.split(' (')[0]).join(' • ');
+                    response = `
+<pre style="font-family:inherit;line-height:1.35;margin:0;">
+                    <span style="color:#27c93f;">'c.</span>          <span style="color:#ffffff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>
+                 <span style="color:#27c93f;">,xNMM.</span>          <span style="color:#555;">------------------------</span>
+               <span style="color:#27c93f;">.OMMMMo</span>           <span style="color:#f6d365;font-weight:600;">OS:</span> macOS Tahoe 26.0 (Finder Portfolio Edition)
+               <span style="color:#27c93f;">OMMM0,</span>            <span style="color:#f6d365;font-weight:600;">Host:</span> MacBook Pro 16" (Apple Silicon)
+     <span style="color:#ffbd2e;">.;loddo:.</span>  <span style="color:#27c93f;">.oaMMMMso:</span>       <span style="color:#f6d365;font-weight:600;">Kernel:</span> Darwin 25.0.0 (arm64)
+   <span style="color:#ffbd2e;">:0KMMMMMMMWk.</span>  <span style="color:#27c93f;">.dNMMMMK,</span>      <span style="color:#f6d365;font-weight:600;">Uptime:</span> 3+ years in AI/ML & Systems Engineering
+  <span style="color:#ffbd2e;">:Nk.       .kM:</span>   <span style="color:#27c93f;">.dMMMMc</span>      <span style="color:#f6d365;font-weight:600;">Shell:</span> zsh 5.9 (arm64-apple-darwin25.0)
+ <span style="color:#ff5f56;">.MN</span>           <span style="color:#ffbd2e;">OM:</span>    <span style="color:#27c93f;">.MMo</span>       <span style="color:#f6d365;font-weight:600;">Terminal:</span> Apple_Terminal (Finder Portfolio CLI)
+ <span style="color:#ff5f56;">.MM.  .</span>       <span style="color:#ffbd2e;">.XM</span>    <span style="color:#27c93f;">xMM,</span>       <span style="color:#f6d365;font-weight:600;">Degree:</span> ${eduStr}
+  <span style="color:#ff5f56;">kM;  :x</span>        <span style="color:#ffbd2e;">.</span>    <span style="color:#27c93f;">XM,</span>        <span style="color:#f6d365;font-weight:600;">Focus:</span> Multimodal RAG, CV (YOLO), LLM Agentic Pipelines
+  <span style="color:#ff5f56;">;MM.  .o.</span>     <span style="color:#af52de;">.</span>    <span style="color:#4facfe;">oW"</span>         <span style="color:#f6d365;font-weight:600;">Internships:</span> ${expStr}
+   <span style="color:#ff5f56;">*W0.</span>          <span style="color:#af52de;">.</span>  <span style="color:#4facfe;">.dK</span>          <span style="color:#f6d365;font-weight:600;">Memory:</span> 100% Passion & Grit
+    <span style="color:#ff5f56;">.kMD.</span>       <span style="color:#af52de;">.oc.oWd</span>          <span style="color:#f6d365;font-weight:600;">GitHub:</span> https://github.com/muditagrawal-alt
+      <span style="color:#ff5f56;">'kWMMMMMMMMMMk'</span>            
+        <span style="color:#af52de;">.,looodl;.</span>               <span style="color:#ff5f56;">███</span> <span style="color:#ffbd2e;">███</span> <span style="color:#27c93f;">███</span> <span style="color:#4facfe;">███</span> <span style="color:#00f2fe;">███</span> <span style="color:#af52de;">███</span> <span style="color:#ff758c;">███</span> <span style="color:#ffffff;">███</span>
+</pre>
+                    `;
+                    break;
+                }
                 case 'whoami':
                     response = 'Mudit Agrawal';
                     break;
