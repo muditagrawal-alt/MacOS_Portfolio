@@ -1,0 +1,52 @@
+/* ==========================================================================
+   Terminal.app Styling (macOS ZSH CLI)
+   ========================================================================== */
+
+#terminal-window {
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+#terminal-content {
+    flex-direction: column;
+    padding: 12px 14px;
+    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    overflow-y: auto;
+    background: transparent;
+    color: #f1f1f1;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#terminal-output {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+#terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    margin-left: 8px;
+}
+
+#terminal-output pre {
+    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+#terminal-output a {
+    color: #4facfe;
+    text-decoration: underline;
+}
+
+#terminal-output a:hover {
+    color: #00f2fe;
+}
+
