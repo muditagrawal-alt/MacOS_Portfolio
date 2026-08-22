@@ -208,7 +208,13 @@ ${p.bio || 'Computer Science Undergraduate (AI/ML) at IILM University, building 
   • Navy Children School, Mumbai (Class X, CBSE — 2021) — 89%
 
 [ WORK EXPERIENCE ]
-${expText}
+${exp.map(x => {
+    let s = `  • ${x.role} — ${x.org}\n    Dates: ${x.dates}`;
+    if (x.bullets && x.bullets.length) {
+        s += '\n' + x.bullets.map(b => `    - ${b}`).join('\n');
+    }
+    return s;
+}).join('\n\n')}
 
 [ CORE PROJECTS ]
   • OmniDoc          - Multimodal RAG Document Intelligence System (Mistral-7B, Nomic, BLIP)
@@ -249,6 +255,32 @@ PHILOSOPHY & CORE PRINCIPLES
 </pre>`;
             } else if (file === 'contact' || file === 'contact.txt') {
                 response = `Email: ${p.contact?.email || 'muditagrawal03@gmail.com'}<br>Phone: ${p.contact?.phone || '+91-7289887349'}<br>LinkedIn: ${p.contact?.linkedin || ''}<br>GitHub: ${p.contact?.github || ''}`;
+            } else if (file === 'experience' || file === 'experience.txt') {
+                response = `
+<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
+WORK EXPERIENCE (From Resume)
+--------------------------------------------------------------------------------
+1. AI/ML Intern @ Carnot Research Pvt. Ltd. (IITD Incubated Startup)
+   Dates: June 2026 – Present
+   – Architected a hybrid RAG platform (pgvector, BM25, Text-to-SQL router), cutting query latency 60s to &lt;1s.
+   – Built a dataset-agnostic ETL pipeline (Spark, Airflow) with a 3-tier OCR fallback chain across 6 languages.
+   – Integrated a 9,000+ line email/scheduling agent into production, validated via CI/CD with RAGAS and TruLens.
+   – Engineered 3 Intel-optimized RAG modes (INT8-quantized), cutting latency 2-3x while reaching 92% Recall@10.
+
+2. Machine Learning Intern @ Zee Tech and Innovation Centre
+   Dates: December 2025 – January 2026
+   – Engineered OmniDoc, a local multimodal RAG engine with BLIP-captioned image retrieval and intent routing.
+   – Architected a context-aware scene selector, replacing naive top-k selection with budget-optimized ranking.
+   – Built a full-stack video prototype with user auth, async job processing, and live progress tracking.
+   – Authored 2 security design specs proposing ML architectures for anomaly detection and content fingerprinting.
+
+3. Summer Intern @ WESEE, Indian Navy (Defense R&D)
+   Dates: June 2025 – July 2025
+   – Assessed in-house LLMs for naval applications within a secure defense R&D environment.
+   – Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability.
+   – Validated Retrieval-Augmented Generation (RAG) pipelines and improved contextual retrieval accuracy.
+   – Built Artifex.AI, a text-to-image tool integrating Stability AI’s SDXL 1.0 API with sub-5s latency.
+</pre>`;
             } else if (file === 'skills' || file === 'skills.txt') {
                 response = `
 <pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
@@ -290,23 +322,55 @@ drwxr-xr-x   5 muditagrawal  staff   160B  Sep 05 12:00  <span style="color:#4fa
 `;
             } else if (args === 'experience' || args === 'experience/' || args.includes('experience')) {
                 response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;">
-total 3 records
-drwxr-xr-x  4 muditagrawal  staff  128B  Jun 01 09:00  <span style="color:#4facfe;font-weight:600;">Carnot-Research-IITD</span>/   <span style="color:#888;"># AI/ML Intern (Jun 2026 – Present)</span>
-drwxr-xr-x  4 muditagrawal  staff  128B  Dec 01 09:00  <span style="color:#4facfe;font-weight:600;">Zee-Tech-Innovation</span>/    <span style="color:#888;"># ML Intern (Dec 2025 – Jan 2026)</span>
-drwxr-xr-x  4 muditagrawal  staff  128B  Jun 01 09:00  <span style="color:#4facfe;font-weight:600;">WESEE-Indian-Navy</span>/      <span style="color:#888;"># Summer Intern, Defence R&D (Jun 2025 – Jul 2025)</span>
+<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
+<strong style="color:#4facfe;">[ WORK EXPERIENCE — FROM RESUME ]</strong>
+<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span style="color:#ffbd2e;font-weight:700;">1. AI/ML Intern @ Carnot Research Pvt. Ltd. (IITD Incubated Startup)</span>
+   <span style="color:#888;">Dates: June 2026 – Present</span>
+   – Architected a hybrid RAG platform (pgvector, BM25, Text-to-SQL router), cutting query latency 60s to &lt;1s.
+   – Built a dataset-agnostic ETL pipeline (Spark, Airflow) with a 3-tier OCR fallback chain across 6 languages.
+   – Integrated a 9,000+ line email/scheduling agent into production, validated via CI/CD with RAGAS and TruLens.
+   – Engineered 3 Intel-optimized RAG modes (INT8-quantized), cutting latency 2-3x while reaching 92% Recall@10.
+
+<span style="color:#ffbd2e;font-weight:700;">2. Machine Learning Intern @ Zee Tech and Innovation Centre</span>
+   <span style="color:#888;">Dates: December 2025 – January 2026</span>
+   – Engineered OmniDoc, a local multimodal RAG engine with BLIP-captioned image retrieval and intent routing.
+   – Architected a context-aware scene selector, replacing naive top-k selection with budget-optimized ranking.
+   – Built a full-stack video prototype with user auth, async job processing, and live progress tracking.
+   – Authored 2 security design specs proposing ML architectures for anomaly detection and content fingerprinting.
+
+<span style="color:#ffbd2e;font-weight:700;">3. Summer Intern @ WESEE, Indian Navy (Defense R&D)</span>
+   <span style="color:#888;">Dates: June 2025 – July 2025</span>
+   – Assessed in-house LLMs for naval applications within a secure defense R&D environment.
+   – Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability.
+   – Validated Retrieval-Augmented Generation (RAG) pipelines and improved contextual retrieval accuracy.
+   – Built Artifex.AI, a text-to-image tool integrating Stability AI’s SDXL 1.0 API with sub-5s latency.
+<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
 </pre>
 `;
             } else if (args === 'skills' || args === 'skills/' || args.includes('skills')) {
                 response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;">
-total 6 categories
-drwxr-xr-x   6 muditagrawal  staff   192B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Programming</span>/   <span style="color:#888;"># Python, Java, C, SQL</span>
-drwxr-xr-x  17 muditagrawal  staff   544B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Frameworks</span>/    <span style="color:#888;"># LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, FastAPI</span>
-drwxr-xr-x  15 muditagrawal  staff   480B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Models</span>/        <span style="color:#888;"># YOLOv8/11/26, Whisper, Coqui XTTS, BLIP, Mistral-7B, Qwen 2.5, BGE-M3</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Databases</span>/     <span style="color:#888;"># PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Evaluation</span>/    <span style="color:#888;"># RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA</span>
-drwxr-xr-x  18 muditagrawal  staff   576B  Aug 23 01:15  <span style="color:#4facfe;font-weight:600;">Tools</span>/         <span style="color:#888;"># Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Airflow, Spark</span>
+<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
+<strong style="color:#4facfe;">[ TECHNICAL SKILLS — FROM RESUME ]</strong>
+<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span style="color:#ffbd2e;font-weight:700;">• Programming:</span>
+  Python, Java, C, SQL
+
+<span style="color:#ffbd2e;font-weight:700;">• Frameworks & ML:</span>
+  LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
+
+<span style="color:#ffbd2e;font-weight:700;">• AI Models & Architectures:</span>
+  YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings, BGE-M3 ReRanker, SentenceTransformers
+
+<span style="color:#ffbd2e;font-weight:700;">• Databases & Vector Stores:</span>
+  PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
+
+<span style="color:#ffbd2e;font-weight:700;">• Evaluation & Validation:</span>
+  RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
+
+<span style="color:#ffbd2e;font-weight:700;">• Tools, DevOps & Cloud:</span>
+  Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
+<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
 </pre>
 `;
             } else {
@@ -396,27 +460,25 @@ To initiate collaboration:<br>
                     break;
                 case 'neofetch': {
                     const p = window.PROFILE_DATA || {};
-                    const eduStr = p.education ? `${p.education.degree} @ ${p.education.university}` : 'B.Tech CSE (AI/ML) @ IILM University';
-                    const expStr = (p.experience || []).map(e => e.org.split(' (')[0]).join(' • ');
                     response = `
 <pre style="font-family:inherit;line-height:1.35;margin:0;">
-                    <span style="color:#27c93f;">'c.</span>          <span style="color:#ffffff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>
-                 <span style="color:#27c93f;">,xNMM.</span>          <span style="color:#555;">------------------------</span>
-               <span style="color:#27c93f;">.OMMMMo</span>           <span style="color:#f6d365;font-weight:600;">OS:</span> macOS Tahoe 26.0 (Finder Portfolio Edition)
-               <span style="color:#27c93f;">OMMM0,</span>            <span style="color:#f6d365;font-weight:600;">Host:</span> MacBook Pro 16" (Apple Silicon)
-     <span style="color:#ffbd2e;">.;loddo:.</span>  <span style="color:#27c93f;">.oaMMMMso:</span>       <span style="color:#f6d365;font-weight:600;">Kernel:</span> Darwin 25.0.0 (arm64)
-   <span style="color:#ffbd2e;">:0KMMMMMMMWk.</span>  <span style="color:#27c93f;">.dNMMMMK,</span>      <span style="color:#f6d365;font-weight:600;">Uptime:</span> 3+ years in AI/ML & Systems Engineering
-  <span style="color:#ffbd2e;">:Nk.       .kM:</span>   <span style="color:#27c93f;">.dMMMMc</span>      <span style="color:#f6d365;font-weight:600;">Shell:</span> zsh 5.9 (arm64-apple-darwin25.0)
- <span style="color:#ff5f56;">.MN</span>           <span style="color:#ffbd2e;">OM:</span>    <span style="color:#27c93f;">.MMo</span>       <span style="color:#f6d365;font-weight:600;">Terminal:</span> Apple_Terminal (Finder Portfolio CLI)
- <span style="color:#ff5f56;">.MM.  .</span>       <span style="color:#ffbd2e;">.XM</span>    <span style="color:#27c93f;">xMM,</span>       <span style="color:#f6d365;font-weight:600;">Degree:</span> ${eduStr}
-  <span style="color:#ff5f56;">kM;  :x</span>        <span style="color:#ffbd2e;">.</span>    <span style="color:#27c93f;">XM,</span>        <span style="color:#f6d365;font-weight:600;">Focus:</span> Multimodal RAG, CV (YOLO), LLM Agentic Pipelines
-  <span style="color:#ff5f56;">;MM.  .o.</span>     <span style="color:#af52de;">.</span>    <span style="color:#4facfe;">oW"</span>         <span style="color:#f6d365;font-weight:600;">Internships:</span> ${expStr}
-   <span style="color:#ff5f56;">*W0.</span>          <span style="color:#af52de;">.</span>  <span style="color:#4facfe;">.dK</span>          <span style="color:#f6d365;font-weight:600;">Memory:</span> 100% Passion & Grit
-    <span style="color:#ff5f56;">.kMD.</span>       <span style="color:#af52de;">.oc.oWd</span>          <span style="color:#f6d365;font-weight:600;">GitHub:</span> https://github.com/muditagrawal-alt
-      <span style="color:#ff5f56;">'kWMMMMMMMMMMk'</span>            
-        <span style="color:#af52de;">.,looodl;.</span>               <span style="color:#ff5f56;">███</span> <span style="color:#ffbd2e;">███</span> <span style="color:#27c93f;">███</span> <span style="color:#4facfe;">███</span> <span style="color:#00f2fe;">███</span> <span style="color:#af52de;">███</span> <span style="color:#ff758c;">███</span> <span style="color:#ffffff;">███</span>
+<span style="color:#34c759;">                    'c.          </span><span style="color:#ffffff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>
+<span style="color:#34c759;">                 ,xNMM.          </span><span style="color:#555;">------------------------</span>
+<span style="color:#34c759;">               .OMMMMo           </span><span style="color:#f6d365;font-weight:600;">OS:</span> macOS Tahoe 26.0 (Finder Portfolio Edition)
+<span style="color:#34c759;">               OMMM0,            </span><span style="color:#f6d365;font-weight:600;">Host:</span> MacBook Pro 16" (Apple Silicon M3 Max)
+<span style="color:#ffcc00;">     .;loddo:.  </span><span style="color:#34c759;">.oaMMMMso:       </span><span style="color:#f6d365;font-weight:600;">Kernel:</span> Darwin 25.0.0 (arm64)
+<span style="color:#ffcc00;">   :0KMMMMMMMWk.  </span><span style="color:#34c759;">.dNMMMMK,      </span><span style="color:#f6d365;font-weight:600;">Uptime:</span> 3+ years in AI/ML & Systems
+<span style="color:#ff9500;">  :Nk.       .kM:   </span><span style="color:#34c759;">.dMMMMc      </span><span style="color:#f6d365;font-weight:600;">Shell:</span> zsh 5.9 (arm64-apple-darwin25.0)
+<span style="color:#ff9500;"> .MN           OM:    </span><span style="color:#34c759;">.MMo       </span><span style="color:#f6d365;font-weight:600;">Terminal:</span> Apple_Terminal (Finder Portfolio)
+<span style="color:#ff3b30;"> .MM.  .       .XM    </span><span style="color:#34c759;">xMM,       </span><span style="color:#f6d365;font-weight:600;">Education:</span> B.Tech CSE (AI/ML) @ IILM University
+<span style="color:#ff3b30;">  kM;  :x        .    </span><span style="color:#34c759;">XM,        </span><span style="color:#f6d365;font-weight:600;">Focus:</span> Agentic AI, Multimodal RAG, CV (YOLOv26)
+<span style="color:#af52de;">  ;MM.  .o.     .    </span><span style="color:#007aff;">oW"         </span><span style="color:#f6d365;font-weight:600;">Internships:</span> Carnot Research (IIT-D) • Zee • WESEE
+<span style="color:#af52de;">   *W0.          .  </span><span style="color:#007aff;">.dK          </span><span style="color:#f6d365;font-weight:600;">Memory:</span> 100% Passion & Grit
+<span style="color:#af52de;">    .kMD.       </span><span style="color:#007aff;">.oc.oWd          </span><span style="color:#f6d365;font-weight:600;">GitHub:</span> https://github.com/muditagrawal-alt
+<span style="color:#af52de;">      'kWMMMMMMMMMMk'            </span>
+<span style="color:#af52de;">        .,looodl;.               </span><span style="color:#ff5f56;">███</span> <span style="color:#ffbd2e;">███</span> <span style="color:#27c93f;">███</span> <span style="color:#4facfe;">███</span> <span style="color:#00f2fe;">███</span> <span style="color:#af52de;">███</span> <span style="color:#ff758c;">███</span> <span style="color:#ffffff;">███</span>
 </pre>
-                    `;
+`;
                     break;
                 }
                 case 'whoami':
@@ -437,43 +499,45 @@ To initiate collaboration:<br>
 <pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
 <strong style="color:#4facfe;">[ MUDIT AGRAWAL — CAREER & PROJECT TIMELINE ]</strong>
 <span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-<span style="color:#ffbd2e;font-weight:700;">• 2021 [FOUNDATION]</span>
-  └─ <strong>Navy Children School, Mumbai</strong> (Class 10 — 89%)
-     Discovered computer science and algorithmic logic; started building software.
+<span style="color:#ffbd2e;font-weight:700;">• 2020 – 2023 [10TH & 12TH GRADE]</span>
+  └─ <strong>Navy Children School, Mumbai & New Delhi</strong> (Class X: 89%, Class XII: 74%)
+     Developed foundational knowledge of science and got inspired to pursue engineering in Computer Science.
 
-<span style="color:#ffbd2e;font-weight:700;">• 2023 [ACADEMIC JOURNEY]</span>
-  └─ <strong>Navy Children School, New Delhi</strong> (Class 12 — 74%)
-  └─ Joined <strong>B.Tech Computer Science (AI/ML) @ IILM University</strong> (CGPA: 7.68)
-     Deep dived into Deep Learning, Applied Math, and Systems Programming.
+<span style="color:#ffbd2e;font-weight:700;">• 2023 – Present [B.TECH IN CSE (AI/ML)]</span>
+  └─ <strong>B.Tech in Computer Science (AI/ML) @ IILM University</strong> (CGPA: 7.68)
+     Pursuing engineering with deep focus on core systems, deep learning algorithms, applied math, and machine learning pipelines.
 
-<span style="color:#ffbd2e;font-weight:700;">• 2024 – 2025 [SYSTEMS & CORE ML EXPLORATION]</span>
-  └─ Built <strong>Helix-Compiler</strong> — C-based lexical analysis, AST parsing & IR generation.
-  └─ Developed <strong>Multiva.Ai</strong> — Voice cloning with Whisper & Coqui XTTS.
-  └─ Created <strong>Artifex.ai</strong> & <strong>Inflx AutoStream</strong> workflow automation.
+<span style="color:#ffbd2e;font-weight:700;">• June 2025 – July 2025 [1ST INTERNSHIP: WESEE, INDIAN NAVY]</span>
+  └─ <strong>Summer Intern @ WESEE, Indian Navy (Defense R&D)</strong>
+     Assessed in-house LLMs for naval applications within a secure defense R&D environment.
+     Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability, and validated Retrieval-Augmented Generation (RAG) pipelines.
+     During this period, created <strong>Artifex.AI</strong> (SDXL 1.0 text-to-image API) and a Pokémon guessing game.
 
-<span style="color:#ffbd2e;font-weight:700;">• Jun 2025 – Jul 2025 [DEFENSE R&D INTERNSHIP]</span>
-  └─ <strong>Summer Intern @ WESEE, Indian Navy (Ministry of Defence)</strong>
-     Engineered defense surveillance computer vision models & real-time edge pipelines.
+<span style="color:#ffbd2e;font-weight:700;">• October 2025 [FIRST PROTOTYPE OF S.W.O.R.D]</span>
+  └─ Engineered the first prototype of <strong>Project S.W.O.R.D</strong> (Surveillance for Weapon Observation using Real-Time Deep Learning)
+     with baseline YOLOv8 real-time detection on security feeds.
 
-<span style="color:#ffbd2e;font-weight:700;">• Sep 2025 – Nov 2025 [DEEP LEARNING BREAKTHROUGHS]</span>
-  └─ Published <strong>Project S.W.O.R.D</strong> — Weapon observation (90.1% mAP@0.5 on 7.5k imgs).
-  └─ Engineered <strong>Deepfake Detector</strong> — Facial manipulation signals & media forensics.
+<span style="color:#ffbd2e;font-weight:700;">• December 2025 – January 2026 [2ND INTERNSHIP: ZEE TECH & INNOVATION CENTRE]</span>
+  └─ <strong>Machine Learning Intern @ Zee Tech and Innovation Centre</strong>
+     Engineered <strong>OmniDoc</strong> (local multimodal RAG engine with BLIP-captioned image retrieval and intent routing) and context-aware scene selector.
+     Also worked on <strong>Sliver.Ai</strong> smart video clipping with facial emotion recognition.
 
-<span style="color:#ffbd2e;font-weight:700;">• Dec 2025 – Jan 2026 [MEDIA TECH INTERNSHIP]</span>
-  └─ <strong>ML Intern @ Zee Tech and Innovation Centre</strong>
-     Automated video highlight tagging and emotion recognition pipelines at scale.
+<span style="color:#ffbd2e;font-weight:700;">• February 2026 [MULTIVA.AI VOICE CLONING PLATFORM]</span>
+  └─ Started working on <strong>Multiva.Ai</strong> — developing an async 11-stage voice cloning and dubbing pipeline
+     using Whisper, NLLB-200, OpenVoice, Wav2Lip, and custom ROI face compositing (5ms/frame).
 
-<span style="color:#ffbd2e;font-weight:700;">• Jan 2026 [MULTIMODAL RAG & AGENTIC AI]</span>
-  └─ Launched <strong>OmniDoc</strong> — Multimodal RAG with Mistral-7B, Nomic & BLIP.
-  └─ Released <strong>Sliver.Ai</strong> — Smart video clipping pipeline with YOLOv8/11 & FFmpeg.
+<span style="color:#ffbd2e;font-weight:700;">• April 2026 [SECOND PROTOTYPE OF S.W.O.R.D]</span>
+  └─ Built second prototype of <strong>Project S.W.O.R.D</strong> using YOLOv26m, achieving 90.1% mAP@0.5 and 82.4% recall,
+     7.4ms (135 FPS) inference speed, CCTV low-light augmentation, and Jetson Nano/Coral TPU edge deployment.
 
-<span style="color:#ffbd2e;font-weight:700;">• Jun 2026 – Present [IIT-D STARTUP INTERNSHIP]</span>
-  └─ <strong>AI/ML Intern @ Carnot Research Pvt. Ltd. (IIT Delhi Incubated)</strong>
-     Architecting production-ready LLM pipelines, autonomous agent systems & evaluation.
+<span style="color:#ffbd2e;font-weight:700;">• June 2026 – Present [3RD INTERNSHIP: CARNOT RESEARCH (IITD-INCUBATED STARTUP)]</span>
+  └─ <strong>AI/ML Intern @ Carnot Research Pvt. Ltd. (IIT Delhi Incubated Startup)</strong>
+     Worked on <strong>AgenticOS:HARNESS</strong> (9,000+ line email/scheduling agent validated with RAGAS and TruLens)
+     and production hybrid RAG systems (pgvector, BM25, Text-to-SQL router) cutting query latency 60s to &lt;1s.
 
-<span style="color:#27c93f;font-weight:700;">• NEXT MILESTONE [YOUR TEAM?]</span>
-  └─ Ready to deploy production AI systems with high impact!
-     <em>Type 'sudo hire-me' or 'brew install talent' to trigger offer protocol 🚀</em>
+<span style="color:#27c93f;font-weight:700;">• FUTURE [YOUR TEAM?]</span>
+  └─ Ready to deploy production AI systems with high impact outside sandboxes!
+     <em>Type 'sudo hire-me' or 'brew install talent' to trigger candidate protocol 🚀</em>
 <span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
 </pre>
 `;
@@ -510,7 +574,14 @@ To initiate collaboration:<br>
                 }
                 case 'experience': {
                     const p = window.PROFILE_DATA || {};
-                    response = (p.experience || []).map(e => `- <strong>${e.role}</strong> @ ${e.org} (${e.dates})`).join('<br>');
+                    response = (p.experience || []).map(e => {
+                        let text = `<div style="margin-bottom:8px;">• <strong style="color:#4facfe;">${escapeHtml(e.role)}</strong> @ ${escapeHtml(e.org)} <span style="color:#888;">(${escapeHtml(e.dates)})</span>`;
+                        if (e.bullets) {
+                            text += `<div style="padding-left:14px;color:#ccc;margin-top:2px;">` + e.bullets.map(b => `– ${escapeHtml(b)}`).join('<br>') + `</div>`;
+                        }
+                        text += `</div>`;
+                        return text;
+                    }).join('');
                     break;
                 }
                 case 'education': {
@@ -522,7 +593,16 @@ To initiate collaboration:<br>
                     response = '• <strong style="color:#4facfe;">OmniDoc</strong> — Multimodal RAG Document Intelligence System<br>• <strong style="color:#4facfe;">Sliver.Ai</strong> — Smart Video Clipping & Facial Highlights<br>• <strong style="color:#4facfe;">Project S.W.O.R.D</strong> — Real-Time Weapon Surveillance System<br>• <strong style="color:#4facfe;">Deepfake Detector</strong> — Media Forensics & Fake News Detection<br>• <strong style="color:#4facfe;">Helix-Compiler</strong> — C-Based Language Compiler<br>• <strong style="color:#4facfe;">Multiva.Ai</strong> — Multilingual AI Voice Cloning<br>• <strong style="color:#4facfe;">Inflx AutoStream</strong> — Autonomous AI Workflow Agent<br>• <strong style="color:#4facfe;">Artifex</strong> — Generative AI Creative Design Platform<br><span style="color:#888;">Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <em>open omnidoc</em>) to visit repo!</span>';
                     break;
                 case 'skills':
-                    response = `<strong>Programming:</strong> Python, Java, C, SQL<br><strong>Frameworks:</strong> LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy<br><strong>Models:</strong> YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings/ReRanker, SentenceTransformers<br><strong>Databases:</strong> PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB<br><strong>Evaluation:</strong> RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA<br><strong>Tools:</strong> Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude`;
+                    response = `
+<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
+<strong style="color:#4facfe;">[ TECHNICAL SKILLS ]</strong><br>
+• <strong style="color:#ffbd2e;">Programming:</strong> Python, Java, C, SQL<br>
+• <strong style="color:#ffbd2e;">Frameworks & ML:</strong> LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy<br>
+• <strong style="color:#ffbd2e;">AI Models:</strong> YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings/ReRanker, SentenceTransformers<br>
+• <strong style="color:#ffbd2e;">Databases:</strong> PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB<br>
+• <strong style="color:#ffbd2e;">Evaluation:</strong> RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA<br>
+• <strong style="color:#ffbd2e;">Tools & Cloud:</strong> Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
+</div>`;
                     break;
                 case 'contact': {
                     const p = window.PROFILE_DATA || {};
