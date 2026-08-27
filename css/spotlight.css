@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Spotlight — Cmd+Space Search Panel
+   ========================================================================== */
+
+.spotlight-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 16vh;
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 96000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+.spotlight-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.spotlight-panel {
+    width: min(640px, 92vw);
+    background: rgba(44, 44, 46, 0.76);
+    backdrop-filter: blur(42px) saturate(190%);
+    -webkit-backdrop-filter: blur(42px) saturate(190%);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    transform: scale(0.97) translateY(-8px);
+    transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.spotlight-overlay.active .spotlight-panel {
+    transform: scale(1) translateY(0);
+}
+
+.spotlight-input-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 18px;
+}
+
+.spotlight-input-row i {
+    font-size: 19px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+#spotlight-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 300;
+}
+
+#spotlight-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.spotlight-results {
+    max-height: 46vh;
+    overflow-y: auto;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+    padding: 6px;
+}
+
+.spotlight-results:empty { display: none; }
+
+.spotlight-group {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.55px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+    padding: 9px 10px 4px;
+}
+
+.spotlight-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: default;
+}
+
+.spotlight-row.selected {
+    background: var(--accent);
+}
+
+.spotlight-row-art {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.spotlight-row-art img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+}
+
+.spotlight-row-art i {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.spotlight-row-text { min-width: 0; }
+
+.spotlight-row-title {
+    font-size: 13.5px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spotlight-row-sub {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spotlight-row.selected .spotlight-row-sub {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.spotlight-empty {
+    padding: 26px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spotlight-overlay, .spotlight-panel { transition: none; }
+}

@@ -51,21 +51,14 @@ Each window features:
 Personal introduction and professional overview
 
 #### Experience
-- **Machine Learning Intern** - Zee Tech and Innovation Centre (Dec 2025 - Jan 2026)
-  - OmniDoc: Multimodal RAG system (Mistral-7B, Nomic, BLIP)
-  - AI video-highlight pipeline (YOLOv8-Face, YOLOv11, FFmpeg)
-  - Sentinel-Web: ML-driven security decision-intelligence prototype
-
-- **Summer Intern** - WESEE, Indian Navy (June 2025 - July 2025)
-  - LLM evaluation for naval applications
-  - RAG pipeline validation
-  - ML workflows and REST API integrations
+- **AI/ML Intern** - Carnot Research Pvt. Ltd. (IITD-incubated startup) (June 2026 – Present)
+- **Machine Learning Intern** - Zee Tech and Innovation Centre (Dec 2025 – Jan 2026)
+- **Summer Intern** - WESEE, Indian Navy (June 2025 – July 2025)
 
 #### Education
-- B.Tech in Computer Science (AI/ML) - IILM University, Greater Noida
-- Class 12 - Navy Children School, New Delhi
-- Class 10 - Navy Children School, Mumbai
-- Certifications from Stanford, Michigan, Duke, and Deloitte
+- B.Tech in Computer Science (AI/ML) - IILM University (2023 – 2027) [CGPA: 7.68]
+- Class 12 - Navy Children School, New Delhi (2023)
+- Class 10 - Navy Children School, Mumbai (2021)
 
 #### Projects
 8 featured projects with live GitHub links:
@@ -268,3 +261,69 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ⭐ **Star this repository** if you found it helpful or interesting!
+
+## Architecture
+
+```
+index.html              markup for the desktop, dock, menu bar and every app window
+css/
+  variables.css         design tokens
+  base.css              reset, desktop canvas, wallpaper
+  menu-bar.css          menu bar + dynamic per-app menus
+  dock.css              dock, magnification, running indicators
+  window.css            window chrome, focus states, traffic lights
+  context-menu.css      right-click menus + Cmd+Tab switcher
+  spotlight.css         Cmd+Space search panel
+  quick-look.css        Space-bar preview overlay
+  boot.css              startup animation
+  responsive.css        must load LAST — its media queries override the rest
+  apps/*.css            one file per application
+js/
+  data/profile.js       single source of truth for name, education, contact
+  data/corpus.js        ONE search index, shared by Safari, Spotlight and Iris
+  config/config.js      runtime config — contains no secrets
+  core/utils.js         escapeHtml / safeUrl / openExternal, math parser
+  core/window-manager.js  open, close, focus, drag, clamp, cascade, maximize
+  core/keyboard.js      global Cmd shortcuts + Cmd+Tab app switcher
+  core/spotlight.js     Cmd+Space search
+  core/context-menu.js  right-click menus per surface
+  core/menu-bar.js      clock + per-application menu definitions
+  core/boot-animation.js  startup sequence (skippable, honours reduced-motion)
+  core/quick-look.js    Space-bar previews
+  core/system-status.js Wi-Fi + battery indicators
+  apps/*.js             one controller per application
+api/iris.js             serverless model proxy — keeps the API key server-side
+```
+
+### Conventions
+
+**Stylesheets are linked individually from `index.html`, never `@import`ed.**
+`@import` forces a serial waterfall and previously caused four sheets to load
+twice. `responsive.css` must stay last.
+
+**Everything user-supplied is escaped before it reaches `innerHTML`.**
+Use `escapeHtml()` for text, `escapeAttr()` inside inline handlers, and
+`safeUrl()` / `openExternal()` for anything that becomes an `href`.
+
+**There is one search corpus.** `window.PORTFOLIO_CORPUS` in
+`js/data/corpus.js` backs Safari's "From this portfolio" results, Spotlight,
+and Iris's offline answers. Add content there once, not in three places.
+
+**No API keys in client code.** `js/config/config.js` is safe to commit.
+Model access goes through `api/iris.js`; see `api/README.md`.
+
+### Keyboard shortcuts
+
+| Shortcut | Action |
+| --- | --- |
+| `⌘Space` | Spotlight search |
+| `⌘Tab` | Switch between running apps |
+| `⌘W` / `⌘Q` | Close the frontmost window |
+| `⌘M` | Minimise |
+| `⌘N` | New Finder window (or new Note in Notes) |
+| `⌘T` | New Safari tab |
+| `⌘L` | Focus the Safari address bar |
+| `⌘F` | Focus the frontmost app's search field |
+| `⌘,` | System Settings |
+| `Space` | Quick Look the selected item |
+| `↑` `↓` / `Tab` | Terminal history / completion |

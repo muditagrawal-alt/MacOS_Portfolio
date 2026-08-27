@@ -3,392 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mudit Agrawal - Portfolio</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome for icons -->
+    <title>Mudit Agrawal - macOS Portfolio</title>
+    <!-- Wallpaper: fetched at highest priority so the desktop never flashes black -->
+    <link rel="preload" as="image" href="assets/Wallpapers/26-Tahoe-Beach-Day.jpg" fetchpriority="high">
+    <!-- Stylesheets (linked individually — parallel fetch, no @import waterfall, no duplicates) -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/menu-bar.css">
+    <link rel="stylesheet" href="css/dock.css">
+    <link rel="stylesheet" href="css/window.css">
+    <link rel="stylesheet" href="css/context-menu.css">
+    <link rel="stylesheet" href="css/spotlight.css">
+    <link rel="stylesheet" href="css/boot.css">
+    <link rel="stylesheet" href="css/lock-screen.css">
+    <link rel="stylesheet" href="css/quick-look.css">
+    <link rel="stylesheet" href="css/apps/finder-v2.css">
+    <link rel="stylesheet" href="css/notification-center.css">
+    <link rel="stylesheet" href="css/apps/desktop.css">
+    <link rel="stylesheet" href="css/apps/textedit.css">
+    <link rel="stylesheet" href="css/apps/photos.css">
+    <link rel="stylesheet" href="css/apps/disk-image.css">
+    <link rel="stylesheet" href="css/apps/mail.css">
+    <link rel="stylesheet" href="css/apps/safari.css">
+    <link rel="stylesheet" href="css/apps/notes.css">
+    <link rel="stylesheet" href="css/apps/appstore.css">
+    <link rel="stylesheet" href="css/apps/settings.css">
+    <link rel="stylesheet" href="css/apps/terminal.css">
+    <link rel="stylesheet" href="css/apps/trash.css">
+    <link rel="stylesheet" href="css/apps/resume.css">
+    <link rel="stylesheet" href="css/apps/iris.css">
+    <link rel="stylesheet" href="css/apps/launchpad.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- FontAwesome 6 for macOS & Brand Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts Inter, Caveat (Hello animation) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <!-- Boot Animation Overlay -->
+    <div class="boot-overlay" id="boot-overlay">
+        <!-- preload="auto": we want the chime ready to play the instant boot
+             starts, not fetched lazily. Autoplay-with-sound is blocked by
+             most browsers on a cold first visit — boot-animation.js attempts
+             playback and silently continues without it if refused; the
+             visual timing is identical either way. -->
+        <audio id="boot-chime" src="assets/mac_startup.mp3" preload="auto"></audio>
+
+        <!-- Power-on gate. Only shown when the browser refuses audio
+             autoplay (see probeAutoplay in js/core/boot-animation.js); the
+             click is what unlocks sound so the chime can fire on cue. -->
+        <div class="boot-power-gate" id="boot-power-gate">
+            <div class="boot-power-inner">
+                <svg class="boot-power-logo" viewBox="0 0 170 170" aria-hidden="true">
+                    <path fill="currentColor" d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.197-2.12-9.973-3.17-14.34-3.17-4.58 0-9.492 1.05-14.746 3.17-5.262 2.13-9.501 3.24-12.742 3.35-4.929 0.21-9.842-1.96-14.746-6.52-3.13-2.73-7.045-7.41-11.735-14.04-5.032-7.08-9.169-15.29-12.41-24.65-3.471-10.11-5.211-19.9-5.211-29.378 0-10.857 2.346-20.221 7.045-28.068 3.693-6.303 8.606-11.275 14.755-14.925s12.793-5.51 19.948-5.629c3.915 0 9.049 1.211 15.429 3.591 6.362 2.388 10.447 3.599 12.238 3.599 1.339 0 5.877-1.416 13.57-4.239 7.275-2.618 13.415-3.702 18.445-3.275 13.63 1.1 23.87 6.473 30.68 16.153-12.19 7.386-18.22 17.731-18.1 31.002 0.11 10.337 3.86 18.939 11.23 25.769 3.34 3.17 7.07 5.62 11.22 7.36-0.9 2.61-1.85 5.11-2.86 7.51zM119.11 7.24c0 8.102-2.96 15.667-8.86 22.669-7.12 8.324-15.732 13.134-25.071 12.375a25.222 25.222 0 0 1-0.188-3.07c0-7.778 3.386-16.102 9.399-22.908 3.002-3.446 6.82-6.312 11.45-8.6 4.62-2.254 8.99-3.501 13.1-3.71 0.12 1.083 0.17 2.166 0.17 3.239z"/>
+                </svg>
+                <div class="boot-power-label">Click anywhere to start</div>
+                <div class="boot-power-sub">Starts the Mac, with sound</div>
+            </div>
+        </div>
+
+        <div class="boot-name-container">
+            <div class="boot-name" id="boot-name">Mudit Agrawal</div>
+            <div class="boot-progress-container">
+                <div class="boot-progress-bar" id="boot-progress-bar"></div>
+            </div>
+        </div>
+        <div class="boot-hello-container">
+            <!-- Apple's intro "hello" is a single continuous handwritten
+                 stroke, drawn on. This is one <path>, animated with
+                 stroke-dashoffset. pathLength="1" normalises the geometry so
+                 the dash values are a simple 0..1 progress regardless of the
+                 path's real length. -->
+            <svg class="boot-hello-svg" id="boot-hello-svg" viewBox="0 0 1000 520"
+                 xmlns="http://www.w3.org/2000/svg" role="img" aria-label="hello">
+                <path id="boot-hello-path" pathLength="1" d="M 165,400
+C 172,296 194,182 226,112
+C 242,76 264,58 276,72
+C 288,87 280,130 260,180
+C 240,230 208,304 200,354
+C 194,392 202,410 220,406
+C 240,402 254,362 282,338
+C 306,317 330,324 334,350
+C 338,374 322,390 329,401
+C 337,413 358,404 373,388
+
+C 390,371 404,350 397,332
+C 390,314 366,317 355,337
+C 343,359 349,386 371,396
+C 396,407 428,394 449,372
+
+C 471,349 496,238 518,146
+C 531,92 542,58 558,63
+C 573,68 569,106 553,154
+C 535,208 508,296 500,346
+C 493,384 502,406 522,401
+C 540,397 555,381 570,363
+
+C 590,339 615,232 637,140
+C 650,86 661,52 677,57
+C 692,62 688,100 672,148
+C 654,202 627,290 619,340
+C 612,378 621,400 641,395
+C 658,391 673,375 688,357
+
+C 708,333 737,317 766,326
+C 795,335 806,366 793,390
+C 780,414 744,419 729,396
+C 713,374 727,341 756,330
+C 792,317 838,340 866,362
+C 890,381 908,392 928,394"/>
+            </svg>
+        </div>
+    </div>
 
     <!-- Menu Bar -->
     <div class="menu-bar">
         <div class="menu-left">
+            <!-- Apple menu (the profile card) -->
             <div class="menu-dropdown-container">
-                <i class="fab fa-apple apple-icon menu-item" onclick="toggleMenu('apple-menu')"></i>
+                <span class="menu-item apple-title" role="button" aria-label="Apple menu" onclick="toggleMenu('apple-menu')">
+                    <svg viewBox="0 0 512 512" aria-hidden="true" focusable="false"><path d="M349.13 136.86c-40.32-2.17-59.75 22.97-78.11 22.97-19.42 0-49.29-21.73-82.94-21.06-43.27.68-83.12 25.14-105.42 64.26-45.01 78.26-11.5 194.06 32.29 257.33 21.35 30.85 46.78 65.49 80.18 64.2 32.06-1.28 44.14-20.69 82.9-20.69 38.75 0 49.74 20.69 83.55 20.05 34.65-.65 56.61-31.49 77.81-62.47 24.53-35.94 34.59-70.74 35.18-72.52-.76-.32-67.51-25.87-68.19-102.4-.65-64.01 52.25-94.95 54.66-96.37-29.86-43.78-76.24-48.67-92.03-49.82zm-30.64-20.02c17.76-21.5 29.73-51.45 26.45-81.2-25.6 1.02-56.55 17.07-74.9 38.55-16.5 18.94-30.95 49.4-27.1 78.54 28.55 2.2 57.7-14.5 75.55-35.89z"/></svg>
+                </span>
                 <div class="menu-dropdown hidden" id="apple-menu">
-                    <div class="dropdown-item profile-item" style="display: flex; align-items: center; padding: 10px;">
-                        <img src="assets/Professionalimage.jpeg" width="45" height="45" style="border-radius:50%; margin-right: 12px; object-fit: cover;">
+                    <div class="dropdown-item profile-item is-static" style="display: flex; align-items: center; padding: 10px;">
+                        <img loading="lazy" decoding="async" src="assets/Professionalimage.jpeg" width="44" height="44" style="border-radius: 50%; margin-right: 12px; object-fit: cover; aspect-ratio: 1 / 1; flex-shrink: 0; width: 44px; height: 44px;" alt="Mudit Agrawal">
                         <div style="line-height: 1.3;">
-                            <strong style="font-size: 15px; color: #fff;">Mudit Agrawal</strong><br>
-                            <span style="font-size: 12px; color: #aaa;">AI/ML Undergraduate<br>IILM University</span>
+                            <strong style="font-size: 15px; color: #fff;" id="menubar-profile-name">Mudit Agrawal</strong><br>
+                            <span style="font-size: 12px; color: #aaa;" id="menubar-profile-blurb">AI Engineer</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="menu-dropdown-container">
-                <span class="menu-item bold" onclick="toggleMenu('finder-menu')">Finder</span>
-                <div class="menu-dropdown hidden" id="finder-menu">
-                    <div class="dropdown-item" onclick="openFinderPane('about')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> About Me</div>
-                    <div class="dropdown-item" onclick="openFinderPane('experience')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Experience</div>
-                    <div class="dropdown-item" onclick="openFinderPane('education')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Education</div>
-                    <div class="dropdown-item" onclick="openFinderPane('projects')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Projects</div>
-                    <div class="dropdown-item" onclick="openFinderPane('skills')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Skills</div>
-                    <div class="dropdown-item" onclick="openFinderPane('contact')"><i class="fas fa-folder icon-color-blue" style="width: 20px;"></i> Contact</div>
-                </div>
-            </div>
-
-            <div class="menu-dropdown-container hide-mobile">
-                <span class="menu-item" onclick="toggleMenu('view-menu')">View</span>
-                <div class="menu-dropdown hidden" id="view-menu">
-                    <div class="dropdown-item" onclick="openResumeWindow()"><i class="fas fa-file-pdf icon-color-yellow" style="width: 20px;"></i> Resume PDF</div>
-                    <div id="resume-download-btn" style="display: none;">
-                        <div class="dropdown-divider"></div>
-                        <a href="assets/MuditAgrawalResumeJanuary2026.pdf" download class="dropdown-item" style="display:block;"><i class="fas fa-download icon-color-green" style="width: 20px;"></i> Download Resume</a>
-                    </div>
                     <div class="dropdown-divider"></div>
-                    <div class="dropdown-item" onclick="window.open('https://github.com/muditagrawal-alt', '_blank')"><i class="fab fa-github" style="width: 20px;"></i> GitHub</div>
-                    <div class="dropdown-item" onclick="window.open('https://www.linkedin.com/in/mudit-agrawal-167610318', '_blank')"><i class="fab fa-linkedin" style="width: 20px; color:#0a66c2;"></i> LinkedIn</div>
-                    <div class="dropdown-item" onclick="window.open('https://huggingface.co/muditagrawal03', '_blank')"><i class="fas fa-robot" style="width: 20px; color:#ffcc00;"></i> HuggingFace</div>
-                    <div class="dropdown-item" onclick="window.open('https://substack.com/@standardissuemudit', '_blank')"><svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6719" style="vertical-align:middle;margin-right:6px;"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg> Substack</div>
+                    <div class="dropdown-item" onclick="openWindow('settings-window')"><i class="fas fa-gear" style="width:20px;"></i> System Settings… <span class="menu-shortcut">&#8984;,</span></div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="lockScreenNow()"><i class="fas fa-lock" style="width:20px;"></i> Lock Screen <span class="menu-shortcut">&#8963;&#8984;Q</span></div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="closeActiveWindow()"><i class="fas fa-power-off" style="width:20px;"></i> Quit <span class="menu-shortcut">&#8984;Q</span></div>
                 </div>
             </div>
 
-            <div class="menu-dropdown-container hide-mobile">
-                <span class="menu-item" onclick="toggleMenu('go-menu')">Go</span>
-                <div class="menu-dropdown hidden" id="go-menu">
-                    <!-- Populated dynamically via JS -->
-                </div>
-            </div>
-
-            <div class="menu-dropdown-container hide-mobile">
-                <span class="menu-item" onclick="toggleMenu('window-menu')">Window</span>
-                <div class="menu-dropdown hidden" id="window-menu">
-                    <!-- Populated dynamically via JS -->
-                </div>
-            </div>
-
-            <div class="menu-dropdown-container hide-mobile">
-                <span class="menu-item" onclick="toggleMenu('help-menu')">Help</span>
-                <div class="menu-dropdown hidden" id="help-menu" style="width: 280px; padding: 15px;">
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <i class="fas fa-info-circle fa-2x" style="color: #4facfe; margin-bottom: 5px;"></i>
-                        <div style="font-weight: 600; font-size: 15px;">Navigation Guide</div>
-                    </div>
-                    <div class="dropdown-item" style="white-space: normal; line-height: 1.6; padding: 10px; cursor: default; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                        <ul style="padding-left: 15px; margin: 0;">
-                            <li style="margin-bottom: 8px;"><strong>Open Folders:</strong> Double click desktop icons or use the Finder menu.</li>
-                            <li style="margin-bottom: 8px;"><strong>Quick Access:</strong> Use the Dock at the bottom.</li>
-                            <li style="margin-bottom: 8px;"><strong>Move Windows:</strong> Drag windows by their top title bar.</li>
-                            <li><strong>Window Controls:</strong> Click <span style="color:#ff5f56; font-size:18px;">●</span><span style="color:#ffbd2e; font-size:18px;">●</span><span style="color:#27c93f; font-size:18px;">●</span> to close, minimize, or maximize.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="menu-dropdown-container">
-                <span class="menu-item bold" style="color: #4facfe;" onclick="openWindow('terminal-window')"><i class="fas fa-terminal"></i> Terminal</span>
-            </div>
+            <!-- Frontmost application's menus. Rebuilt by syncMenuBarToActiveApp(). -->
+            <div id="menubar-app-menus" class="menubar-app-menus"></div>
         </div>
         <div class="menu-right">
+            <img src="assets/icons/siri.png" class="menu-icon siri-menu-icon" style="width: 17px; height: 17px; cursor: pointer; object-fit: contain; vertical-align: middle; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));" onclick="toggleIris()" data-tooltip="Siri AI Assistant" alt="Siri">
             <i class="fas fa-wifi menu-icon" id="wifi-icon" data-tooltip="Wi-Fi: Checking status..."></i>
             <i class="fas fa-battery-full menu-icon" id="battery-icon" data-tooltip="Battery: Checking status..."></i>
-            <span id="clock" class="menu-time">Loading...</span>
+            <span id="clock" class="menu-time" role="button" tabindex="0" title="Notification Centre" onclick="toggleNotificationCenter()">Loading...</span>
         </div>
     </div>
 
-    <!-- Desktop -->
+
+    <!-- Desktop Area -->
     <div class="desktop" id="desktop">
         
-        <!-- Desktop Icons -->
-        <div class="desktop-icon" ondblclick="openFinderPane('about')">
-            <img src="https://github.com/muditagrawal-alt.png" alt="About Me" style="border-radius: 50%;">
-            <span>About Me</span>
-        </div>
-        <div class="desktop-icon" ondblclick="openFinderPane('experience')">
-            <i class="fas fa-briefcase icon-color-blue"></i>
-            <span>Experience</span>
-        </div>
-        <div class="desktop-icon" ondblclick="openFinderPane('education')">
-            <i class="fas fa-graduation-cap icon-color-green"></i>
-            <span>Education</span>
-        </div>
-        <div class="desktop-icon" ondblclick="openFinderPane('projects')">
-            <i class="fas fa-folder-open icon-color-folder"></i>
-            <span>Projects</span>
-        </div>
-        <div class="desktop-icon" ondblclick="openFinderPane('skills')">
-            <i class="fas fa-code icon-color-purple"></i>
-            <span>Skills</span>
-        </div>
-        <div class="desktop-icon" ondblclick="openFinderPane('contact')">
-            <i class="fas fa-envelope icon-color-yellow"></i>
-            <span>Contact</span>
-        </div>
+        <!-- Desktop Icons — rendered from js/data/desktop-files.js.
+             These are FILES, not shortcuts to Finder sections. The portfolio
+             sections live in Finder / Dock / Spotlight; duplicating them here
+             is what the old desktop did. -->
+        <div class="desktop-files" id="desktop-files"></div>
 
-        <!-- Unified Finder Window -->
-        <div class="window" id="finder-window" style="top: 10%; left: 10%; width: 700px; height: 450px; z-index: 10;">
+        <!-- Authentic macOS Finder Window (Aakash Portfolio Style) -->
+        <div class="window" id="finder-window" style="top: 10%; left: 10%; width: 800px; height: 500px; z-index: 10;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'finder-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('finder-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('finder-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('finder-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Finder" title="Close" onclick="closeWindow('finder-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Finder" title="Minimize" onclick="minimizeWindow('finder-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Finder" title="Zoom" onclick="maximizeWindow('finder-window')"></button>
                 </div>
-                <div class="window-title" id="finder-window-title">About Me</div>
+                <div class="window-title" id="finder-window-title">Finder</div>
             </div>
             <div class="window-content">
-                <div class="sidebar">
-                    <div class="sidebar-title">Favorites</div>
-                    <div class="sidebar-item active" data-pane="about" onclick="switchFinderPane('about')"><i class="fas fa-user"></i> About Me</div>
-                    <div class="sidebar-item" data-pane="experience" onclick="switchFinderPane('experience')"><i class="fas fa-briefcase"></i> Experience</div>
-                    <div class="sidebar-item" data-pane="education" onclick="switchFinderPane('education')"><i class="fas fa-graduation-cap"></i> Education</div>
-                    <div class="sidebar-item" data-pane="projects" onclick="switchFinderPane('projects')"><i class="fas fa-folder"></i> Projects</div>
-                    <div class="sidebar-item" data-pane="skills" onclick="switchFinderPane('skills')"><i class="fas fa-code"></i> Skills</div>
-                    <div class="sidebar-item" data-pane="contact" onclick="switchFinderPane('contact')"><i class="fas fa-envelope"></i> Contact</div>
-                </div>
-
-                <!-- About Pane -->
-                <div class="finder-pane main-area content-padding" data-pane="about">
-                    <h1>Mudit Agrawal</h1>
-                    <h2>Computer Science (AI/ML) Undergraduate</h2>
-                    <p>I'm a Computer Science student interested in how technology works in real-world environments, beyond theory and coursework.</p>
-                    <p>Through internships and hands-on projects, I've been gradually building an understanding of software systems, data, and applied AI/ML, with a focus on learning by doing rather than just studying concepts. I value practical exposure, problem-solving, and understanding how technology supports large-scale operations.</p>
-                    <p>I'm especially interested in roles and projects at the intersection of technology, data, and real-world impact, and I enjoy working on things that require both technical thinking and context awareness.</p>
-                    <p>Currently focused on strengthening fundamentals, gaining industry exposure, and building projects that actually hold up outside the classroom.</p>
-                    <p>Double click the folders on the desktop or use the sidebar to explore my portfolio!</p>
-                </div>
-
-                <!-- Experience Pane -->
-                <div class="finder-pane main-area content-padding list-view" data-pane="experience" style="display:none;">
-                    <div class="resume-item">
-                        <div class="resume-header">
-                            <h3>Machine Learning Intern</h3>
-                            <span class="date">Dec 2025 - Jan 2026</span>
+                <!-- Toolbar Header -->
+                <div class="finder-header-toolbar">
+                    <div class="finder-header-left">
+                        <div class="finder-nav-arrows">
+                            <button class="finder-nav-btn" id="finder-btn-back" onclick="finderGoBack()" title="Back" disabled><i class="fas fa-chevron-left"></i></button>
+                            <button class="finder-nav-btn" id="finder-btn-forward" onclick="finderGoForward()" title="Forward" disabled><i class="fas fa-chevron-right"></i></button>
                         </div>
-                        <div class="company">Zee Tech and Innovation Centre</div>
-                        <ul>
-                            <li>Built OmniDoc, a multimodal RAG system using Mistral-7B, Nomic embeddings, and BLIP.</li>
-                            <li>Developed an AI video-highlight pipeline using YOLOv8-Face, YOLOv11, and FFmpeg.</li>
-                            <li>Engineered Sentinel-Web, an ML-driven security decision-intelligence prototype.</li>
-                            <li>Authored AI security design specs focused on explainability and false-positive reduction.</li>
-                        </ul>
-                    </div>
-
-                    <div class="resume-item">
-                        <div class="resume-header">
-                            <h3>Summer Intern</h3>
-                            <span class="date">June 2025 - July 2025</span>
-                        </div>
-                        <div class="company">WESEE, Indian Navy</div>
-                        <ul>
-                            <li>Evaluated in-house Large Language Models (LLMs) for naval applications in a secure defense R&D environment.</li>
-                            <li>Identified bugs, inconsistencies, and logic failures in model outputs to ensure mission-critical reliability.</li>
-                            <li>Assisted in validating Retrieval-Augmented Generation (RAG) pipelines and improving contextual accuracy.</li>
-                            <li>Gained hands-on experience with Python, ML workflows, CV modules, and REST API integrations.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Education Pane -->
-                <div class="finder-pane main-area content-padding list-view" data-pane="education" style="display:none;">
-                    <h2>Education</h2>
-                    <div class="resume-item">
-                        <div class="resume-header">
-                            <h3>B.Tech in Computer Science (AI/ML)</h3>
-                            <span class="date">2023 - 2027</span>
-                        </div>
-                        <div class="company">IILM University, Greater Noida</div>
-                        <p>CGPA: 8.14</p>
-                    </div>
-
-                    <div class="resume-item">
-                        <div class="resume-header">
-                            <h3>Class 12</h3>
-                            <span class="date">2023</span>
-                        </div>
-                        <div class="company">Navy Children School, New Delhi</div>
-                        <p>Percentage: 74%</p>
-                    </div>
-
-                    <div class="resume-item">
-                        <div class="resume-header">
-                            <h3>Class 10</h3>
-                            <span class="date">2021</span>
-                        </div>
-                        <div class="company">Navy Children School, Mumbai</div>
-                        <p>Percentage: 89%</p>
-                    </div>
-
-                    <h2>Certifications</h2>
-                    <ul class="cert-list">
-                        <li><strong>Machine Learning Specialization</strong> — Stanford University (DeepLearning.AI)</li>
-                        <li><strong>Python Specialisation</strong> — University of Michigan</li>
-                        <li><strong>Technology Job Simulation</strong> — Deloitte</li>
-                        <li><strong>Java Programming and OOP</strong> — Duke University</li>
-                    </ul>
-                </div>
-
-                <!-- Projects Pane -->
-                <div class="finder-pane main-area projects-grid content-padding" data-pane="projects" style="display:none;">
-                    <!-- Project 1 -->
-                    <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" rel="noopener noreferrer" class="project-card">
-                        <div class="project-icon"><i class="fas fa-brain"></i></div>
-                        <h3>OmniDoc</h3>
-                        <p>RAG based LLM Document Intelligence System using Mistral 7B & BLIP.</p>
-                        <div class="tags"><span class="tag">Python</span><span class="tag">Mistral-7B</span></div>
-                    </a>
-                    <!-- Project 2 -->
-                    <a href="https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool" target="_blank" class="project-card">
-                        <div class="project-icon"><i class="fas fa-video"></i></div>
-                        <h3>Sliver.Ai</h3>
-                        <p>Smart Video Clipping Tool. Video clipping pipeline using YOLOv8n & YOLO11m.</p>
-                        <div class="tags"><span class="tag">Python</span><span class="tag">YOLO</span></div>
-                    </a>
-                    <!-- Project 3 -->
-                    <a href="https://github.com/muditagrawal-alt/Project-S.W.O.R.D" target="_blank" rel="noopener noreferrer" class="project-card">
-                        <div class="project-icon"><i class="fas fa-crosshairs"></i></div>
-                        <h3>S.W.O.R.D</h3>
-                        <p>Surveillance for Weapon Observation Using Real-Time Deep Learning (YOLOv8).</p>
-                        <div class="tags"><span class="tag">Python</span><span class="tag">YOLOv8</span></div>
-                    </a>
-                    <!-- Project 4 -->
-                    <a href="https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector" target="_blank" class="project-card">
-                        <div class="project-icon"><i class="fas fa-shield-alt"></i></div>
-                        <h3>Deepfake Detector</h3>
-                        <p>ML-based system for detecting deepfake media and classifying fake news signals across digital content.</p>
-                        <div class="tags"><span class="tag">Python</span></div>
-                    </a>
-                    <!-- Project 5 -->
-                    <a href="https://github.com/muditagrawal-alt/Helix-Compiler" target="_blank" class="project-card">
-                        <div class="project-icon"><i class="fas fa-terminal"></i></div>
-                        <h3>Helix-Compiler</h3>
-                        <p>C-based compiler project focused on core parsing, translation, and systems-level language design concepts.</p>
-                        <div class="tags"><span class="tag">C</span></div>
-                    </a>
-                    <!-- Project 6 -->
-                    <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" class="project-card">
-                        <div class="project-icon"><i class="fas fa-globe"></i></div>
-                        <h3>Multiva.Ai</h3>
-                        <p>AI voice cloning platform built with Whisper, Coqui XTTS, and FB-NLLB for multilingual speech and translation workflows.</p>
-                        <div class="tags"><span class="tag">Python</span><span class="tag">XTTS</span><span class="tag">Whisper</span></div>
-                    </a>
-                    <!-- Project 7 -->
-                    <a href="https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-" target="_blank" rel="noopener noreferrer" class="project-card">
-                        <div class="project-icon"><i class="fas fa-chart-line"></i></div>
-                        <h3>Inflx</h3>
-                        <p>AutoStream agent service for orchestrating intelligent workflow and streaming automation.</p>
-                        <div class="tags"><span class="tag">Python</span><span class="tag">Agents</span></div>
-                    </a>
-                    <!-- Project 8 -->
-                    <a href="https://github.com/muditagrawal-alt/Artifex.ai" target="_blank" rel="noopener noreferrer" class="project-card">
-                        <div class="project-icon"><i class="fas fa-palette"></i></div>
-                        <h3>Artifex</h3>
-                        <p>Creative AI project focused on intelligent design and art-driven interactive experiences.</p>
-                        <div class="tags"><span class="tag">AI</span><span class="tag">Creative Tech</span></div>
-                    </a>
-                </div>
-
-                <!-- Skills Pane -->
-                <div class="finder-pane main-area content-padding list-view" data-pane="skills" style="display:none;">
-                    <div class="skill-category">
-                        <h3>Programming</h3>
-                        <div class="tags large-tags">
-                            <span class="tag">Python</span>
-                            <span class="tag">C</span>
-                            <span class="tag">Java</span>
-                            <span class="tag">HTML</span>
-                            <span class="tag">CSS</span>
-                            <span class="tag">Tailwind CSS</span>
+                        <div class="finder-header-title">
+                            <img src="assets/icons/folder-home.png" id="finder-title-icon" alt="Folder">
+                            <span id="finder-title-text">Mudit</span>
                         </div>
                     </div>
 
-                    <div class="skill-category">
-                        <h3>Frameworks & Libraries</h3>
-                        <div class="tags large-tags">
-                            <span class="tag">PyTorch</span>
-                            <span class="tag">TensorFlow</span>
-                            <span class="tag">Keras</span>
-                            <span class="tag">OpenCV</span>
-                            <span class="tag">Scikit-Learn</span>
-                            <span class="tag">Torchvision</span>
-                            <span class="tag">Torchaudio</span>
-                            <span class="tag">PIL</span>
-                            <span class="tag">NumPy</span>
-                            <span class="tag">Pandas</span>
-                            <span class="tag">Matplotlib</span>
-                            <span class="tag">Flask</span>
-                            <span class="tag">Gradio</span>
-                            <span class="tag">Streamlit</span>
+                    <div class="finder-header-center">
+                        <div class="finder-view-segmented">
+                            <button class="finder-view-btn active" data-view="icons" onclick="setFinderViewMode('icons')" title="Icons View"><i class="fas fa-th-large"></i></button>
+                            <button class="finder-view-btn" data-view="list" onclick="setFinderViewMode('list')" title="List View"><i class="fas fa-list"></i></button>
+                            <button class="finder-view-btn" data-view="columns" onclick="setFinderViewMode('columns')" title="Columns View"><i class="fas fa-columns"></i></button>
                         </div>
                     </div>
 
-                    <div class="skill-category">
-                        <h3>Models</h3>
-                        <div class="tags large-tags">
-                            <span class="tag">YOLOv8</span>
-                            <span class="tag">YOLOv11</span>
-                            <span class="tag">YOLOv26</span>
-                            <span class="tag">Whisper</span>
-                            <span class="tag">XTTS</span>
-                            <span class="tag">BLIP</span>
-                            <span class="tag">Mistral 7B</span>
-                            <span class="tag">FB-NLLB</span>
-                            <span class="tag">Wav2Lip</span>
-                        </div>
-                    </div>
-
-                    <div class="skill-category">
-                        <h3>Tools</h3>
-                        <div class="tags large-tags">
-                            <span class="tag">Git</span>
-                            <span class="tag">GitHub</span>
-                            <span class="tag">Hugging Face</span>
-                            <span class="tag">Jupyter</span>
-                            <span class="tag">FFMPEG</span>
-                            <span class="tag">Colab</span>
+                    <div class="finder-header-right">
+                        <div class="finder-search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search" oninput="filterFinderSearch(this.value)">
                         </div>
                     </div>
                 </div>
 
-                <!-- Contact Pane -->
-                <div class="finder-pane main-area content-padding contact-grid" data-pane="contact" style="display:none;">
-                    <a href="mailto:muditagrawal03@gmail.com" class="contact-card">
-                        <i class="fas fa-envelope fa-2x"></i>
-                        <h3>Email</h3>
-                        <p>muditagrawal03@gmail.com</p>
-                    </a>
+                <!-- Main Layout: Sidebar + Viewport -->
+                <div class="finder-main-layout">
+                    <!-- Authentic Sidebar -->
+                    <div class="finder-sidebar-v2">
+                        <!-- Top Recents & Shared -->
+                        <div class="sidebar-v2-section">
+                            <div class="sidebar-v2-item" data-target="recents" onclick="finderSidebarNav('recents')">
+                                <i class="fas fa-clock sb-icon-gray"></i> <span>Recents</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="shared" onclick="finderSidebarNav('shared')">
+                                <i class="fas fa-share-alt sb-icon-blue"></i> <span>Shared</span>
+                            </div>
+                        </div>
 
-                    <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="contact-card">
-                        <i class="fab fa-linkedin fa-2x"></i>
-                        <h3>LinkedIn</h3>
-                        <p>Mudit Agrawal</p>
-                    </a>
+                        <!-- Favorites -->
+                        <div class="sidebar-v2-section">
+                            <div class="sidebar-v2-heading">Favorites</div>
+                            <div class="sidebar-v2-item active" data-target="home" onclick="finderSidebarNav('home')">
+                                <i class="fas fa-home sb-icon-blue"></i> <span>Mudit</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="desktop" onclick="finderSidebarNav('desktop')">
+                                <i class="fas fa-desktop sb-icon-blue"></i> <span>Desktop</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="documents" onclick="finderSidebarNav('documents')">
+                                <i class="fas fa-file-alt sb-icon-orange"></i> <span>Documents</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="downloads" onclick="finderSidebarNav('downloads')">
+                                <i class="fas fa-arrow-alt-circle-down sb-icon-purple"></i> <span>Downloads</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="pictures" onclick="finderSidebarNav('pictures')">
+                                <i class="fas fa-image sb-icon-red"></i> <span>Pictures</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="projects" onclick="finderSidebarNav('projects')">
+                                <i class="fas fa-folder sb-icon-blue"></i> <span>Projects</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="experience" onclick="finderSidebarNav('experience')">
+                                <i class="fas fa-briefcase sb-icon-teal"></i> <span>Experience</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="education" onclick="finderSidebarNav('education')">
+                                <i class="fas fa-graduation-cap sb-icon-green"></i> <span>Education</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="skills" onclick="finderSidebarNav('skills')">
+                                <i class="fas fa-code sb-icon-purple"></i> <span>Skills</span>
+                            </div>
+                        </div>
 
-                    <a href="https://github.com/muditagrawal-alt" target="_blank" class="contact-card">
-                        <i class="fab fa-github fa-2x"></i>
-                        <h3>GitHub</h3>
-                        <p>muditagrawal-alt</p>
-                    </a>
+                        <!-- iCloud -->
+                        <div class="sidebar-v2-section">
+                            <div class="sidebar-v2-heading">iCloud</div>
+                            <div class="sidebar-v2-item" data-target="icloud-drive" onclick="finderSidebarNav('icloud-drive')">
+                                <i class="fas fa-cloud sb-icon-blue"></i> <span>iCloud Drive</span>
+                            </div>
+                        </div>
 
-                    <a href="https://huggingface.co/muditagrawal03" target="_blank" class="contact-card">
-                        <i class="fas fa-robot fa-2x"></i>
-                        <h3>HuggingFace</h3>
-                        <p>muditagrawal03</p>
-                    </a>
-                    
-                    <a href="https://substack.com/@standardissuemudit" target="_blank" class="contact-card">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="#FF6719" style="margin-bottom:8px;"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                        <h3>Substack</h3>
-                        <p>@standardissuemudit</p>
-                    </a>
+                        <!-- Locations -->
+                        <div class="sidebar-v2-section">
+                            <div class="sidebar-v2-heading">Locations</div>
+                            <div class="sidebar-v2-item" data-target="macintosh-hd" onclick="finderSidebarNav('macintosh-hd')">
+                                <i class="fas fa-hdd sb-icon-gray"></i> <span>Macintosh HD</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="airdrop" onclick="finderSidebarNav('airdrop')">
+                                <i class="fas fa-wifi sb-icon-blue"></i> <span>AirDrop</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="network" onclick="finderSidebarNav('network')">
+                                <i class="fas fa-network-wired sb-icon-blue"></i> <span>Network</span>
+                            </div>
+                            <div class="sidebar-v2-item" data-target="trash" onclick="finderSidebarNav('trash')">
+                                <i class="fas fa-trash sb-icon-gray"></i> <span>Trash</span>
+                            </div>
+                        </div>
 
-                    <div class="contact-card">
-                        <i class="fas fa-phone fa-2x"></i>
-                        <h3>Phone</h3>
-                        <p>+91-7289887349</p>
+                        <!-- Tags -->
+                        <div class="sidebar-v2-section">
+                            <div class="sidebar-v2-heading">Tags</div>
+                            <div class="sidebar-v2-item" onclick="finderSidebarNav('projects')">
+                                <span class="tag-dot" style="background:#ff3b30;"></span> <span>Red</span>
+                            </div>
+                            <div class="sidebar-v2-item" onclick="finderSidebarNav('experience')">
+                                <span class="tag-dot" style="background:#ff9500;"></span> <span>Orange</span>
+                            </div>
+                            <div class="sidebar-v2-item" onclick="finderSidebarNav('education')">
+                                <span class="tag-dot" style="background:#007aff;"></span> <span>Blue</span>
+                            </div>
+                            <div class="sidebar-v2-item" onclick="finderSidebarNav('skills')">
+                                <span class="tag-dot" style="background:#34c759;"></span> <span>Green</span>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Dynamic Content Viewport -->
+                    <div class="finder-content-viewport" id="finder-content-viewport"></div>
+                </div>
+
+                <!-- Bottom Path & Status Bar -->
+                <div class="finder-bottom-bar">
+                    <div class="finder-path-breadcrumbs" id="finder-breadcrumbs"></div>
+                    <div class="finder-status-info" id="finder-status-text">8 items, 128.4 GB available</div>
                 </div>
             </div>
         </div>
@@ -397,15 +308,15 @@
         <div class="window hidden" id="resume-window" style="top: 15%; left: 25%; width: 700px; height: 500px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'resume-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('resume-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('resume-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('resume-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Resume" title="Close" onclick="closeWindow('resume-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Resume" title="Minimize" onclick="minimizeWindow('resume-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Resume" title="Zoom" onclick="maximizeWindow('resume-window')"></button>
                 </div>
                 <div class="window-title">Resume PDF</div>
                 <button type="button" onmousedown="event.stopPropagation()" onclick="downloadResume(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); color: #eee; font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;"><i class="fas fa-download"></i> Download</button>
             </div>
             <div class="window-content" style="overflow: auto; background: white; display: block;">
-                <img src="assets/MuditAgrawalResumePreview.png" alt="Resume PDF preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
+                <img loading="lazy" decoding="async" src="assets/MuditAgrawalResumePreview.png" alt="Resume PDF preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
             </div>
         </div>
 
@@ -413,9 +324,9 @@
         <div class="window hidden" id="terminal-window" style="top: 20%; left: 40%; width: 600px; height: 350px; background: rgba(0, 0, 0, 0.9);">
             <div class="title-bar" style="background: rgba(30, 30, 30, 0.9);" onmousedown="dragMouseDown(event, 'terminal-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('terminal-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('terminal-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('terminal-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Terminal" title="Close" onclick="closeWindow('terminal-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Terminal" title="Minimize" onclick="minimizeWindow('terminal-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Terminal" title="Zoom" onclick="maximizeWindow('terminal-window')"></button>
                 </div>
                 <div class="window-title" style="color: #bbb;">muditagrawal@macbook ~ zsh</div>
             </div>
@@ -430,93 +341,89 @@
             </div>
         </div>
 
-        <!-- Mail.app Window -->
-        <div class="window hidden" id="mail-window" style="top: 12%; left: 14%; width: 780px; height: 480px;">
+        <!-- Upgraded Apple Mail.app Window (Full 3-Pane Interface) -->
+        <div class="window hidden" id="mail-window" style="top: 10%; left: 12%; width: 850px; height: 520px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'mail-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('mail-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('mail-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('mail-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Mail" title="Close" onclick="closeWindow('mail-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Mail" title="Minimize" onclick="minimizeWindow('mail-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Mail" title="Zoom" onclick="maximizeWindow('mail-window')"></button>
                 </div>
-                <div class="window-title">Mail — Inbox (1 Unread)</div>
-                <div class="mail-toolbar-actions">
-                    <button type="button" class="app-pill-btn" onclick="openMailCompose()"><i class="fas fa-edit"></i> Compose</button>
+                <div class="window-title" id="mail-window-title">Mail — Inbox (1 Unread)</div>
+                <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
+                    <button type="button" class="app-pill-btn primary" onclick="openMailCompose()"><i class="fas fa-edit"></i> Compose</button>
                 </div>
             </div>
             <div class="window-content mail-layout">
-                <!-- Mailboxes Sidebar -->
+                <!-- Pane 1: Mailboxes Sidebar -->
                 <div class="mail-sidebar">
                     <div class="sidebar-title">Mailboxes</div>
-                    <div class="sidebar-item active" onclick="switchMailbox('inbox', this)"><i class="fas fa-inbox"></i> Inbox <span class="badge">1</span></div>
-                    <div class="sidebar-item" onclick="switchMailbox('vip', this)"><i class="fas fa-star"></i> VIPs</div>
-                    <div class="sidebar-item" onclick="switchMailbox('sent', this)"><i class="fas fa-paper-plane"></i> Sent</div>
-                    <div class="sidebar-item" onclick="switchMailbox('drafts', this)"><i class="fas fa-file-alt"></i> Drafts</div>
-                    <div class="sidebar-item" onclick="switchMailbox('trash', this)"><i class="fas fa-trash-alt"></i> Trash</div>
+                    <div class="sidebar-item active" data-mailbox="inbox" onclick="switchMailbox('inbox', this)"><i class="fas fa-inbox"></i> Inbox <span class="badge" id="mail-inbox-badge">1</span></div>
+                    <div class="sidebar-item" data-mailbox="vip" onclick="switchMailbox('vip', this)"><i class="fas fa-star" style="color:#ffd60a;"></i> VIPs</div>
+                    <div class="sidebar-item" data-mailbox="sent" onclick="switchMailbox('sent', this)"><i class="fas fa-paper-plane"></i> Sent</div>
+                    <div class="sidebar-item" data-mailbox="drafts" onclick="switchMailbox('drafts', this)"><i class="fas fa-file-alt"></i> Drafts</div>
+                    <div class="sidebar-item" data-mailbox="trash" onclick="switchMailbox('trash', this)"><i class="fas fa-trash-alt"></i> Trash</div>
                 </div>
-                <!-- Message List -->
-                <div class="mail-list">
-                    <div class="mail-item active" onclick="selectEmail(1, this)">
-                        <div class="mail-item-header">
-                            <span class="mail-sender">Mudit Agrawal</span>
-                            <span class="mail-time">4:30 PM</span>
-                        </div>
-                        <div class="mail-subject">Open for AI/ML Roles & Projects</div>
-                        <div class="mail-snippet">Hi! I'm actively seeking opportunities in Applied Machine Learning, LLMs, and Computer Vision...</div>
+
+                <!-- Pane 2: Message List Column with Search Filter -->
+                <div class="mail-list-container">
+                    <div class="mail-search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search messages..." onkeyup="filterMailMessages(this.value)">
                     </div>
-                    <div class="mail-item" onclick="selectEmail(2, this)">
-                        <div class="mail-item-header">
-                            <span class="mail-sender">GitHub Updates</span>
-                            <span class="mail-time">Yesterday</span>
-                        </div>
-                        <div class="mail-subject">Latest Repos: OmniDoc & Sliver.Ai</div>
-                        <div class="mail-snippet">OmniDoc RAG Multimodal pipeline updated with Mistral-7B, Nomic, and BLIP embeddings...</div>
-                    </div>
-                    <div class="mail-item" onclick="selectEmail(3, this)">
-                        <div class="mail-item-header">
-                            <span class="mail-sender">Quick Contact & Connect</span>
-                            <span class="mail-time">Aug 12</span>
-                        </div>
-                        <div class="mail-subject">Direct Reach & Collaboration Channels</div>
-                        <div class="mail-snippet">Email: muditagrawal03@gmail.com | Phone: +91-7289887349 | LinkedIn Profile...</div>
+                    <div class="mail-list" id="mail-list-items">
+                        <!-- Populated dynamically via js/apps/mail.js -->
                     </div>
                 </div>
-                <!-- Reading Pane -->
+
+                <!-- Pane 3: Reading Pane -->
                 <div class="mail-reader" id="mail-reader-pane">
+                    <div class="mail-reader-toolbar">
+                        <button type="button" class="mail-tool-btn" onclick="openMailCompose()"><i class="fas fa-reply"></i> Reply</button>
+                        <button type="button" class="mail-tool-btn" onclick="trashActiveEmail()"><i class="fas fa-trash-alt"></i> Trash</button>
+                    </div>
                     <div class="mail-reader-header">
-                        <div class="mail-avatar">MA</div>
+                        <div class="mail-avatar" id="mail-reader-avatar">MA</div>
                         <div class="mail-meta">
-                            <div class="mail-reader-subject" id="mail-reader-subject">Open for AI/ML Roles & Projects</div>
-                            <div class="mail-reader-from">From: <strong style="color:#fff;">Mudit Agrawal</strong> &lt;muditagrawal03@gmail.com&gt;</div>
-                            <div class="mail-reader-to">To: <span style="color:#aaa;">Recruiter / Collaborator</span> &lt;you@future.org&gt;</div>
+                            <div class="mail-reader-subject" id="mail-reader-subject">Open for AI/ML Roles & SWE Opportunities</div>
+                            <div class="mail-reader-from" id="mail-reader-from">From: <strong style="color:#fff;">Mudit Agrawal</strong> &lt;muditagrawal03@gmail.com&gt; <i class="fas fa-check-circle mail-verified-badge" title="Verified Contact"></i></div>
+                            <div class="mail-reader-to" id="mail-reader-to">To: <span style="color:#aaa;">Recruiter / Engineering Leader</span> &lt;you@future.org&gt;</div>
                         </div>
-                        <div class="mail-date">Today at 4:30 PM</div>
+                        <div class="mail-date" id="mail-reader-date">Today at 4:30 PM</div>
                     </div>
                     <div class="mail-reader-body" id="mail-reader-body">
-                        <p>Hi there,</p>
-                        <p>Thank you for exploring my macOS portfolio workspace!</p>
-                        <p>I am a Computer Science Undergraduate specialising in Artificial Intelligence & Machine Learning at IILM University. I have built real-world AI pipelines including multimodal document intelligence (<strong>OmniDoc</strong>), automated video clipping (<strong>Sliver.Ai</strong>), and defense-grade surveillance (<strong>S.W.O.R.D</strong>).</p>
-                        <p>I am actively looking for software engineering and machine learning roles where I can contribute to mission-critical systems and learn by doing.</p>
-                        <div class="mail-action-buttons">
-                            <a href="mailto:muditagrawal03@gmail.com?subject=Opportunity%20Discussion%20with%20Mudit" class="mail-action-btn primary"><i class="fas fa-reply"></i> Reply via Email</a>
-                            <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" class="mail-action-btn"><i class="fab fa-linkedin"></i> Connect on LinkedIn</a>
-                            <a href="tel:+917289887349" class="mail-action-btn"><i class="fas fa-phone"></i> Call +91-7289887349</a>
-                        </div>
+                        <!-- Populated dynamically via js/apps/mail.js -->
+                    </div>
+                    <div id="mail-reader-attachment">
+                        <!-- Attachment slot populated dynamically -->
+                    </div>
+                    <div class="mail-action-buttons" id="mail-reader-actions">
+                        <!-- Action buttons populated dynamically -->
                     </div>
                 </div>
             </div>
-            <!-- Interactive Compose Modal -->
+
+            <!-- Floating Compose Modal -->
             <div class="mail-compose-modal hidden" id="mail-compose-modal">
                 <div class="mail-compose-header">
                     <span>New Message</span>
                     <button type="button" class="close-compose-btn" onclick="closeMailCompose()">&times;</button>
                 </div>
                 <div class="mail-compose-fields">
-                    <div class="compose-row"><span>To:</span> <input type="text" value="Mudit Agrawal <muditagrawal03@gmail.com>" readonly></div>
-                    <div class="compose-row"><span>Subject:</span> <input type="text" id="compose-subject" placeholder="Let's build something together / Project Inquiry"></div>
+                    <div class="compose-row"><span>To:</span> <input type="text" value="Mudit Agrawal <muditagrawal03@gmail.com>" readonly style="color:#888;"></div>
+                    <div class="compose-row"><span>From:</span> <input type="text" id="compose-sender-name" placeholder="Your Name"></div>
+                    <div class="compose-row"><span>Email:</span> <input type="email" id="compose-sender-email" placeholder="your@email.com"></div>
+                    <div class="compose-row"><span>Subject:</span> <input type="text" id="compose-subject" placeholder="Project Inquiry / Job Opportunity / Collaboration"></div>
                     <textarea id="compose-message" placeholder="Type your message here..."></textarea>
+                    <div class="compose-attachment-zone" id="compose-attachment-zone">
+                        <i class="fas fa-paperclip"></i>
+                        <span>Drop files here or <label for="compose-file-input" style="color:#007aff;cursor:pointer;text-decoration:underline;">browse</label></span>
+                        <input type="file" id="compose-file-input" style="display:none;" multiple onchange="handleComposeFileSelect(this)">
+                        <div id="compose-file-list"></div>
+                    </div>
                     <div class="compose-actions">
-                        <button type="button" class="app-pill-btn primary" onclick="sendMailCompose()"><i class="fas fa-paper-plane"></i> Send Email</button>
-                        <span id="compose-status" style="font-size:12px;color:#27c93f;display:none;margin-left:10px;">Message draft ready! Opening mail client...</span>
+                        <button type="button" class="app-pill-btn primary" onclick="sendMailCompose()" id="compose-send-btn"><i class="fas fa-paper-plane"></i> Send Email</button>
+                        <span id="compose-status" style="font-size:12px;display:none;margin-left:10px;"></span>
                     </div>
                 </div>
             </div>
@@ -526,12 +433,12 @@
         <div class="window hidden" id="notes-window" style="top: 14%; left: 18%; width: 740px; height: 460px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'notes-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('notes-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('notes-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('notes-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Notes" title="Close" onclick="closeWindow('notes-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Notes" title="Minimize" onclick="minimizeWindow('notes-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Notes" title="Zoom" onclick="maximizeWindow('notes-window')"></button>
                 </div>
                 <div class="window-title">Notes — iCloud</div>
-                <div class="notes-toolbar-actions">
+                <div class="notes-toolbar-actions" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
                     <button type="button" class="app-pill-btn" onclick="addNewNotePrompt()"><i class="fas fa-plus"></i> New</button>
                 </div>
             </div>
@@ -585,9 +492,9 @@
             <!-- Safari Title Bar & Navigation Controls -->
             <div class="title-bar safari-title-bar" onmousedown="dragMouseDown(event, 'safari-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('safari-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('safari-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('safari-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Safari" title="Close" onclick="closeWindow('safari-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Safari" title="Minimize" onclick="minimizeWindow('safari-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Safari" title="Zoom" onclick="maximizeWindow('safari-window')"></button>
                 </div>
                 
                 <div class="safari-nav-cluster">
@@ -734,9 +641,9 @@
         <div class="window hidden" id="appstore-window" style="top: 8%; left: 16%; width: 840px; height: 520px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'appstore-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('appstore-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('appstore-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('appstore-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Appstore" title="Close" onclick="closeWindow('appstore-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Appstore" title="Minimize" onclick="minimizeWindow('appstore-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Appstore" title="Zoom" onclick="maximizeWindow('appstore-window')"></button>
                 </div>
                 <div class="window-title">App Store — Projects & Creations</div>
                 <div class="appstore-search-box">
@@ -755,7 +662,7 @@
                 <!-- App Store Main Feed -->
                 <div class="appstore-feed">
                     <!-- Featured Hero Banner -->
-                    <div class="appstore-hero-banner" onclick="window.open('https://github.com/muditagrawal-alt/OmniDoc', '_blank')">
+                    <div class="appstore-hero-banner" onclick="window.open('https://github.com/muditagrawal-alt/OmniDoc', '_blank', 'noopener,noreferrer')">
                         <div class="hero-tag">FEATURED APP OF THE DAY</div>
                         <h2>OmniDoc Intelligence</h2>
                         <p>Multimodal RAG Document Intelligence System with Mistral-7B & BLIP.</p>
@@ -765,7 +672,13 @@
                         </div>
                     </div>
 
-                    <!-- Projects Grid -->
+                    <div id="appstore-empty-state" style="display:none;text-align:center;padding:48px 20px;color:#888;">
+                    <i class="fas fa-magnifying-glass fa-2x" style="color:#555;margin-bottom:10px;"></i>
+                    <div style="font-size:15px;color:#ddd;font-weight:600;">No Apps Found</div>
+                    <p style="font-size:12.5px;margin-top:6px;">Try a different search or category.</p>
+                </div>
+
+                <!-- Projects Grid -->
                     <div class="appstore-section-title">Essential Creations by Mudit</div>
                     <div class="appstore-grid" id="appstore-grid-container">
                         <!-- App Card 1 -->
@@ -777,7 +690,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">5.0</span></div>
                                 <p class="app-desc">RAG based LLM system using Mistral 7B & BLIP.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 2 -->
                         <div class="app-card" data-cat="vision">
@@ -788,7 +701,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
                                 <p class="app-desc">Automated video highlight pipeline with YOLOv8 & YOLO11.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 3 -->
                         <div class="app-card" data-cat="vision">
@@ -799,7 +712,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.8</span></div>
                                 <p class="app-desc">Weapon observation with real-time deep learning.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Project-S.W.O.R.D" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Project-S.W.O.R.D" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 4 -->
                         <div class="app-card" data-cat="ai">
@@ -810,7 +723,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
                                 <p class="app-desc">Detecting deepfake signals and fake news patterns.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 5 -->
                         <div class="app-card" data-cat="systems">
@@ -821,7 +734,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.7</span></div>
                                 <p class="app-desc">C-based parsing, translation & systems compiler.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Helix-Compiler" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Helix-Compiler" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 6 -->
                         <div class="app-card" data-cat="ai">
@@ -832,7 +745,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
                                 <p class="app-desc">Voice cloning with Whisper, Coqui XTTS & FB-NLLB.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 7 -->
                         <div class="app-card" data-cat="systems">
@@ -843,7 +756,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.8</span></div>
                                 <p class="app-desc">AutoStream agent service for workflow automation.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                         <!-- App Card 8 -->
                         <div class="app-card" data-cat="ai">
@@ -854,7 +767,7 @@
                                 <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
                                 <p class="app-desc">Interactive generative design and creative tech.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/Artifex.ai" target="_blank" class="appstore-get-btn">GET</a>
+                            <a href="https://github.com/muditagrawal-alt/Artifex.ai" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
                     </div>
                 </div>
@@ -865,9 +778,9 @@
         <div class="window hidden" id="settings-window" style="top: 15%; left: 20%; width: 720px; height: 460px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'settings-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('settings-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('settings-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('settings-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Settings" title="Close" onclick="closeWindow('settings-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Settings" title="Minimize" onclick="minimizeWindow('settings-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Settings" title="Zoom" onclick="maximizeWindow('settings-window')"></button>
                 </div>
                 <div class="window-title">System Settings</div>
             </div>
@@ -875,7 +788,7 @@
                 <!-- Settings Sidebar -->
                 <div class="settings-sidebar">
                     <div class="settings-user-card">
-                        <img src="https://github.com/muditagrawal-alt.png" alt="Mudit Agrawal">
+                        <img loading="lazy" decoding="async" src="assets/Professionalimage.jpeg" alt="Mudit Agrawal">
                         <div>
                             <strong>Mudit Agrawal</strong>
                             <span>Apple Account</span>
@@ -917,25 +830,33 @@
                         <h3>Desktop Wallpaper</h3>
                         <p style="font-size:12px;color:#aaa;margin-bottom:12px;">Click any wallpaper below to change the desktop background in real time:</p>
                         <div class="wallpaper-grid">
-                            <div class="wallpaper-card active" onclick="setDesktopWallpaper('assets/bg.png', this)">
-                                <div class="wallpaper-thumb" style="background-image: url('assets/bg.png');"></div>
+                            <div class="wallpaper-card active" onclick="setDesktopWallpaper('assets/Wallpapers/26-Tahoe-Beach-Day.jpg', this)">
+                                <div class="wallpaper-thumb" style="background-image: url('assets/Wallpapers/thumbs/26-Tahoe-Beach-Day.jpg'); background-size:cover;"></div>
+                                <span>Tahoe Day</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('assets/Wallpapers/27-Golden-Gate-Bridge.jpg', this)">
+                                <div class="wallpaper-thumb" style="background-image: url('assets/Wallpapers/thumbs/27-Golden-Gate-Bridge.jpg'); background-size:cover;"></div>
+                                <span>California Golden Gate</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('assets/Wallpapers/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg', this)">
+                                <div class="wallpaper-thumb" style="background-image: url('assets/Wallpapers/thumbs/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg'); background-size:cover;"></div>
+                                <span>Sonoma Horizon</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('assets/Wallpapers/jack-anstey-XVoyX7l9ocY-unsplash.jpg', this)">
+                                <div class="wallpaper-thumb" style="background-image: url('assets/Wallpapers/thumbs/jack-anstey-XVoyX7l9ocY-unsplash.jpg'); background-size:cover;"></div>
+                                <span>Sequoia Sunrise</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #0a1628 0%, #1a3a6b 35%, #2563eb 65%, #1e40af 100%)', this, true)">
+                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #0a1628 0%, #1a3a6b 35%, #2563eb 65%, #1e40af 100%);"></div>
+                                <span>Mac Blue</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #0c3547 0%, #1a6b7a 30%, #2aa5a0 55%, #0e4d6e 80%, #0a2e42 100%)', this, true)">
+                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #0c3547 0%, #1a6b7a 30%, #2aa5a0 55%, #0e4d6e 80%, #0a2e42 100%);"></div>
+                                <span>California Dolphin Pod</span>
+                            </div>
+                            <div class="wallpaper-card" onclick="setDesktopWallpaper('assets/bg.png', this)">
+                                <div class="wallpaper-thumb" style="background-image: url('assets/bg.png'); background-size:cover;"></div>
                                 <span>Default Nebula</span>
-                            </div>
-                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', this, true)">
-                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"></div>
-                                <span>Deep Oceanic</span>
-                            </div>
-                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)', this, true)">
-                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);"></div>
-                                <span>Dark Cyber</span>
-                            </div>
-                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)', this, true)">
-                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #654ea3 0%, #eaafc8 100%);"></div>
-                                <span>Sonoma Sunset</span>
-                            </div>
-                            <div class="wallpaper-card" onclick="setDesktopWallpaper('linear-gradient(135deg, #141e30 0%, #243b55 100%)', this, true)">
-                                <div class="wallpaper-thumb" style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);"></div>
-                                <span>Midnight Blue</span>
                             </div>
                         </div>
                     </div>
@@ -949,7 +870,7 @@
                             <div class="spec-table">
                                 <div class="spec-row"><span class="spec-name">Chip</span><span class="spec-val">Apple M3 Max (AI/ML Neural Engine)</span></div>
                                 <div class="spec-row"><span class="spec-name">Memory</span><span class="spec-val">100% Passion & Curiosity</span></div>
-                                <div class="spec-row"><span class="spec-name">Education</span><span class="spec-val">B.Tech CSE (AI/ML) @ IILM University</span></div>
+                                <div class="spec-row"><span class="spec-name">Education</span><span class="spec-val" id="about-mac-education">B.Tech Computer Science (AI/ML) @ IILM University</span></div>
                                 <div class="spec-row"><span class="spec-name">System</span><span class="spec-val">macOS Mudit 1.0 (Finder Portfolio)</span></div>
                                 <div class="spec-row"><span class="spec-name">Startup Disk</span><span class="spec-val">Macintosh HD — ML Models & Code</span></div>
                             </div>
@@ -963,12 +884,12 @@
         <div class="window hidden" id="trash-window" style="top: 25%; left: 30%; width: 620px; height: 380px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'trash-window')">
                 <div class="window-controls">
-                    <div class="control close" onclick="closeWindow('trash-window')"></div>
-                    <div class="control minimize" onclick="minimizeWindow('trash-window')"></div>
-                    <div class="control maximize" onclick="maximizeWindow('trash-window')"></div>
+                    <button type="button" class="control close" aria-label="Close Trash" title="Close" onclick="closeWindow('trash-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Trash" title="Minimize" onclick="minimizeWindow('trash-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Trash" title="Zoom" onclick="maximizeWindow('trash-window')"></button>
                 </div>
                 <div class="window-title" id="trash-title">Trash — 4 Discarded Items</div>
-                <div class="trash-actions">
+                <div class="trash-actions" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
                     <button type="button" class="app-pill-btn" onclick="emptyTrash()"><i class="fas fa-trash-alt"></i> Empty</button>
                 </div>
             </div>
@@ -995,64 +916,245 @@
             </div>
         </div>
 
-    </div>
+        <!-- TextEdit.app — README.txt -->
+        <div class="window hidden" id="textedit-window" style="top: 12%; left: 18%; width: 620px; height: 560px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'textedit-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close README" title="Close" onclick="closeWindow('textedit-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize README" title="Minimize" onclick="minimizeWindow('textedit-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom README" title="Zoom" onclick="maximizeWindow('textedit-window')"></button>
+                </div>
+                <div class="window-title" id="textedit-title">README.txt</div>
+            </div>
+            <div class="window-content textedit-content">
+                <pre class="textedit-body" id="textedit-body" tabindex="0"></pre>
+                <div class="textedit-statusbar" id="textedit-stats"></div>
+            </div>
+        </div>
 
-    <!-- Dock -->
-    <div class="dock-container">
-        <div class="dock">
-            <!-- Finder.app -->
-            <div class="dock-item is-running" id="dock-finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
-                <img src="assets/FINDER.jpeg" alt="Finder">
+        <!-- Photos.app — certificates &amp; workspace gallery -->
+        <div class="window hidden" id="photos-window" style="top: 9%; left: 14%; width: 860px; height: 580px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'photos-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Photos" title="Close" onclick="closeWindow('photos-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Photos" title="Minimize" onclick="minimizeWindow('photos-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Photos" title="Zoom" onclick="maximizeWindow('photos-window')"></button>
+                </div>
+                <div class="window-title" id="photos-window-title">Photos</div>
             </div>
-            <!-- Safari.app -->
-            <div class="dock-item" id="dock-safari" onclick="openWindow('safari-window')" data-tooltip="Safari (Blog & GitHub)">
-                <div class="dock-icon-bg bg-safari">
-                    <i class="fas fa-compass"></i>
+            <div class="window-content">
+                <div class="sidebar photos-sidebar">
+                    <div class="sidebar-title">Library</div>
+                    <div id="photos-albums"></div>
+                </div>
+                <div class="photos-main">
+                    <div class="photos-grid" id="photos-grid"></div>
                 </div>
             </div>
-            <!-- Mail.app -->
-            <div class="dock-item" id="dock-mail" onclick="openWindow('mail-window')" data-tooltip="Mail (Contact & Connect)">
-                <div class="dock-icon-bg bg-mail">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <span class="dock-badge">1</span>
-            </div>
-            <!-- Notes.app -->
-            <div class="dock-item" id="dock-notes" onclick="openWindow('notes-window')" data-tooltip="Notes (Philosophy & Bio)">
-                <div class="dock-icon-bg bg-notes">
-                    <i class="fas fa-sticky-note"></i>
-                </div>
-            </div>
-            <!-- App Store.app -->
-            <div class="dock-item" id="dock-appstore" onclick="openWindow('appstore-window')" data-tooltip="App Store (Projects)">
-                <div class="dock-icon-bg bg-appstore">
-                    <i class="fas fa-shapes"></i>
+
+            <!-- Lightbox is scoped to the window so it can't escape its frame -->
+            <div class="photo-lightbox" id="photo-lightbox">
+                <button type="button" class="photo-lightbox-close" onclick="closePhotoLightbox()" aria-label="Close preview">&times;</button>
+                <button type="button" class="photo-lightbox-nav prev" onclick="stepPhotoLightbox(-1)" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+                <button type="button" class="photo-lightbox-nav next" onclick="stepPhotoLightbox(1)" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+                <div class="photo-lightbox-stage"><img id="photo-lightbox-img" alt=""></div>
+                <div class="photo-lightbox-bar">
+                    <div class="photo-lightbox-meta">
+                        <div class="photo-lightbox-title" id="photo-lightbox-title"></div>
+                        <div class="photo-lightbox-issuer" id="photo-lightbox-issuer"></div>
+                    </div>
+                    <span class="photo-lightbox-counter" id="photo-lightbox-counter"></span>
+                    <button type="button" class="app-pill-btn primary" id="photo-lightbox-open">Open PDF</button>
                 </div>
             </div>
-            <!-- Terminal.app -->
-            <div class="dock-item" id="dock-terminal" onclick="openWindow('terminal-window')" data-tooltip="Terminal (CLI)">
-                <div class="dock-icon-bg bg-terminal">
-                    <i class="fas fa-terminal"></i>
+        </div>
+
+        <!-- Mounted disk image (.dmg) -->
+        <div class="window hidden dmg-win" id="dmg-window" style="top: 14%; left: 22%; width: 660px; height: 520px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'dmg-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Disk Image" title="Close" onclick="closeWindow('dmg-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Disk Image" title="Minimize" onclick="minimizeWindow('dmg-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Disk Image" title="Zoom" onclick="maximizeWindow('dmg-window')"></button>
+                </div>
+                <div class="window-title" id="dmg-window-title">Disk Image</div>
+            </div>
+            <div class="window-content dmg-content">
+                <div class="dmg-stage" id="dmg-stage"></div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /desktop -->
+
+    <!-- System Overlays — MUST be siblings of .desktop, not children.
+         .desktop is position:absolute;z-index:1 which creates a stacking
+         context; nesting these inside it capped them below the dock no
+         matter how high their z-index was. -->
+    <!-- Quick Look Overlay -->
+        <div class="quicklook-overlay" id="quicklook-overlay">
+            <div class="quicklook-window" role="dialog" aria-label="Quick Look">
+                <div class="quicklook-header">
+                    <button type="button" class="ql-close" onclick="closeQuickLook()" aria-label="Close Quick Look">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                    <div class="quicklook-title">
+                        <i class="fas fa-file" id="ql-icon"></i>
+                        <span id="ql-title">Preview</span>
+                    </div>
+                    <div class="quicklook-actions">
+                        <span class="quicklook-meta" id="ql-meta"></span>
+                        <div class="ql-zoom-controls" id="ql-zoom-controls">
+                            <button type="button" class="ql-zoom-btn" onclick="stepQuickLookZoom(-1)" aria-label="Zoom out" title="Zoom out">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="ql-zoom-level" id="ql-zoom-level">100%</span>
+                            <button type="button" class="ql-zoom-btn" onclick="stepQuickLookZoom(1)" aria-label="Zoom in" title="Zoom in">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button type="button" class="ql-open-btn" id="ql-open-btn">Open</button>
+                    </div>
+                </div>
+                <div class="quicklook-content" id="ql-content"></div>
+            </div>
+        </div>
+
+        <!-- Iris AI Assistant Overlay -->
+        <div class="iris-overlay" id="iris-overlay">
+            <button class="iris-close-btn" onclick="closeIris()">✕</button>
+            <div class="iris-orb-container" onclick="document.getElementById('iris-input').focus()">
+                <div class="iris-orb"></div>
+            </div>
+            <div class="iris-waveform">
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+                <div class="iris-waveform-bar"></div>
+            </div>
+            <div class="iris-label">Iris</div>
+            <div class="iris-suggestions" id="iris-suggestions"></div>
+            <div class="iris-conversation" id="iris-conversation"></div>
+            <div class="iris-input-area">
+                <div class="iris-input-wrapper">
+                    <input type="text" class="iris-input" id="iris-input" placeholder="Ask Iris anything about Mudit..." onkeydown="handleIrisInput(event)" autocomplete="off">
+                    <button class="iris-send-btn" id="iris-send-btn" onclick="sendIrisMessage()"><i class="fas fa-arrow-up"></i></button>
                 </div>
             </div>
-            <!-- System Settings.app -->
-            <div class="dock-item" id="dock-settings" onclick="openWindow('settings-window')" data-tooltip="System Settings">
-                <div class="dock-icon-bg bg-settings">
-                    <i class="fas fa-cog"></i>
-                </div>
+        </div>
+
+    <!-- macOS Launchpad Overlay -->
+    <div class="launchpad-overlay" id="launchpad-overlay" role="dialog" aria-label="Launchpad">
+        <div class="launchpad-content">
+            <div class="launchpad-search-container">
+                <i class="fas fa-magnifying-glass launchpad-search-icon"></i>
+                <input type="text" id="launchpad-search-input" class="launchpad-search-input" placeholder="Search" autocomplete="off" spellcheck="false" aria-label="Search Applications">
+                <button type="button" class="launchpad-search-clear" id="launchpad-search-clear" aria-label="Clear Search"><i class="fas fa-times"></i></button>
             </div>
-            <div class="dock-divider"></div>
-            <!-- Trash.app -->
-            <div class="dock-item" id="dock-trash" onclick="openWindow('trash-window')" data-tooltip="Trash">
-                <div class="dock-icon-bg bg-trash">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
+            <div class="launchpad-grid" id="launchpad-grid"></div>
+            <div class="launchpad-dots">
+                <button type="button" class="launchpad-dot active" aria-label="Page 1"></button>
             </div>
         </div>
     </div>
 
-    <script src="battery-status.js"></script>
-    <script src="resume-data.js"></script>
-    <script src="script.js"></script>
+    <!-- Quick Look Hint -->
+    <div class="quicklook-hint" id="quicklook-hint">Press Space to Quick Look</div>
+
+    <!-- macOS Dock -->
+    <div class="dock-container">
+        <div class="dock">
+            <!-- Finder.app -->
+            <div class="dock-item is-running" id="dock-finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
+                <img src="assets/icons/finder.png" alt="Finder">
+            </div>
+            <!-- Launchpad.app -->
+            <div class="dock-item" id="dock-launchpad" onclick="toggleLaunchpad()" data-tooltip="Launchpad (⌥L)">
+                <img src="assets/icons/launchpad.svg" alt="Launchpad">
+            </div>
+            <!-- Safari.app -->
+            <div class="dock-item" id="dock-safari" onclick="openWindow('safari-window')" data-tooltip="Safari">
+                <img src="assets/icons/safari.png" alt="Safari">
+            </div>
+            <!-- Mail.app -->
+            <div class="dock-item" id="dock-mail" onclick="openWindow('mail-window')" data-tooltip="Mail">
+                <img src="assets/icons/mail.png" alt="Mail">
+                <span class="dock-badge">1</span>
+            </div>
+            <!-- Notes.app -->
+            <div class="dock-item" id="dock-notes" onclick="openWindow('notes-window')" data-tooltip="Notes">
+                <img src="assets/icons/notes.png" alt="Notes">
+            </div>
+            <!-- Photos.app -->
+            <div class="dock-item" id="dock-photos" onclick="openWindow('photos-window')" data-tooltip="Photos">
+                <img src="assets/icons/photos.png" alt="Photos">
+            </div>
+            <!-- App Store.app -->
+            <div class="dock-item" id="dock-appstore" onclick="openWindow('appstore-window')" data-tooltip="App Store">
+                <img src="assets/icons/app-store.png" alt="App Store">
+            </div>
+            <!-- Terminal.app -->
+            <div class="dock-item" id="dock-terminal" onclick="openWindow('terminal-window')" data-tooltip="Terminal">
+                <img src="assets/icons/terminal.png" alt="Terminal">
+            </div>
+            <!-- System Settings.app -->
+            <div class="dock-item" id="dock-settings" onclick="openWindow('settings-window')" data-tooltip="System Settings">
+                <img src="assets/icons/settings.png" alt="System Settings">
+            </div>
+            <!-- Iris AI Assistant -->
+            <div class="dock-item" id="dock-iris" onclick="toggleIris()" data-tooltip="Iris">
+                <img src="assets/icons/siri.png" alt="Iris">
+            </div>
+            <div class="dock-divider"></div>
+            <!-- Trash.app -->
+            <div class="dock-item" id="dock-trash" onclick="openWindow('trash-window')" data-tooltip="Trash">
+                <img src="assets/icons/trash-full.png" alt="Trash" id="dock-trash-img">
+            </div>
+        </div>
+    </div>
+
+    <!-- Central Profile Data (Single Source of Truth) -->
+    <script src="js/data/profile.js"></script>
+    <script src="js/data/corpus.js"></script>
+    <script src="js/data/desktop-files.js"></script>
+
+    <!-- Runtime config: endpoint for the serverless AI proxy. Contains no secrets. -->
+    <script src="js/config/config.js"></script>
+
+    <!-- Core Modular System Scripts -->
+    <script src="js/core/utils.js"></script>
+    <script src="js/core/system-status.js"></script>
+    <script src="js/core/window-manager.js"></script>
+    <script src="js/core/keyboard.js"></script>
+    <script src="js/core/context-menu.js"></script>
+    <script src="js/core/spotlight.js"></script>
+    <script src="js/core/menu-bar.js"></script>
+    <script src="js/core/boot-animation.js"></script>
+    <script src="js/core/lock-screen.js"></script>
+    <script src="js/core/quick-look.js"></script>
+
+    <!-- Feature Application Scripts -->
+    <script src="js/apps/desktop.js"></script>
+    <script src="js/apps/textedit.js"></script>
+    <script src="js/apps/photos.js"></script>
+    <script src="js/apps/disk-image.js"></script>
+    <script src="js/apps/finder-v2.js"></script>
+    <script src="js/apps/mail.js"></script>
+    <script src="js/apps/safari.js"></script>
+    <script src="js/apps/notes.js"></script>
+    <script src="js/apps/appstore.js"></script>
+    <script src="js/apps/settings.js"></script>
+    <script src="js/apps/terminal.js"></script>
+    <script src="js/apps/trash.js"></script>
+    <script src="js/apps/resume.js"></script>
+    <script src="js/apps/iris.js"></script>
+    <script src="js/apps/launchpad.js"></script>
+    <script src="js/apps/notification-center.js"></script>
+
+    <!-- App Bootstrap -->
+    <script src="js/main.js"></script>
 </body>
 </html>

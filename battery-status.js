@@ -1,3 +1,0 @@
-window.SYSTEM_BATTERY_STATUS = 'Battery: 52%';
-window.SYSTEM_BATTERY_LEVEL = 52;
-window.SYSTEM_BATTERY_CHARGING = false;

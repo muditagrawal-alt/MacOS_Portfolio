@@ -1,0 +1,232 @@
+/* ==========================================================================
+   macOS Dock & Dock App Icons Styling
+   ========================================================================== */
+
+.dock-container {
+    position: fixed;
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 9000;
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+/* In Fullscreen mode: Auto-hide dock, float up on hover / bottom edge cursor */
+body.has-fullscreen-app .dock-container,
+body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container {
+    transform: translateY(calc(100% + 25px));
+    opacity: 0;
+    pointer-events: none;
+    z-index: 99999;
+}
+
+body.has-fullscreen-app .dock-container.is-revealed,
+body.has-fullscreen-app .dock-container:hover,
+body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container.is-revealed,
+body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container:hover {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dock {
+    background: var(--dock-bg);
+    align-items: flex-end;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--dock-border);
+    border-radius: 20px;
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.dock-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), margin 0.2s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* Dock Item Name Tooltip on Hover */
+.dock-item::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.72);
+    transform-origin: bottom center;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    color: #ffffff;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 0.5px 0 rgba(255, 255, 255, 0.2);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    z-index: 10000;
+}
+
+.dock-item:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(0.72) translateY(-2px);
+}
+
+/* Magnification uses transform only. The old rule animated `margin`, which
+   relaid out every icon to the right and made the dock jitter on hover. */
+.dock-item:hover {
+    transform: scale(1.42) translateY(-15px);
+}
+
+/* Neighbour falloff — the real dock scales adjacent icons too. */
+.dock-item:hover + .dock-item,
+.dock-item:has(+ .dock-item:hover) {
+    transform: scale(1.2) translateY(-7px);
+}
+
+.dock-item:hover + .dock-item + .dock-item,
+.dock-item:has(+ .dock-item + .dock-item:hover) {
+    transform: scale(1.08) translateY(-3px);
+}
+
+.dock {
+    /* Room for magnified icons to grow into without clipping. */
+    padding-top: 14px;
+}
+
+.dock-item img {
+    width: 48px !important;
+    height: 48px !important;
+    object-fit: contain;
+    border-radius: 12px;
+    background: transparent;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    transition: transform 0.2s ease;
+}
+
+.dock-icon-bg {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* Authentic macOS Dock App Gradients */
+.bg-safari { background: linear-gradient(145deg, #00c6ff, #0072ff); }
+.bg-mail { background: linear-gradient(145deg, #1e90ff, #0052d4); }
+.bg-notes { background: linear-gradient(145deg, #f6d365, #fda085); color: #333 !important; }
+.bg-appstore { background: linear-gradient(145deg, #00c6ff, #0072ff); }
+.bg-settings { background: linear-gradient(145deg, #8e9eab, #626970); }
+.bg-terminal { background: linear-gradient(145deg, #2b2b2b, #111111); border: 1px solid rgba(255,255,255,0.15); }
+.bg-trash { background: linear-gradient(145deg, #757f9a, #d7dde8); color: #222 !important; }
+
+/* Dock running dot indicator */
+.dock-item::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    /* A 4px pure-white dot on a light translucent dock was effectively
+       invisible. Dark core + light halo reads on any wallpaper. */
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.dock-item.is-running::after {
+    opacity: 1;
+}
+
+/* Dock Notification Badge */
+.dock-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ff3b30;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(30, 30, 30, 0.8);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.dock-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    align-self: center;
+    margin: 0 4px;
+}
+
+/* App Pill Button */
+.app-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.app-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.app-pill-btn.primary {
+    background: var(--accent);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.app-pill-btn.primary:hover {
+    background: var(--accent-hover);
+    filter: brightness(1.15);
+}

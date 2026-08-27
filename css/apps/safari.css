@@ -1,0 +1,1239 @@
+/* ==========================================================================
+   Safari.app (macOS Browser) Styling: Tabs, Search Engine, Favorites & Video
+   ========================================================================== */
+
+.safari-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    background: rgba(35, 35, 35, 0.9);
+}
+
+.safari-nav-cluster, .safari-action-cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.safari-nav-cluster {
+    margin-left: 65px;
+}
+
+.safari-btn {
+    background: transparent;
+    border: none;
+    color: #bbb;
+    padding: 4px 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.safari-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.safari-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.safari-url-bar {
+    flex: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    height: 26px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.safari-url-bar:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3), inset 0 1px 2px rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.safari-privacy-icon {
+    font-size: 11px;
+    color: #34c759;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.safari-url-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #eee;
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+}
+
+.safari-url-bar:focus-within input {
+    text-align: left;
+    color: #fff;
+}
+
+.safari-reload-icon {
+    font-size: 10px;
+    color: #888;
+    cursor: pointer;
+    transition: transform 0.3s, color 0.15s;
+    margin-left: 6px;
+}
+
+.safari-reload-icon:hover {
+    color: #fff;
+    transform: rotate(180deg);
+}
+
+/* Safari Tab Bar */
+.safari-tab-bar {
+    height: 32px;
+    background: rgba(24, 24, 24, 0.85);
+    border-bottom: 1px solid var(--window-border);
+    display: flex;
+    padding: 0 8px;
+    gap: 4px;
+    align-items: flex-end;
+    overflow-x: auto;
+}
+
+.safari-tab-item {
+    height: 28px;
+    padding: 0 14px;
+    font-size: 12px;
+    color: #aaa;
+    background: rgba(45, 45, 45, 0.4);
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 200px;
+    min-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.15s;
+    position: relative;
+}
+
+.safari-tab-item:hover {
+    background: rgba(55, 55, 55, 0.6);
+    color: #fff;
+}
+
+.safari-tab-item.active {
+    background: rgba(30, 30, 30, 0.95);
+    color: #fff;
+    font-weight: 500;
+    border: 1px solid var(--window-border);
+    border-bottom: none;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
+}
+
+.safari-tab-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.safari-tab-close {
+    font-size: 11px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    transition: all 0.15s;
+}
+
+.safari-tab-close:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* Safari Viewport */
+.safari-viewport {
+    flex: 1;
+    background: rgba(14, 14, 14, 0.7);
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#safari-start-page-view {
+    width: 100%;
+    flex: 1;
+    display: block;
+}
+
+#safari-web-page-view {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#safari-start-page-view.hidden,
+#safari-web-page-view.hidden {
+    display: none !important;
+}
+
+/* Safari Start Page Layout */
+.safari-start-page {
+    padding: 30px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.start-page-hero {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.safari-compass-icon {
+    font-size: 28px;
+    color: #007aff;
+}
+
+.start-page-hero h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+/* 8-Item Favorites Grid */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px 16px;
+    margin-bottom: 35px;
+}
+
+@media (max-width: 650px) {
+    .favorites-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.favorite-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.favorite-item:hover {
+    transform: translateY(-4px);
+}
+
+.fav-icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.favorite-item:hover .fav-icon-box {
+    box-shadow: 0 12px 24px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.4);
+    transform: scale(1.05);
+}
+
+/* Brand Background Gradients */
+.bg-fav-github { background: linear-gradient(135deg, #24292e 0%, #0d1117 100%); border: 1px solid rgba(255,255,255,0.15); }
+.bg-fav-hf { background: linear-gradient(135deg, #ffd21e 0%, #ff9d00 100%); color: #111 !important; }
+.bg-fav-linkedin { background: linear-gradient(135deg, #0a66c2 0%, #004182 100%); }
+.bg-fav-substack { background: linear-gradient(135deg, #FF6719 0%, #d84300 100%); }
+.bg-fav-medium { background: linear-gradient(135deg, #12100e 0%, #2b4141 100%); border: 1px solid rgba(255,255,255,0.15); }
+.bg-fav-instagram { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+.bg-fav-x { background: linear-gradient(135deg, #14171a 0%, #000000 100%); border: 1px solid rgba(255,255,255,0.15); }
+.bg-fav-leetcode { background: linear-gradient(135deg, #ffa116 0%, #c47600 100%); }
+
+.fav-icon-box svg {
+    width: 28px;
+    height: 28px;
+    fill: #ffffff;
+}
+
+.fav-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #eee;
+    margin-bottom: 2px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fav-domain {
+    font-size: 10px;
+    color: #888;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Privacy Report Card */
+.safari-privacy-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 35px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.privacy-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.privacy-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.privacy-card-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 3px;
+}
+
+.privacy-card-header p {
+    font-size: 12.5px;
+    color: #aaa;
+    margin: 0;
+}
+
+.privacy-stats-row {
+    display: flex;
+    gap: 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.privacy-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.stat-num {
+    font-size: 16px;
+    font-weight: 700;
+    color: #34c759;
+}
+
+.stat-lbl {
+    font-size: 11px;
+    color: #888;
+}
+
+/* Reading List Section */
+.safari-reading-section h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.reading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.reading-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.reading-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.reading-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f57c00;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.reading-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.reading-card p {
+    font-size: 11.5px;
+    color: #aaa;
+    line-height: 1.4;
+    flex: 1;
+    margin-bottom: 10px;
+}
+
+.reading-meta {
+    font-size: 10px;
+    color: #777;
+}
+
+/* Safari Web Page View */
+.safari-web-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.safari-page-render-area {
+    flex: 1;
+    padding: 16px 24px;
+    overflow-y: auto;
+    background: #1c1c1e;
+}
+
+/* Safari Search Engine */
+.safari-search-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 8px 12px 40px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #e3e3e8;
+}
+
+.safari-search-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+}
+
+.safari-search-tabs {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.safari-search-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #98989d;
+    cursor: pointer;
+    padding-bottom: 8px;
+    position: relative;
+    transition: color 0.15s;
+}
+
+.safari-search-tab:hover {
+    color: #f5f5f7;
+}
+
+.safari-search-tab.active {
+    color: #2997ff;
+    font-weight: 600;
+}
+
+.safari-search-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 0;
+    width: 100%;
+    height: 2.5px;
+    background: #2997ff;
+    border-radius: 2px;
+}
+
+.safari-search-stats {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
+.safari-search-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 820px) {
+    .safari-search-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.safari-knowledge-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.safari-kc-thumb {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background: #111;
+}
+
+.safari-kc-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+    letter-spacing: -0.3px;
+}
+
+.safari-skel-line {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.14) 37%, rgba(255,255,255,0.06) 63%);
+    background-size: 400% 100%;
+    animation: safari-shimmer 1.4s ease infinite;
+    margin-bottom: 10px;
+}
+@keyframes safari-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+.safari-skel-block {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.safari-portfolio-match-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.safari-portfolio-match-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2997ff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.safari-portfolio-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.safari-portfolio-card {
+    background: rgba(41, 151, 255, 0.06);
+    border: 1px solid rgba(41, 151, 255, 0.2);
+    border-left: 4px solid #2997ff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+.safari-portfolio-card:hover {
+    background: rgba(41, 151, 255, 0.12);
+    transform: translateY(-1px);
+}
+.safari-portfolio-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.safari-portfolio-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #2997ff;
+    background: rgba(41, 151, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+.safari-portfolio-link-icon {
+    font-size: 12px;
+    color: #8e8e93;
+}
+.safari-portfolio-card:hover .safari-portfolio-link-icon {
+    color: #2997ff;
+}
+.safari-portfolio-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.safari-portfolio-card-text {
+    font-size: 12.5px;
+    color: #d1d1d6;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.safari-noresults-card {
+    text-align: center;
+    padding: 36px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    margin: 16px 0 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.safari-noresults-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+.safari-noresults-sub {
+    font-size: 13px;
+    color: #8e8e93;
+    max-width: 480px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.safari-kc-subtitle {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-bottom: 12px;
+    text-transform: capitalize;
+}
+
+.safari-kc-extract {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #d1d1d6;
+    margin-bottom: 14px;
+}
+
+.safari-kc-attributes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    margin-bottom: 14px;
+}
+
+.safari-kc-attr-item {
+    font-size: 12px;
+    color: #aaa;
+    display: flex;
+    gap: 6px;
+}
+
+.safari-kc-attr-label {
+    font-weight: 600;
+    color: #e5e5ea;
+}
+
+.safari-kc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.safari-calc-card {
+    background: rgba(41, 151, 255, 0.08);
+    border: 1px solid rgba(41, 151, 255, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.safari-calc-expr {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-bottom: 4px;
+}
+
+.safari-calc-val {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2997ff;
+}
+
+.safari-results-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.safari-result-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.safari-result-source-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.safari-result-favicon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.safari-result-source-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.safari-result-site-name {
+    font-size: 12px;
+    color: #f5f5f7;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.safari-result-url {
+    font-size: 11px;
+    color: #8e8e93;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 500px;
+}
+
+.safari-result-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: #58a6ff;
+    text-decoration: none;
+    line-height: 1.35;
+    cursor: pointer;
+    display: inline-block;
+    transition: color 0.1s;
+}
+
+.safari-result-title:hover {
+    text-decoration: underline;
+    color: #79b8ff;
+}
+
+.safari-result-snippet {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.safari-result-snippet em, .safari-result-snippet b, .safari-result-snippet strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.safari-video-spotlight {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 4px 0 10px 0;
+}
+
+.safari-video-spotlight-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.safari-video-cards-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.safari-search-vcard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.safari-search-vcard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.safari-search-vcard-thumb {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #111;
+}
+
+.safari-search-vcard-thumb img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.safari-search-vcard-info {
+    padding: 8px 10px;
+}
+
+.safari-search-vcard-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.safari-search-vcard-channel {
+    font-size: 10.5px;
+    color: #8e8e93;
+}
+
+.safari-faq-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 4px 0 10px 0;
+}
+
+.safari-faq-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f5f5f7;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.safari-faq-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.safari-faq-item:last-child {
+    border-bottom: none;
+}
+
+.safari-faq-question {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e5e5ea;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+}
+
+.safari-faq-question:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.safari-faq-answer {
+    padding: 0 16px 14px 16px;
+    font-size: 12.5px;
+    color: #aaa;
+    line-height: 1.55;
+    display: none;
+}
+
+.safari-faq-item.open .safari-faq-answer {
+    display: block;
+}
+
+.safari-faq-item.open .safari-faq-chevron {
+    transform: rotate(180deg);
+}
+
+.safari-faq-chevron {
+    transition: transform 0.2s;
+    font-size: 11px;
+    color: #8e8e93;
+}
+
+.safari-related-section {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.safari-related-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.safari-related-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.safari-related-chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #e5e5ea;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.safari-related-chip:hover {
+    background: rgba(41, 151, 255, 0.15);
+    border-color: #2997ff;
+    color: #fff;
+}
+
+/* YouTube In-Browser Player Engine Layout */
+.yt-engine-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.yt-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.yt-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.yt-logo i {
+    color: #ff0000;
+    font-size: 22px;
+}
+
+.yt-search-form {
+    flex: 1;
+    max-width: 440px;
+    display: flex;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 0 12px;
+    align-items: center;
+}
+
+.yt-search-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 12.5px;
+    outline: none;
+}
+
+.yt-categories-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+.yt-cat-chip {
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ddd;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.yt-cat-chip.active, .yt-cat-chip:hover {
+    background: #fff;
+    color: #111;
+    font-weight: 600;
+}
+
+.yt-main-player-box {
+    margin-bottom: 24px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+.yt-iframe-responsive {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.yt-iframe-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.yt-player-details {
+    padding: 16px 20px;
+    background: rgba(25, 25, 25, 0.9);
+}
+
+.yt-active-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.yt-active-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    color: #aaa;
+}
+
+.yt-channel-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #eee;
+}
+
+.yt-grid-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 14px;
+}
+
+.yt-videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.yt-video-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.yt-video-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.yt-thumb-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #111;
+    overflow: hidden;
+}
+
+.yt-thumb-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.yt-duration-tag {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.yt-card-info {
+    padding: 12px;
+}
+
+.yt-card-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.yt-card-channel {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 2px;
+}
+
+.yt-card-stats {
+    font-size: 10.5px;
+    color: #777;
+}
+
+.yt-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.yt-action-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.yt-action-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #eee;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+
+.yt-action-pill:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+.yt-search-results-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: rgba(255, 0, 0, 0.08);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #fff;
+}

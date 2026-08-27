@@ -1,0 +1,294 @@
+/* ==========================================================================
+   macOS Launchpad — Fullscreen Application Grid Overlay
+   ========================================================================== */
+
+.launchpad-overlay {
+    position: fixed;
+    inset: 0;
+    top: 30px; /* Sits below the menu bar */
+    z-index: 9200;
+    background: rgba(12, 14, 18, 0.42);
+    backdrop-filter: blur(48px) saturate(180%) brightness(0.88);
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 32px 40px 80px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.24s;
+    user-select: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.launchpad-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Container with macOS Zoom Effect */
+.launchpad-content {
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: scale(1.08);
+    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.launchpad-overlay.active .launchpad-content {
+    transform: scale(1);
+}
+
+/* Top Search Bar */
+.launchpad-search-container {
+    position: relative;
+    width: min(280px, 86vw);
+    margin-bottom: 36px;
+    margin-top: 10px;
+}
+
+.launchpad-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.launchpad-search-input {
+    width: 100%;
+    height: 32px;
+    padding: 0 32px 0 34px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 0.5px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    outline: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, width 0.2s;
+}
+
+.launchpad-search-input:focus {
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28), 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.launchpad-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 400;
+}
+
+.launchpad-search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    color: rgba(0, 0, 0, 0.7);
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.launchpad-search-clear:hover {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.launchpad-search-clear.visible {
+    display: flex;
+}
+
+/* App Grid */
+.launchpad-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 32px 20px;
+    width: 100%;
+    justify-items: center;
+    align-items: start;
+    min-height: 380px;
+    transition: opacity 0.15s ease;
+}
+
+/* App Item */
+.launchpad-app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 104px;
+    padding: 8px 4px;
+    border-radius: 12px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    outline: none;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.18s ease;
+}
+
+.launchpad-app-item:hover {
+    transform: scale(1.09);
+}
+
+.launchpad-app-item:active {
+    transform: scale(0.96);
+}
+
+.launchpad-app-item.focused-app {
+    outline: 2px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.launchpad-app-icon-wrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.launchpad-app-icon-wrapper img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 14px;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.42));
+    transition: filter 0.2s ease;
+}
+
+.launchpad-app-item:hover .launchpad-app-icon-wrapper img {
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.55)) brightness(1.05);
+}
+
+.launchpad-app-name {
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-align: center;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Filter / Search Hide State */
+.launchpad-app-item.hidden-by-search {
+    display: none;
+}
+
+/* Empty Search Results Message */
+.launchpad-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    font-size: 15px;
+    display: none;
+}
+
+.launchpad-empty-state.visible {
+    display: flex;
+}
+
+/* Pagination Dots */
+.launchpad-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 36px;
+}
+
+.launchpad-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.28);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.launchpad-dot.active {
+    background: #ffffff;
+    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.launchpad-dot:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+/* Responsive Scaling */
+@media (max-width: 900px) {
+    .launchpad-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 24px 14px;
+    }
+    .launchpad-app-icon-wrapper,
+    .launchpad-app-icon-wrapper img {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+@media (max-width: 600px) {
+    .launchpad-overlay {
+        padding: 24px 16px 70px;
+    }
+    .launchpad-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px 8px;
+    }
+    .launchpad-app-item {
+        width: 76px;
+    }
+    .launchpad-app-icon-wrapper,
+    .launchpad-app-icon-wrapper img {
+        width: 48px;
+        height: 48px;
+    }
+    .launchpad-app-name {
+        font-size: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .launchpad-overlay,
+    .launchpad-content,
+    .launchpad-app-item {
+        transition: none !important;
+    }
+}

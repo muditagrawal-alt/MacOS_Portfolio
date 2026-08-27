@@ -1,0 +1,109 @@
+/* ==========================================================================
+   Notes.app (iCloud Notes) Styling
+   ========================================================================== */
+
+.notes-layout {
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+}
+
+.notes-sidebar {
+    width: 150px;
+    background: rgba(20, 20, 20, 0.7);
+    border-right: 1px solid var(--window-border);
+    padding: 15px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notes-list {
+    width: 200px;
+    background: rgba(28, 28, 28, 0.6);
+    border-right: 1px solid var(--window-border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.note-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.note-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.note-item.active {
+    background: rgba(246, 211, 101, 0.15);
+    border-left: 3px solid #f6d365;
+}
+
+.note-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 3px;
+}
+
+.note-item-meta {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-time {
+    color: #aaa;
+    margin-right: 5px;
+}
+
+.notes-canvas {
+    flex: 1;
+    background: rgba(24, 22, 18, 0.85);
+    padding: 30px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.note-date-stamp {
+    text-align: center;
+    font-size: 11px;
+    color: #8a8275;
+    margin-bottom: 15px;
+}
+
+.note-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f7e8c4;
+    margin-bottom: 15px;
+}
+
+.note-body-content p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #d8ceba;
+    margin-bottom: 12px;
+}
+
+.note-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+    padding-left: 5px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: #e5dac6;
+}

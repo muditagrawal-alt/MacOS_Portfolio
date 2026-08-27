@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgleetcode" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb549"/><stop offset="1" stop-color="#ffa116"/>
+    </linearGradient>
+    <filter id="shleetcode" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3.5" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <g filter="url(#shleetcode)">
+    <rect x="6" y="6" width="116" height="116" rx="27" fill="url(#bgleetcode)"/>
+  </g>
+  <path d="M74.5 24.1a5.4 5.4 0 0 0-7.6.2L44.6 47.6 27.9 63.9a20.6 20.6 0 0 0-4.7 8.2 21.5 21.5 0 0 0-.5 2 21.6 21.6 0 0 0 .2 9.2 22.8 22.8 0 0 0 1.4 4 23.2 23.2 0 0 0 5 7.1l16.7 16.4.2.1c8.8 8.5 22.9 8.3 31.5-.3l9.4-9.3a5.4 5.4 0 1 0-7.6-7.6l-9.4 9.3a11.8 11.8 0 0 1-16.4.1l-.1-.1-16.7-16.4a10.5 10.5 0 0 1-3.7-8.8 10.5 10.5 0 0 1 2.6-7l15.1-16.2 20.7-22.3a5.4 5.4 0 0 0-.1-7.6zm15.2 37.6H69.2a5.4 5.4 0 0 0 0 10.7h20.5a5.4 5.4 0 0 0 0-10.7z" fill="#ffffff"/>
+</svg>

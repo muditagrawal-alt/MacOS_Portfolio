@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Desktop Files — macOS-style icon grid
+   ========================================================================== */
+
+.desktop-files {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 96px;
+    padding: 7px 5px 5px;
+    border-radius: 7px;
+    cursor: default;
+    text-align: center;
+    transition: background 0.12s ease;
+    animation: desktop-icon-in 0.36s ease both;
+    animation-delay: calc(var(--stagger, 0) * 60ms);
+}
+
+@keyframes desktop-icon-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.desktop-icon-art {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.desktop-icon-art img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.45));
+    pointer-events: none;
+}
+
+/* macOS labels are plain text with a shadow; the blue pill appears only on
+   selection. The old build had a permanent dark pill behind every label. */
+.desktop-icon-label {
+    font-size: 12px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 2px rgba(0, 0, 0, 0.6);
+    padding: 1px 6px;
+    border-radius: 9px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.desktop-icon:hover .desktop-icon-label {
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.desktop-icon.selected .desktop-icon-art img {
+    filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.45)) brightness(0.86);
+}
+
+.desktop-icon.selected .desktop-icon-label {
+    background: var(--accent);
+    color: #fff;
+    text-shadow: none;
+}
+
+.desktop-icon:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 1px;
+}
+
+@media (max-width: 768px) {
+    .desktop-icon { width: 78px; }
+    .desktop-icon-art { width: 48px; height: 48px; }
+    .desktop-icon-label { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .desktop-icon { animation: none; }
+}

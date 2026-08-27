@@ -1,0 +1,206 @@
+/* ==========================================================================
+   System Settings.app Styling (Appearance, Wallpaper & About This Mac)
+   ========================================================================== */
+
+.settings-layout {
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+}
+
+.settings-sidebar {
+    width: 170px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--window-border);
+    padding: 15px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-user-card img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.settings-user-card strong {
+    font-size: 12px;
+    color: #fff;
+    display: block;
+}
+
+.settings-user-card span {
+    font-size: 10px;
+    color: #888;
+}
+
+.settings-pane-container {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.settings-pane h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.theme-options-grid {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.theme-option {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.theme-preview {
+    width: 90px;
+    height: 60px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.theme-option.active .theme-preview {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3);
+}
+
+.theme-option span {
+    font-size: 12px;
+    color: #ccc;
+}
+
+.dark-preview {
+    background: #1c1c1e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-preview {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.accent-colors-row {
+    display: flex;
+    gap: 10px;
+}
+
+.accent-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s;
+}
+
+.accent-dot:hover {
+    transform: scale(1.15);
+}
+
+.accent-dot.active::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.wallpaper-card {
+    cursor: pointer;
+    text-align: center;
+}
+
+.wallpaper-thumb {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+}
+
+.wallpaper-card.active .wallpaper-thumb {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(0, 122, 255, 0.5);
+}
+
+.wallpaper-card span {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.about-mac-dialog {
+    text-align: center;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 10px 0;
+}
+
+.about-mac-dialog h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.spec-table {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spec-row:last-child {
+    border-bottom: none;
+}
+
+.spec-name {
+    color: #888;
+}
+
+.spec-val {
+    color: #fff;
+    font-weight: 500;
+}

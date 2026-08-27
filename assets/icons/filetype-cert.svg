@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 128" width="100" height="128">
+  <defs>
+    <linearGradient id="certSheet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9e9ec"/>
+    </linearGradient>
+    <linearGradient id="certFold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d2d2d7"/><stop offset="1" stop-color="#b9b9c0"/>
+    </linearGradient>
+    <linearGradient id="certSeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd875"/><stop offset="1" stop-color="#e8a530"/>
+    </linearGradient>
+    <filter id="certSh" x="-25%" y="-15%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <g filter="url(#certSh)">
+    <path d="M12 4h56l20 20v100a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="url(#certSheet)"/>
+    <path d="M68 4l20 20H72a4 4 0 0 1-4-4z" fill="url(#certFold)"/>
+  </g>
+  <rect x="16" y="34" width="42" height="4" rx="2" fill="#d5d5da"/>
+  <rect x="16" y="44" width="34" height="4" rx="2" fill="#e2e2e6"/>
+  <g transform="translate(66,86)" filter="url(#certSh)">
+    <path d="M-15 -2 L-9 15 L0 9 L9 15 L15 -2 Z" fill="#c9821f"/>
+    <circle r="16" fill="url(#certSeal)"/>
+    <circle r="16" fill="none" stroke="#fff" stroke-width="2" stroke-opacity="0.7"/>
+    <path d="M-6 0 L-2 5 L7 -6" fill="none" stroke="#8a5a12" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

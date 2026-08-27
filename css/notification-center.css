@@ -1,0 +1,177 @@
+/* ==========================================================================
+   Notification Centre — slides in from the right edge, macOS style
+   ========================================================================== */
+
+.notif-center {
+    position: fixed;
+    top: 28px;                       /* below the menu bar */
+    right: 0;
+    bottom: 0;
+    width: 344px;
+    max-width: 92vw;
+    z-index: 1500;                   /* above windows, below Spotlight/lock */
+    display: flex;
+    flex-direction: column;
+    background: rgba(38, 38, 40, 0.72);
+    backdrop-filter: blur(42px) saturate(180%);
+    -webkit-backdrop-filter: blur(42px) saturate(180%);
+    border-left: 0.5px solid rgba(255, 255, 255, 0.14);
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+}
+
+.notif-center.open { transform: translateX(0); }
+
+.notif-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+}
+
+.notif-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.2px;
+}
+
+.notif-refresh {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.14s ease;
+}
+
+.notif-refresh:hover { background: rgba(255, 255, 255, 0.22); }
+.notif-refresh:active i { transform: rotate(180deg); transition: transform 0.3s ease; }
+
+.notif-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 12px 18px;
+}
+
+.notif-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    padding: 14px 6px 7px;
+}
+
+/* Each notification is a real macOS-style rounded card. */
+.notif-card {
+    display: flex;
+    gap: 11px;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 0.5px solid rgba(255, 255, 255, 0.10);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.14s ease, transform 0.14s ease;
+}
+
+.notif-card:hover {
+    background: rgba(255, 255, 255, 0.17);
+    transform: translateY(-1px);
+}
+
+.notif-card-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.notif-card-body { min-width: 0; flex: 1; }
+
+.notif-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 1px;
+}
+
+.notif-card-app {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.notif-card-time {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+}
+
+.notif-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notif-card-text {
+    font-size: 11.5px;
+    line-height: 1.42;
+    color: rgba(255, 255, 255, 0.66);
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-card-meta {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 4px;
+}
+
+.notif-loading,
+.notif-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12.5px;
+}
+
+.notif-empty i {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.notif-empty div {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.notif-empty p { font-size: 11.5px; }
+
+/* The clock doubles as the toggle, like the real menu bar. */
+#clock { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+    .notif-center { transition: none; }
+    .notif-card:hover { transform: none; }
+}

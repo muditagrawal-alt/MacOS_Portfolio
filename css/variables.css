@@ -1,0 +1,23 @@
+/* ==========================================================================
+   CSS Design Tokens, Color Variables & Glassmorphism Variables
+   ========================================================================== */
+
+:root {
+    --bg-color: #000;
+    --window-bg: rgba(30, 30, 30, 0.7);
+    --window-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #fff;
+    --text-secondary: #aaa;
+    --sidebar-bg: rgba(20, 20, 20, 0.6);
+    --sidebar-active: rgba(255, 255, 255, 0.15);
+    --titlebar-bg: rgba(40, 40, 40, 0.8);
+    --dock-bg: rgba(255, 255, 255, 0.15);
+    --dock-border: rgba(255, 255, 255, 0.2);
+    --accent: #007aff;
+    --accent-hover: #0062cc;
+    --traffic-close: #ff5f56;
+    --traffic-minimize: #ffbd2e;
+    --traffic-maximize: #27c93f;
+    --mail-unread-blue: #0a84ff;
+    --mail-star-yellow: #ffd60a;
+}

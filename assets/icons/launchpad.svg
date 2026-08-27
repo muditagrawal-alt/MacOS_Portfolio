@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Outer disc gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a4a4e" />
+      <stop offset="40%" stop-color="#323236" />
+      <stop offset="100%" stop-color="#1c1c1e" />
+    </linearGradient>
+    <linearGradient id="discBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.45)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0.1)" />
+    </linearGradient>
+    <!-- Tile gradients -->
+    <linearGradient id="tile1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00C7FF" /><stop offset="100%" stop-color="#0072FF" />
+    </linearGradient>
+    <linearGradient id="tile2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34C759" /><stop offset="100%" stop-color="#30B0C7" />
+    </linearGradient>
+    <linearGradient id="tile3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9500" /><stop offset="100%" stop-color="#FF2D55" />
+    </linearGradient>
+    <linearGradient id="tile4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5E5CE6" /><stop offset="100%" stop-color="#AF52DE" />
+    </linearGradient>
+    <linearGradient id="tile5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007AFF" /><stop offset="100%" stop-color="#5856D6" />
+    </linearGradient>
+    <linearGradient id="tile6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD60A" /><stop offset="100%" stop-color="#FF9F0A" />
+    </linearGradient>
+    <linearGradient id="tile7" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF375F" /><stop offset="100%" stop-color="#FF2D55" />
+    </linearGradient>
+    <linearGradient id="tile8" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#636366" /><stop offset="100%" stop-color="#2C2C2E" />
+    </linearGradient>
+    <linearGradient id="tile9" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8E8E93" /><stop offset="100%" stop-color="#48484A" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background squircle/disc -->
+  <rect x="8" y="8" width="112" height="112" rx="27" fill="url(#bgGrad)" stroke="url(#discBorder)" stroke-width="1.5" filter="url(#shadow)" />
+  
+  <!-- Subtle inner top highlight -->
+  <rect x="9" y="9" width="110" height="40" rx="26" fill="white" opacity="0.06" />
+
+  <!-- 3x3 App Tiles Grid -->
+  <!-- Row 1 -->
+  <rect x="23" y="23" width="22" height="22" rx="5.5" fill="url(#tile1)" />
+  <path d="M 34 27 L 34 41 M 27 34 L 41 34" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.9" />
+
+  <rect x="53" y="23" width="22" height="22" rx="5.5" fill="url(#tile2)" />
+  <circle cx="64" cy="34" r="5" fill="white" opacity="0.85" />
+
+  <rect x="83" y="23" width="22" height="22" rx="5.5" fill="url(#tile3)" />
+  <path d="M 94 28 C 91 31, 91 37, 94 40 C 97 37, 97 31, 94 28 Z" fill="white" opacity="0.9" />
+
+  <!-- Row 2 -->
+  <rect x="23" y="53" width="22" height="22" rx="5.5" fill="url(#tile4)" />
+  <circle cx="34" cy="64" r="6" stroke="white" stroke-width="1.5" fill="none" opacity="0.85" />
+
+  <rect x="53" y="53" width="22" height="22" rx="5.5" fill="url(#tile5)" />
+  <path d="M 59 60 L 69 60 L 64 68 Z" fill="white" opacity="0.9" />
+
+  <rect x="83" y="53" width="22" height="22" rx="5.5" fill="url(#tile6)" />
+  <rect x="87" y="57" width="14" height="2" rx="1" fill="white" opacity="0.9" />
+  <rect x="87" y="62" width="14" height="2" rx="1" fill="white" opacity="0.75" />
+  <rect x="87" y="67" width="10" height="2" rx="1" fill="white" opacity="0.75" />
+
+  <!-- Row 3 -->
+  <rect x="23" y="83" width="22" height="22" rx="5.5" fill="url(#tile7)" />
+  <circle cx="31" cy="95" r="3" fill="white" opacity="0.9" />
+  <path d="M 34 95 L 34 88 L 40 86 L 40 93" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9" />
+  <circle cx="37" cy="93" r="3" fill="white" opacity="0.9" />
+
+  <rect x="53" y="83" width="22" height="22" rx="5.5" fill="url(#tile8)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" />
+  <text x="56" y="97" font-family="-apple-system, monospace" font-size="9" font-weight="700" fill="#30D158">&gt;_</text>
+
+  <rect x="83" y="83" width="22" height="22" rx="5.5" fill="url(#tile9)" />
+  <circle cx="94" cy="94" r="5" stroke="white" stroke-width="2" fill="none" opacity="0.85" />
+</svg>

@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Responsive Adaptations for Mobile & Small Displays
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+    
+    /* Sizes only — no !important on top/left. Those inline styles are written
+       by the drag handler, and !important silently made dragging and
+       maximising no-ops on every touch device. */
+    .window {
+        width: 92%;
+        height: 82%;
+        min-width: unset;
+        min-height: unset;
+    }
+
+    /* Only windows the visitor has never moved get the default placement. */
+    .window:not([data-placed]) {
+        top: 10%;
+        left: 4%;
+    }
+    
+    .sidebar, .notes-sidebar, .appstore-sidebar, .settings-sidebar {
+        display: none;
+    }
+
+    .mail-sidebar {
+        display: none;
+    }
+
+    .mail-list-container {
+        width: 100%;
+    }
+
+    .mail-reader {
+        display: none;
+    }
+
+    .mail-reader.mobile-active {
+        display: flex;
+    }
+
+    .safari-nav-cluster {
+        margin-left: 50px;
+    }
+
+    .safari-url-bar {
+        max-width: 260px;
+    }
+
+    .dock {
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .dock-item {
+        width: 40px;
+        height: 40px;
+    }
+
+    .dock-item img {
+        width: 34px !important;
+        height: 34px !important;
+    }
+}

@@ -1,0 +1,197 @@
+/* ==========================================================================
+   Photos.app — certificate & workspace gallery
+   ========================================================================== */
+
+.photos-sidebar { width: 190px; }
+
+.photos-sidebar .sidebar-item { position: relative; }
+
+.photos-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: #8a8a8f;
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 9px;
+    padding: 1px 7px;
+}
+
+.photos-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 18px;
+}
+
+.photo-tile {
+    margin: 0;
+    cursor: pointer;
+    border-radius: 9px;
+    padding: 7px;
+    transition: background 0.14s ease, transform 0.14s ease;
+}
+
+.photo-tile:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-2px);
+}
+
+.photo-tile:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.photo-tile-frame {
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-tile-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.photo-tile figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 9px;
+}
+
+.photo-tile-title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #f0f0f2;
+    line-height: 1.3;
+}
+
+.photo-tile-issuer {
+    font-size: 11px;
+    color: #8a8a8f;
+}
+
+/* ── Lightbox ───────────────────────────────────────────────────────────── */
+
+.photo-lightbox {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.86);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+.photo-lightbox.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.photo-lightbox-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 46px 62px 12px;
+    min-height: 0;
+}
+
+.photo-lightbox-stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.6);
+}
+
+.photo-lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.photo-lightbox-close:hover { background: rgba(255, 255, 255, 0.24); }
+
+.photo-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.11);
+    color: #fff;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.photo-lightbox-nav:hover { background: rgba(255, 255, 255, 0.22); }
+.photo-lightbox-nav.prev { left: 12px; }
+.photo-lightbox-nav.next { right: 12px; }
+
+.photo-lightbox-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-lightbox-meta { flex: 1; min-width: 0; }
+
+.photo-lightbox-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.photo-lightbox-issuer {
+    font-size: 11.5px;
+    color: #9a9a9f;
+}
+
+.photo-lightbox-counter {
+    font-size: 11.5px;
+    color: #8a8a8f;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+    .photos-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .photo-lightbox-stage { padding: 40px 14px 8px; }
+    .photo-lightbox-nav { width: 32px; height: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .photo-tile, .photo-lightbox { transition: none; }
+    .photo-tile:hover { transform: none; }
+}

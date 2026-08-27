@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bghuggingface" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffdb4f"/><stop offset="1" stop-color="#ffd21e"/>
+    </linearGradient>
+    <filter id="shhuggingface" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3.5" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <g filter="url(#shhuggingface)">
+    <rect x="6" y="6" width="116" height="116" rx="27" fill="url(#bghuggingface)"/>
+  </g>
+  <path d="M64 30c-18.8 0-34 15.2-34 34 0 6.1 1.6 11.8 4.4 16.7-1.6-.5-3.3-.4-4.8.4-2.6 1.4-3.6 4.6-2.3 7.2l4.6 8.8c1.1 2.1 3.3 3.3 5.6 3.1 5.9 5.1 15.6 8.8 26.5 8.8s20.6-3.7 26.5-8.8c2.3.2 4.5-1 5.6-3.1l4.6-8.8c1.3-2.6.3-5.8-2.3-7.2-1.5-.8-3.2-.9-4.8-.4A33.8 33.8 0 0 0 98 64c0-18.8-15.2-34-34-34zm-12 28a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm24 0a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM48 76h32c0 8.8-7.2 16-16 16s-16-7.2-16-16z" fill="#1a1a1a"/>
+</svg>

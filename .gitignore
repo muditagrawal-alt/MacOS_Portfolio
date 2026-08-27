@@ -19,3 +19,12 @@ build/
 
 # Temp Word files
 ~$*.docx
+
+# API Keys
+js/config/api-keys.js
+.env
+
+# Wallpaper masters — the optimized .jpg files are what ship.
+# Regenerate with:
+#   sips -s format jpeg -s formatOptions 72 -Z 2560 master.png --out out.jpg
+assets/Wallpapers/*.png

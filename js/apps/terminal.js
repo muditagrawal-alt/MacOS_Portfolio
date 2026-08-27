@@ -1,5 +1,5 @@
 const TERMINAL_COMMANDS = [
-    'help', 'neofetch', 'whoami', 'clear', 'ls', 'ls projects/', 'ls experience/',
+    'help', 'whoami', 'clear', 'ls', 'ls projects/', 'ls experience/',
     'ls education/', 'ls skills/', 'ls documents/', 'pwd', 'cd', 'date', 'uname',
     'echo', 'history', 'about me', 'experience', 'education', 'projects',
     'skills', 'contact', 'cat resume.txt', 'cat README.txt', 'cat Philosophy.txt',
@@ -11,7 +11,7 @@ const TERMINAL_COMMANDS = [
 ];
 
 /* ==========================================================================
-   Terminal.app Controller: CLI Command Parser, Neofetch & System Shortcuts
+   Terminal.app Controller: CLI Command Parser & System Shortcuts
    ========================================================================== */
 
 /**
@@ -434,7 +434,6 @@ To initiate collaboration:<br>
                         <span style="color:#888;">── Core Information ──</span><br>
                         • <span style="color:#4facfe">whoami</span> — Display author identity<br>
                         • <span style="color:#4facfe">cat resume.txt</span> — Rich text-formatted resume<br>
-                        • <span style="color:#4facfe">neofetch</span> — ASCII art system info card & specifications<br>
                         • <span style="color:#4facfe">history</span> — Chronological career & project timeline<br>
                         • <span style="color:#4facfe">about me</span> — Mudit's brief background bio<br>
                         • <span style="color:#4facfe">experience</span> — Internship history at Carnot, Zee & WESEE<br>
@@ -458,29 +457,6 @@ To initiate collaboration:<br>
                         <span style="color:#666;">↑/↓ recalls history &nbsp;·&nbsp; Tab completes commands</span>
                     `;
                     break;
-                case 'neofetch': {
-                    const p = window.PROFILE_DATA || {};
-                    response = `
-<pre style="font-family:inherit;line-height:1.35;margin:0;">
-<span style="color:#34c759;">                    'c.          </span><span style="color:#ffffff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>
-<span style="color:#34c759;">                 ,xNMM.          </span><span style="color:#555;">------------------------</span>
-<span style="color:#34c759;">               .OMMMMo           </span><span style="color:#f6d365;font-weight:600;">OS:</span> macOS Tahoe 26.0 (Finder Portfolio Edition)
-<span style="color:#34c759;">               OMMM0,            </span><span style="color:#f6d365;font-weight:600;">Host:</span> MacBook Pro 16" (Apple Silicon M3 Max)
-<span style="color:#ffcc00;">     .;loddo:.  </span><span style="color:#34c759;">.oaMMMMso:       </span><span style="color:#f6d365;font-weight:600;">Kernel:</span> Darwin 25.0.0 (arm64)
-<span style="color:#ffcc00;">   :0KMMMMMMMWk.  </span><span style="color:#34c759;">.dNMMMMK,      </span><span style="color:#f6d365;font-weight:600;">Uptime:</span> 3+ years in AI/ML & Systems
-<span style="color:#ff9500;">  :Nk.       .kM:   </span><span style="color:#34c759;">.dMMMMc      </span><span style="color:#f6d365;font-weight:600;">Shell:</span> zsh 5.9 (arm64-apple-darwin25.0)
-<span style="color:#ff9500;"> .MN           OM:    </span><span style="color:#34c759;">.MMo       </span><span style="color:#f6d365;font-weight:600;">Terminal:</span> Apple_Terminal (Finder Portfolio)
-<span style="color:#ff3b30;"> .MM.  .       .XM    </span><span style="color:#34c759;">xMM,       </span><span style="color:#f6d365;font-weight:600;">Education:</span> B.Tech CSE (AI/ML) @ IILM University
-<span style="color:#ff3b30;">  kM;  :x        .    </span><span style="color:#34c759;">XM,        </span><span style="color:#f6d365;font-weight:600;">Focus:</span> Agentic AI, Multimodal RAG, CV (YOLOv26)
-<span style="color:#af52de;">  ;MM.  .o.     .    </span><span style="color:#007aff;">oW"         </span><span style="color:#f6d365;font-weight:600;">Internships:</span> Carnot Research (IIT-D) • Zee • WESEE
-<span style="color:#af52de;">   *W0.          .  </span><span style="color:#007aff;">.dK          </span><span style="color:#f6d365;font-weight:600;">Memory:</span> 100% Passion & Grit
-<span style="color:#af52de;">    .kMD.       </span><span style="color:#007aff;">.oc.oWd          </span><span style="color:#f6d365;font-weight:600;">GitHub:</span> https://github.com/muditagrawal-alt
-<span style="color:#af52de;">      'kWMMMMMMMMMMk'            </span>
-<span style="color:#af52de;">        .,looodl;.               </span><span style="color:#ff5f56;">███</span> <span style="color:#ffbd2e;">███</span> <span style="color:#27c93f;">███</span> <span style="color:#4facfe;">███</span> <span style="color:#00f2fe;">███</span> <span style="color:#af52de;">███</span> <span style="color:#ff758c;">███</span> <span style="color:#ffffff;">███</span>
-</pre>
-`;
-                    break;
-                }
                 case 'whoami':
                     response = 'Mudit Agrawal';
                     break;

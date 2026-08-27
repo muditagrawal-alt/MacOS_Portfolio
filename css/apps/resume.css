@@ -1,0 +1,16 @@
+/* ==========================================================================
+   Resume.app (PDF Viewer) Styling
+   ========================================================================== */
+
+#resume-window .window-content {
+    background: #ffffff;
+    overflow-y: auto;
+    display: block;
+}
+
+#resume-window img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #ffffff;
+}

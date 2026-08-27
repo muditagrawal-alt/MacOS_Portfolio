@@ -1,0 +1,253 @@
+/* ==========================================================================
+   Boot Animation Styles — macOS Startup Sequence
+   Phase 1: Name Logo (Apple boot style)
+   Phase 2: Frosted Cursive "Hello" Animation
+   ========================================================================== */
+
+/* ── Boot Overlay Container ── */
+.boot-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 99999;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.boot-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.boot-overlay.hidden {
+    display: none;
+}
+
+/* ── Phase 1: Name Logo ──────────────────────────────────────────────────
+   The name fades in quickly on its own visual clock (this is just a snappy
+   logo entrance, no audio involved yet). The chime itself doesn't play here
+   — js/core/boot-animation.js fires it once the loading bar finishes (or
+   immediately on skip), and pairs it with the .glowing/.chime-beat classes
+   at that exact moment, so the "beat" below is what's actually synced to
+   the sound, not this entrance. */
+.boot-name-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    opacity: 0;
+    animation: bootNameFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.06s forwards;
+}
+
+.boot-name {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 42px;
+    font-weight: 200;
+    letter-spacing: 4px;
+    color: #f5f5f7;
+    text-align: center;
+    user-select: none;
+    text-shadow: 0 0 60px rgba(255, 255, 255, 0.15);
+    transform: scale(1);
+}
+
+/* Subtle glow pulse on the name */
+@keyframes bootNameGlow {
+    0%, 100% { text-shadow: 0 0 40px rgba(255, 255, 255, 0.08); }
+    50% { text-shadow: 0 0 80px rgba(255, 255, 255, 0.22); }
+}
+
+.boot-name.glowing {
+    animation: bootNameGlow 2s ease-in-out infinite;
+}
+
+/* One-shot "beat" — a soft scale pulse fired the instant the glow begins,
+   giving the sync moment a felt tick even for visitors whose browser
+   blocked the chime's audio (the visual reads as intentional either way). */
+@keyframes bootNameBeat {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.035); }
+    100% { transform: scale(1); }
+}
+
+.boot-name.chime-beat {
+    animation: bootNameGlow 2s ease-in-out infinite, bootNameBeat 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Progress Bar ── */
+.boot-progress-container {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.boot-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #f5f5f7;
+    border-radius: 2px;
+    /* No transition declared here on purpose — boot-animation.js sets the
+       full-duration one at runtime. A short transition here would win the
+       cascade order fight only by accident and make the fill stutter. */
+}
+
+@keyframes bootNameFadeIn {
+    0% { opacity: 0; transform: scale(0.96); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Phase 2: Apple's handwritten "hello" ───────────────────────────────
+   A single continuous stroke, drawn on rather than faded in. The previous
+   version was a rainbow-gradient text element cycling through languages,
+   which reads as generic web-flourish; Apple's actual intro is one white
+   cursive stroke being written. */
+.boot-hello-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    background: #000;
+    transition: opacity 0.35s ease;
+}
+
+.boot-hello-container.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.boot-hello-svg {
+    width: min(62vw, 780px);
+    overflow: visible;
+}
+
+#boot-hello-path {
+    fill: none;
+    stroke: #f5f5f7;
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* pathLength="1" on the element normalises these to 0..1 progress. */
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    filter: drop-shadow(0 0 26px rgba(255, 255, 255, 0.28));
+}
+
+.boot-hello-container.writing #boot-hello-path {
+    animation: helloWrite 2.2s cubic-bezier(0.55, 0.06, 0.3, 0.96) forwards;
+}
+
+@keyframes helloWrite {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+}
+
+/* Whatever happened to the animation, the finished stroke must be fully
+   drawn by the time we settle — otherwise a tab that was backgrounded
+   during Phase 2 shows an empty screen. */
+.boot-hello-container.settled #boot-hello-path {
+    stroke-dashoffset: 0;
+}
+
+/* Gentle settle once the stroke completes. */
+.boot-hello-container.settled .boot-hello-svg {
+    animation: helloSettle 0.7s ease forwards;
+}
+
+@keyframes helloSettle {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.02); }
+}
+
+/* ── Power-on gate (shown only when audio autoplay is blocked) ────────── */
+.boot-power-gate {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transition: opacity 0.45s ease;
+}
+
+.boot-power-gate.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.boot-power-gate.dismissed {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.boot-power-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: powerGateIn 0.7s ease both;
+}
+
+@keyframes powerGateIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.boot-power-logo {
+    width: 62px;
+    height: 62px;
+    color: #f5f5f7;
+    animation: powerLogoPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes powerLogoPulse {
+    0%, 100% { opacity: 0.82; filter: drop-shadow(0 0 16px rgba(255,255,255,0.12)); }
+    50%      { opacity: 1;    filter: drop-shadow(0 0 30px rgba(255,255,255,0.30)); }
+}
+
+.boot-power-label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
+    color: #f5f5f7;
+}
+
+.boot-power-sub {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(245, 245, 247, 0.5);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .boot-name {
+        font-size: 28px;
+        letter-spacing: 2px;
+    }
+
+    .boot-progress-container {
+        width: 140px;
+    }
+
+    .boot-hello-svg {
+        width: 78vw;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .boot-hello-container.writing #boot-hello-path { animation: none; stroke-dashoffset: 0; }
+    .boot-power-logo { animation: none; }
+}

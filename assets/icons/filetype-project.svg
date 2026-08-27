@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 104" width="128" height="104">
+  <defs>
+    <linearGradient id="projBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f7cf0"/><stop offset="1" stop-color="#5e46d6"/>
+    </linearGradient>
+    <linearGradient id="projFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7c65e8"/><stop offset="1" stop-color="#4c35c9"/>
+    </linearGradient>
+    <filter id="projSh" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+  <g filter="url(#projSh)">
+    <path d="M6 20a7 7 0 0 1 7-7h33l10 10h59a7 7 0 0 1 7 7v10H6z" fill="url(#projBack)"/>
+    <path d="M6 33h116a7 7 0 0 1 7 7v50a7 7 0 0 1-7 7H13a7 7 0 0 1-7-7z" fill="url(#projFront)"/>
+  </g>
+  <text x="64" y="76" font-family="'SF Mono',ui-monospace,Menlo,monospace" font-size="30"
+        font-weight="700" fill="#fff" text-anchor="middle" opacity="0.96">&lt;/&gt;</text>
+</svg>

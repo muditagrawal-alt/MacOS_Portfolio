@@ -1,0 +1,389 @@
+/* ==========================================================================
+   Iris AI Assistant — Siri-Style Overlay & Animation
+   ========================================================================== */
+
+/* ── Full-Screen Overlay ── */
+.iris-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 95000;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(60px) saturate(150%);
+    -webkit-backdrop-filter: blur(60px) saturate(150%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 8vh;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.iris-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Animated Orb (Siri Style) ── */
+.iris-orb-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 30px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.iris-orb {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%,
+        rgba(147, 112, 219, 0.8),
+        rgba(75, 0, 130, 0.6) 40%,
+        rgba(30, 144, 255, 0.5) 60%,
+        rgba(255, 105, 180, 0.4) 80%,
+        rgba(0, 191, 255, 0.3)
+    );
+    box-shadow:
+        0 0 60px rgba(138, 43, 226, 0.4),
+        0 0 120px rgba(75, 0, 130, 0.2),
+        inset 0 0 40px rgba(255, 255, 255, 0.1);
+    animation: irisOrbFloat 4s ease-in-out infinite, irisOrbGradient 8s ease infinite;
+    transition: transform 0.3s ease;
+}
+
+/* Orb states */
+.iris-orb.listening {
+    animation: irisOrbFloat 2s ease-in-out infinite, irisOrbPulse 1.5s ease-in-out infinite, irisOrbGradient 4s ease infinite;
+    box-shadow:
+        0 0 80px rgba(138, 43, 226, 0.5),
+        0 0 160px rgba(75, 0, 130, 0.3),
+        inset 0 0 50px rgba(255, 255, 255, 0.15);
+}
+
+.iris-orb.thinking {
+    animation: irisOrbFloat 1.5s ease-in-out infinite, irisOrbSpin 2s linear infinite, irisOrbGradient 3s ease infinite;
+    box-shadow:
+        0 0 100px rgba(0, 191, 255, 0.5),
+        0 0 200px rgba(138, 43, 226, 0.3),
+        inset 0 0 60px rgba(255, 255, 255, 0.2);
+}
+
+/* Glow ring around orb */
+.iris-orb::after {
+    content: '';
+    position: absolute;
+    top: -8px; left: -8px;
+    right: -8px; bottom: -8px;
+    border-radius: 50%;
+    border: 2px solid rgba(138, 43, 226, 0.2);
+    animation: irisRingPulse 3s ease-in-out infinite;
+}
+
+@keyframes irisOrbFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes irisOrbPulse {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.05) translateY(-5px); }
+}
+
+@keyframes irisOrbSpin {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes irisOrbGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes irisRingPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* ── Waveform Bars (under orb, listening state) ── */
+.iris-waveform {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 30px;
+    margin-top: -15px;
+    margin-bottom: 15px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.iris-waveform.active {
+    opacity: 1;
+}
+
+.iris-waveform-bar {
+    width: 3px;
+    background: linear-gradient(to top, #8a2be2, #00bfff);
+    border-radius: 2px;
+    animation: waveformBounce 0.8s ease-in-out infinite;
+}
+
+.iris-waveform-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+.iris-waveform-bar:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+.iris-waveform-bar:nth-child(3) { height: 24px; animation-delay: 0.2s; }
+.iris-waveform-bar:nth-child(4) { height: 18px; animation-delay: 0.3s; }
+.iris-waveform-bar:nth-child(5) { height: 28px; animation-delay: 0.15s; }
+.iris-waveform-bar:nth-child(6) { height: 12px; animation-delay: 0.25s; }
+.iris-waveform-bar:nth-child(7) { height: 20px; animation-delay: 0.05s; }
+
+@keyframes waveformBounce {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+}
+
+/* ── Iris Label ── */
+.iris-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+/* ── Conversation Area ── */
+.iris-conversation {
+    flex: 1;
+    width: 100%;
+    max-width: 600px;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.iris-message {
+    max-width: 90%;
+    padding: 12px 18px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    animation: irisMessageSlideIn 0.3s ease;
+}
+
+@keyframes irisMessageSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.iris-message.user {
+    align-self: flex-end;
+    background: #007aff;
+    color: #fff;
+    border-bottom-right-radius: 6px;
+}
+
+.iris-message.iris {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e8e8e8;
+    border-bottom-left-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.iris-message.iris strong {
+    color: #fff;
+}
+
+.iris-message.iris a {
+    color: #64b5f6;
+    text-decoration: underline;
+}
+
+/* Typing indicator */
+.iris-typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 12px 18px;
+    align-self: flex-start;
+}
+
+.iris-typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    animation: irisTypingBounce 1.2s ease-in-out infinite;
+}
+
+.iris-typing-dot:nth-child(1) { animation-delay: 0s; }
+.iris-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.iris-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes irisTypingBounce {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* ── Input Area ── */
+.iris-input-area {
+    width: 100%;
+    max-width: 600px;
+    padding: 16px 20px 24px;
+    flex-shrink: 0;
+}
+
+.iris-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 4px 6px 4px 18px;
+    transition: border-color 0.2s;
+}
+
+.iris-input-wrapper:focus-within {
+    border-color: rgba(138, 43, 226, 0.5);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.15);
+}
+
+.iris-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    padding: 10px 0;
+}
+
+.iris-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.iris-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8a2be2, #007aff);
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, opacity 0.15s;
+    flex-shrink: 0;
+}
+
+.iris-send-btn:hover {
+    transform: scale(1.08);
+}
+
+.iris-send-btn:active {
+    transform: scale(0.95);
+}
+
+.iris-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Close Button ── */
+.iris-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ccc;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.iris-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* ── Suggested Prompts ── */
+.iris-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 600px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+}
+
+.iris-suggestion {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.iris-suggestion:hover {
+    background: rgba(138, 43, 226, 0.2);
+    border-color: rgba(138, 43, 226, 0.4);
+    color: #fff;
+}
+
+/* ── Dock Icon Gradient ── */
+.dock-icon-bg.bg-iris {
+    background: linear-gradient(135deg, #8a2be2 0%, #ff69b4 35%, #00bfff 65%, #8a2be2 100%);
+    background-size: 300% 300%;
+    animation: irisDockGlow 4s ease infinite;
+}
+
+@keyframes irisDockGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .iris-orb-container {
+        width: 120px;
+        height: 120px;
+    }
+
+    .iris-conversation {
+        max-width: 100%;
+    }
+
+    .iris-input-area {
+        max-width: 100%;
+    }
+
+    .iris-suggestions {
+        max-width: 100%;
+    }
+}

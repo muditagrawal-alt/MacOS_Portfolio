@@ -1,0 +1,42 @@
+/* ==========================================================================
+   TextEdit.app — plain text viewer
+   ========================================================================== */
+
+#textedit-window {
+    background: rgba(28, 28, 30, 0.92);
+}
+
+.textedit-content {
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.textedit-body {
+    flex: 1;
+    margin: 0;
+    padding: 22px 26px;
+    overflow: auto;
+    font-family: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.62;
+    color: #e6e6e8;
+    white-space: pre;
+    tab-size: 4;
+    user-select: text;
+    -webkit-user-select: text;
+    outline: none;
+}
+
+.textedit-body:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.textedit-statusbar {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: #8a8a8f;
+    background: rgba(0, 0, 0, 0.28);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: right;
+}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><title>Key Debug</title></head>
+<body style="background:#111;color:#0f0;font-family:monospace;padding:40px">
+<h2>Press any key combo — events logged below</h2>
+<div id="log" style="white-space:pre-wrap;font-size:14px;line-height:1.8"></div>
+<script>
+document.addEventListener('keydown', e => {
+    const info = `key="${e.key}" code="${e.code}" alt=${e.altKey} meta=${e.metaKey} ctrl=${e.ctrlKey} shift=${e.shiftKey}`;
+    document.getElementById('log').textContent = info + '\n' + document.getElementById('log').textContent;
+    
+    // Test the exact same conditions as keyboard.js
+    const isKeyL = e.code === 'KeyL' || (e.key && e.key.toLowerCase() === 'l') || e.key === '¬';
+    const isLaunchpadShortcut = 
+        (e.altKey && isKeyL) ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && isKeyL) ||
+        (e.code === 'F4' || e.key === 'F4');
+    
+    if (isLaunchpadShortcut) {
+        document.getElementById('log').textContent = '>>> LAUNCHPAD WOULD FIRE <<<\n' + document.getElementById('log').textContent;
+    }
+});
+</script>
+</body></html>
