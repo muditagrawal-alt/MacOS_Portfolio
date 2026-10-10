@@ -66,17 +66,19 @@ const QUICKLOOK_DATA = {
         title: 'Projects',
         type: 'text',
         icon: 'fas fa-folder-open',
-        meta: 'Folder — 8 items',
+        meta: 'Folder — 10 items',
         content: `<h2>Featured Projects</h2>
             <ul>
                 <li><strong>OmniDoc</strong> — Multimodal RAG system using Mistral-7B & BLIP</li>
+                <li><strong>VLM Leads (Live)</strong> — Vision-Language business card lead extractor on Vercel</li>
+                <li><strong>Monocular SLAM</strong> — Sparse 3D point cloud reconstruction from RGB</li>
                 <li><strong>Sliver.Ai</strong> — Smart video clipping with YOLOv8 & YOLO11m</li>
-                <li><strong>S.W.O.R.D</strong> — Real-time weapon observation with YOLOv8</li>
+                <li><strong>Project S.W.O.R.D</strong> — Real-time weapon observation with YOLOv8</li>
                 <li><strong>Deepfake Detector</strong> — ML-based deepfake media detection</li>
-                <li><strong>Helix-Compiler</strong> — C-based compiler project</li>
+                <li><strong>Helix-Compiler</strong> — C-based systems compiler</li>
+                <li><strong>Skyguard AI</strong> — Airspace threat detection & drone tracking</li>
                 <li><strong>Multiva.Ai</strong> — AI voice cloning with Whisper & XTTS</li>
-                <li><strong>Inflx</strong> — AutoStream agent service</li>
-                <li><strong>Artifex</strong> — Creative AI design experiences</li>
+                <li><strong>Artifex</strong> — Creative generative AI design platform</li>
             </ul>`,
         openAction: "openFinderPane('projects')"
     },

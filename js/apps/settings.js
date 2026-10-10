@@ -59,6 +59,14 @@ function setThemeMode(mode, element) {
     saveSettings({ theme: mode });
 }
 
+function toggleTheme() {
+    const s = typeof loadSettings === 'function' ? loadSettings() : { theme: 'standard' };
+    const next = s.theme === 'glass' ? 'standard' : 'glass';
+    setThemeMode(next);
+    return next;
+}
+window.toggleTheme = toggleTheme;
+
 function setAccentColor(colorHex, element) {
     document.querySelectorAll('.accent-dot').forEach(dot => dot.classList.remove('active'));
     if (element) element.classList.add('active');

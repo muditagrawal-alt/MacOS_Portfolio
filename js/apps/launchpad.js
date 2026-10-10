@@ -36,6 +36,42 @@ const LAUNCHPAD_APPS = [
         action: () => openWindow('photos-window')
     },
     {
+        id: 'photobooth',
+        name: 'Photo Booth',
+        icon: 'assets/icons/photobooth.svg',
+        action: () => {
+            if (typeof openPhotoBooth === 'function') openPhotoBooth();
+            else openWindow('photobooth-window');
+        }
+    },
+    {
+        id: 'music',
+        name: 'Music',
+        icon: 'assets/icons/music.png',
+        action: () => {
+            if (typeof openMusic === 'function') openMusic();
+            else openWindow('music-window');
+        }
+    },
+    {
+        id: 'breakout',
+        name: 'Breakout',
+        icon: 'assets/icons/breakout.svg',
+        action: () => {
+            if (typeof openBreakout === 'function') openBreakout();
+            else openWindow('breakout-window');
+        }
+    },
+    {
+        id: 'snake',
+        name: 'Snake',
+        icon: 'assets/icons/snake.svg',
+        action: () => {
+            if (typeof openSnake === 'function') openSnake();
+            else openWindow('snake-window');
+        }
+    },
+    {
         id: 'appstore',
         name: 'App Store',
         icon: 'assets/icons/app-store.png',
@@ -144,12 +180,63 @@ const LAUNCHPAD_APPS = [
         }
     },
     {
+        id: 'vlm',
+        name: 'VLM Leads (Live)',
+        icon: 'assets/icons/app-vlm.svg',
+        action: () => window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer')
+    },
+    {
+        id: 'veritas',
+        name: 'Veritas Check (Live)',
+        icon: 'assets/icons/app-veritas.svg',
+        action: () => window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer')
+    },
+    {
+        id: 'slam',
+        name: 'Monocular SLAM',
+        icon: 'assets/icons/app-slam.svg',
+        action: () => {
+            if (typeof openProjectDetails === 'function') openProjectDetails('Monocular SLAM');
+            else openWindow('appstore-window');
+        }
+    },
+    {
+        id: 'skyguard',
+        name: 'Skyguard AI',
+        icon: 'assets/icons/app-skyguard.svg',
+        action: () => {
+            if (typeof openProjectDetails === 'function') openProjectDetails('Skyguard AI');
+            else openWindow('appstore-window');
+        }
+    },
+    {
         id: 'trash',
         name: 'Trash',
         icon: 'assets/icons/trash-full.png',
         action: () => openWindow('trash-window')
     }
 ];
+
+window.openProjectDetails = function(name) {
+    if (typeof openWindow === 'function') openWindow('appstore-window');
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.app-card');
+        const q = (name || '').toLowerCase();
+        for (const card of cards) {
+            if (card.textContent.toLowerCase().includes(q)) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.transition = 'box-shadow 0.35s ease, transform 0.35s ease';
+                card.style.boxShadow = '0 0 0 3px #007aff, 0 10px 25px rgba(0,122,255,0.4)';
+                card.style.transform = 'scale(1.03)';
+                setTimeout(() => {
+                    card.style.boxShadow = '';
+                    card.style.transform = '';
+                }, 2200);
+                break;
+            }
+        }
+    }, 250);
+};
 
 function initLaunchpad() {
     const overlay = document.getElementById('launchpad-overlay');

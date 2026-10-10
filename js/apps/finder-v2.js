@@ -15,70 +15,70 @@ const AAKASH_STYLE_FS = {
         id: 'home',
         name: (pData.name || 'Mudit').split(' ')[0],
         kind: 'folder',
-        icon: 'assets/icons/folder-home.png',
+        icon: 'assets/icons/folder-home-macos.svg',
         items: ['desktop', 'documents', 'downloads', 'pictures', 'projects-folder', 'experience-folder', 'education-folder', 'skills-folder']
     },
     'desktop': {
         id: 'desktop',
         name: 'Desktop',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-desktop-macos.svg',
         items: ['readme', 'notes-txt', 'resume-pdf', 'contact-card']
     },
     'documents': {
         id: 'documents',
         name: 'Documents',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-documents-macos.svg',
         items: ['resume-pdf', 'cover-letter', 'transcript-doc', 'projects-folder']
     },
     'downloads': {
         id: 'downloads',
         name: 'Downloads',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-downloads-macos.svg',
         items: ['resume-pdf', 'wallpaper-tahoe', 'source-zip']
     },
     'pictures': {
         id: 'pictures',
         name: 'Pictures',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-pictures-macos.svg',
         items: ['profile-pic', 'wallpaper-tahoe']
     },
     'music': {
         id: 'music',
         name: 'Music',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-macos.svg',
         items: ['multiva-voice', 'ambient-tune']
     },
     'projects-folder': {
         id: 'projects-folder',
         name: 'Projects',
         kind: 'folder',
-        icon: 'assets/icons/folder-dock.png',
-        items: ['proj-omnidoc', 'proj-sliver', 'proj-sword', 'proj-deepfake', 'proj-helix', 'proj-multiva', 'proj-inflx', 'proj-artifex']
+        icon: 'assets/icons/folder-projects-macos.svg',
+        items: ['proj-vlm', 'proj-slam', 'proj-omnidoc', 'proj-sliver', 'proj-sword', 'proj-deepfake', 'proj-helix', 'proj-multiva', 'proj-skyguard', 'proj-artifex']
     },
     'experience-folder': {
         id: 'experience-folder',
         name: 'Experience',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-experience-macos.svg',
         items: expKeys
     },
     'education-folder': {
         id: 'education-folder',
         name: 'Education',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-education-macos.svg',
         items: ['edu-btech', 'edu-12', 'edu-10', 'cert-ml', 'cert-py', 'cert-del', 'cert-java']
     },
     'skills-folder': {
         id: 'skills-folder',
         name: 'Skills',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-skills-macos.svg',
         items: ['skill-prog', 'skill-fw', 'skill-models', 'skill-db', 'skill-eval', 'skill-tools']
     },
     'network': {
@@ -93,7 +93,7 @@ const AAKASH_STYLE_FS = {
         id: 'recents',
         name: 'Recents',
         kind: 'folder',
-        icon: 'assets/icons/folder-generic.png',
+        icon: 'assets/icons/folder-macos.svg',
         items: ['proj-omnidoc', 'resume-pdf', expKeys[0] || 'exp-0', 'proj-sliver', 'notes-txt']
     },
     'trash': {
@@ -107,14 +107,14 @@ const AAKASH_STYLE_FS = {
 
 // ── File & Folder Items Definition ──
 const FS_ITEMS = {
-    'desktop': { id: 'desktop', name: 'Desktop', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Today', size: '4 items', targetFolder: 'desktop' },
-    'documents': { id: 'documents', name: 'Documents', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Today', size: '4 items', targetFolder: 'documents' },
-    'downloads': { id: 'downloads', name: 'Downloads', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Yesterday', size: '3 items', targetFolder: 'downloads' },
-    'pictures': { id: 'pictures', name: 'Pictures', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Jun 3', size: '2 items', targetFolder: 'pictures' },
-    'projects-folder': { id: 'projects-folder', name: 'Projects', kind: 'folder', icon: 'assets/icons/folder-dock.png', date: 'Today', size: '8 items', targetFolder: 'projects-folder' },
-    'experience-folder': { id: 'experience-folder', name: 'Experience', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Today', size: `${expKeys.length} items`, targetFolder: 'experience-folder' },
-    'education-folder': { id: 'education-folder', name: 'Education', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'May 2026', size: '7 items', targetFolder: 'education-folder' },
-    'skills-folder': { id: 'skills-folder', name: 'Skills', kind: 'folder', icon: 'assets/icons/folder-generic.png', date: 'Aug 2026', size: '6 items', targetFolder: 'skills-folder' },
+    'desktop': { id: 'desktop', name: 'Desktop', kind: 'folder', icon: 'assets/icons/folder-desktop-macos.svg', date: 'Today', size: '4 items', targetFolder: 'desktop' },
+    'documents': { id: 'documents', name: 'Documents', kind: 'folder', icon: 'assets/icons/folder-documents-macos.svg', date: 'Today', size: '4 items', targetFolder: 'documents' },
+    'downloads': { id: 'downloads', name: 'Downloads', kind: 'folder', icon: 'assets/icons/folder-downloads-macos.svg', date: 'Yesterday', size: '3 items', targetFolder: 'downloads' },
+    'pictures': { id: 'pictures', name: 'Pictures', kind: 'folder', icon: 'assets/icons/folder-pictures-macos.svg', date: 'Jun 3', size: '2 items', targetFolder: 'pictures' },
+    'projects-folder': { id: 'projects-folder', name: 'Projects', kind: 'folder', icon: 'assets/icons/folder-projects-macos.svg', date: 'Today', size: '10 items', targetFolder: 'projects-folder' },
+    'experience-folder': { id: 'experience-folder', name: 'Experience', kind: 'folder', icon: 'assets/icons/folder-experience-macos.svg', date: 'Today', size: `${expKeys.length} items`, targetFolder: 'experience-folder' },
+    'education-folder': { id: 'education-folder', name: 'Education', kind: 'folder', icon: 'assets/icons/folder-education-macos.svg', date: 'May 2026', size: '7 items', targetFolder: 'education-folder' },
+    'skills-folder': { id: 'skills-folder', name: 'Skills', kind: 'folder', icon: 'assets/icons/folder-skills-macos.svg', date: 'Aug 2026', size: '6 items', targetFolder: 'skills-folder' },
     
     // Files
     'readme': {
@@ -209,9 +209,27 @@ const FS_ITEMS = {
     },
 
     // ── Projects ──
+    'proj-vlm': {
+        id: 'proj-vlm', name: 'VLM Lead Extraction', kind: 'Vision AI Web App', ext: 'app',
+        icon: 'assets/icons/app-vlm.svg', date: 'Recent', size: '28 MB',
+        link: 'https://muditagrawal-lead-extraction.vercel.app',
+        preview: {
+            title: 'VLM Business Card Lead Extraction', subtitle: 'Live Deployed Web Application',
+            desc: 'Bulk business-card lead extraction using vision-language models (Gemini & Qwen3-VL), structured field parsing, review drawer, and formatted Excel export.\n\n• Stack: FastAPI · React · PostgreSQL · Vercel · Oracle Cloud\n• Live App: muditagrawal-lead-extraction.vercel.app'
+        }
+    },
+    'proj-slam': {
+        id: 'proj-slam', name: 'Monocular SLAM', kind: 'Computer Vision System', ext: 'py',
+        icon: 'assets/icons/app-slam.svg', date: 'Recent', size: '34 MB',
+        link: 'https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM',
+        preview: {
+            title: 'Monocular RGB Sparse Point Cloud SLAM', subtitle: 'Classical Multi-View Geometry',
+            desc: 'Camera trajectory and a sparse 3D point cloud from a single-lens RGB video. Classical multi-view geometry, no neural network, no GPU: a 10s clip reconstructs in under 7s on CPU.'
+        }
+    },
     'proj-omnidoc': {
-        id: 'proj-omnidoc', name: 'OmniDoc', kind: 'Python Project', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Jan 2026', size: '24 MB',
+        id: 'proj-omnidoc', name: 'OmniDoc', kind: 'Multimodal RAG App', ext: 'app',
+        icon: 'assets/icons/app-omnidoc.svg', date: 'Jan 2026', size: '24 MB',
         link: 'https://github.com/muditagrawal-alt/OmniDoc',
         preview: {
             title: 'OmniDoc', subtitle: 'Multimodal RAG Document Intelligence',
@@ -219,17 +237,17 @@ const FS_ITEMS = {
         }
     },
     'proj-sliver': {
-        id: 'proj-sliver', name: 'Sliver.Ai', kind: 'Python Project', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Jan 2026', size: '18 MB',
+        id: 'proj-sliver', name: 'Sliver.Ai', kind: 'Video AI App', ext: 'app',
+        icon: 'assets/icons/app-sliver.svg', date: 'Jan 2026', size: '18 MB',
         link: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool',
         preview: {
-            title: 'Sliver.Ai', subtitle: 'Smart Video Clipping Tool',
-            desc: 'Automated video highlight pipeline leveraging YOLOv8n, YOLO11m, facial emotion recognition, and FFmpeg chunking.'
+            title: 'Sliver.Ai', subtitle: 'On-Device Video Summarization Engine',
+            desc: 'On-device AI video summarization engine & smart highlight extractor using YOLO11m, YOLOv8-Face, and OpenAI CLIP with sample-accurate audio sync.'
         }
     },
     'proj-sword': {
-        id: 'proj-sword', name: 'Project S.W.O.R.D', kind: 'Deep Learning System', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Dec 2025', size: '42 MB',
+        id: 'proj-sword', name: 'Project S.W.O.R.D', kind: 'Defense CV App', ext: 'app',
+        icon: 'assets/icons/app-sword.svg', date: 'Dec 2025', size: '42 MB',
         link: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D',
         preview: {
             title: 'Project S.W.O.R.D', subtitle: 'Real-Time Weapon Surveillance System',
@@ -237,48 +255,48 @@ const FS_ITEMS = {
         }
     },
     'proj-deepfake': {
-        id: 'proj-deepfake', name: 'Deepfake Detector', kind: 'ML Model', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Nov 2025', size: '36 MB',
-        link: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector',
+        id: 'proj-deepfake', name: 'Veritas Check', kind: 'Media Forensics (Live)', ext: 'app',
+        icon: 'assets/icons/app-veritas.svg', date: 'Nov 2025', size: '36 MB',
+        link: 'https://veritas-check.vercel.app',
         preview: {
-            title: 'Deepfake Detector', subtitle: 'Media Forensics & Fake News Detector',
-            desc: 'Machine learning system designed to detect facial manipulation signals, deepfake artifacts, and misinformation patterns.'
+            title: 'Veritas Check / Deepfake Detector', subtitle: 'Live Deployed Web Application',
+            desc: 'Checks whether a news link, image or short video is what it claims to be. Local forensics plus an LLM fact-check with verifiable sources.\n\n• Live App: veritas-check.vercel.app'
         }
     },
     'proj-helix': {
-        id: 'proj-helix', name: 'Helix-Compiler', kind: 'C System', ext: 'c',
-        icon: 'assets/icons/filetype-project.svg', date: 'Oct 2025', size: '840 KB',
-        link: 'https://github.com/muditagrawal-alt/Helix-Compiler',
+        id: 'proj-helix', name: 'Helix-Compiler', kind: 'Language Compiler (Live)', ext: 'app',
+        icon: 'assets/icons/app-helix.svg', date: 'Oct 2025', size: '840 KB',
+        link: 'https://huggingface.co/spaces/muditagrawal03/Helix-Compiler',
         preview: {
-            title: 'Helix-Compiler', subtitle: 'C-Based Language Compiler',
-            desc: 'Systems project implementing lexical analysis, AST parsing, symbol tables, intermediate representation, and machine translation.'
+            title: 'Helix-Compiler', subtitle: 'Interactive Playground on Hugging Face',
+            desc: 'Systems project implementing lexical analysis, AST parsing, symbol tables, intermediate representation, and machine translation with live web REPL.'
         }
     },
     'proj-multiva': {
-        id: 'proj-multiva', name: 'Multiva.Ai', kind: 'Speech Synthesis System', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Oct 2025', size: '65 MB',
+        id: 'proj-multiva', name: 'Multiva.Ai', kind: 'Speech Dubbing App', ext: 'app',
+        icon: 'assets/icons/app-multiva.svg', date: 'Oct 2025', size: '65 MB',
         link: 'https://github.com/muditagrawal-alt/Multiva.Ai',
         preview: {
-            title: 'Multiva.Ai', subtitle: 'Multilingual AI Voice Cloning',
-            desc: 'Voice cloning and real-time audio translation platform built with Whisper, Coqui XTTS, and FB-NLLB.'
+            title: 'Multiva.Ai', subtitle: 'Offline Video Dubbing Studio',
+            desc: 'Offline video dubbing for Indian languages. Keeps speaker\'s own voice and re-syncs lips: faster-whisper, NLLB-200, IndicF5 and Wav2Lip in a desktop studio.'
         }
     },
-    'proj-inflx': {
-        id: 'proj-inflx', name: 'Inflx AutoStream', kind: 'AI Agent Service', ext: 'py',
-        icon: 'assets/icons/filetype-project.svg', date: 'Sep 2025', size: '12 MB',
-        link: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-',
+    'proj-skyguard': {
+        id: 'proj-skyguard', name: 'Skyguard AI', kind: 'Defense CV System', ext: 'py',
+        icon: 'assets/icons/app-skyguard.svg', date: '2026', size: '16 MB',
+        link: 'https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026',
         preview: {
-            title: 'Inflx AutoStream', subtitle: 'Workflow & Streaming Automation Agent',
-            desc: 'Autonomous agent service orchestrating intelligent workflow automation and streaming media processing.'
+            title: 'Skyguard AI (SIH 2026)', subtitle: 'Autonomous Aerial Defense Surveillance',
+            desc: 'Smart aerial monitoring and autonomous surveillance computer vision pipeline engineered for Smart India Hackathon.'
         }
     },
     'proj-artifex': {
-        id: 'proj-artifex', name: 'Artifex', kind: 'Generative AI Platform', ext: 'py',
+        id: 'proj-artifex', name: 'Artifex.ai', kind: 'Generative AI Platform', ext: 'py',
         icon: 'assets/icons/filetype-project.svg', date: 'Sep 2025', size: '15 MB',
         link: 'https://github.com/muditagrawal-alt/Artifex.ai',
         preview: {
-            title: 'Artifex', subtitle: 'Creative AI Design Experiments',
-            desc: 'Interactive generative design platform exploring neural style transfer and algorithmic creativity.'
+            title: 'Artifex.ai', subtitle: 'Text-to-Image Chatbot',
+            desc: 'Generative AI text-to-image chatbot utilizing Stable Diffusion v1.5 with Gradio UI and prompt history sidebar.'
         }
     },
 

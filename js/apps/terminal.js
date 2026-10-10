@@ -5,8 +5,8 @@ const TERMINAL_COMMANDS = [
     'skills', 'contact', 'cat resume.txt', 'cat README.txt', 'cat Philosophy.txt',
     'iris', 'open finder', 'open safari', 'open mail', 'open notes', 'open appstore',
     'open settings', 'open trash', 'open resume', 'open iris', 'open omnidoc',
-    'open sliver', 'open sword', 'open deepfake', 'open helix', 'open multiva',
-    'open inflx', 'open artifex', 'sudo hire-me', 'brew install talent',
+    'open vlm', 'open slam', 'open sliver', 'open sword', 'open deepfake', 'open veritas',
+    'open helix', 'open skyguard', 'open multiva', 'open artifex', 'sudo hire-me', 'brew install talent',
     'git status', 'git log', 'matrix', 'curl'
 ];
 
@@ -37,6 +37,13 @@ let terminalHistoryIndex = -1;
 /* Project repository lookup registry */
 const PROJECT_REPOS = {
     'omnidoc': { name: 'OmniDoc', url: 'https://github.com/muditagrawal-alt/OmniDoc', desc: 'Multimodal RAG Document Intelligence System' },
+    'vlm': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
+    'vlm-leads': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
+    'vlm leads': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
+    'slam': { name: 'Monocular RGB SLAM', url: 'https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', desc: 'Monocular RGB Sparse Point Cloud SLAM' },
+    'monocular-slam': { name: 'Monocular RGB SLAM', url: 'https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', desc: 'Monocular RGB Sparse Point Cloud SLAM' },
+    'skyguard': { name: 'Skyguard AI', url: 'https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', desc: 'Airspace Drone Threat Detection & Tracking' },
+    'skyguard-ai': { name: 'Skyguard AI', url: 'https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', desc: 'Airspace Drone Threat Detection & Tracking' },
     'sliver': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
     'sliver.ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
     'sliver-ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
@@ -47,18 +54,12 @@ const PROJECT_REPOS = {
     's.w.o.r.d': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
     'deepfake': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
     'deepfake-detector': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
-    'deepfake detector': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
-    'helix': { name: 'Helix-Compiler', url: 'https://github.com/muditagrawal-alt/Helix-Compiler', desc: 'C-Based Language Compiler' },
-    'helix-compiler': { name: 'Helix-Compiler', url: 'https://github.com/muditagrawal-alt/Helix-Compiler', desc: 'C-Based Language Compiler' },
+    'veritas': { name: 'Veritas Check', url: 'https://veritas-check.vercel.app', desc: 'Live Deepfake & Fake News Forensics Web App' },
+    'helix': { name: 'Helix-Compiler', url: 'https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', desc: 'C-Based Language Compiler & Live Playground' },
+    'helix-compiler': { name: 'Helix-Compiler', url: 'https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', desc: 'C-Based Language Compiler & Live Playground' },
     'multiva': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
     'multiva.ai': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
-    'multiva-ai': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
-    'inflx': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
-    'inflx-autostream': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
-    'inflx autostream': { name: 'Inflx AutoStream', url: 'https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-', desc: 'Workflow & Streaming Automation Agent' },
     'artifex': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
-    'artifex.ai': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
-    'artifex-ai': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
     'github': { name: 'Mudit Agrawal GitHub', url: 'https://github.com/muditagrawal-alt', desc: 'GitHub Profile' },
     'linkedin': { name: 'Mudit Agrawal LinkedIn', url: 'https://www.linkedin.com/in/mudit-agrawal-167610318', desc: 'LinkedIn Profile' }
 };
@@ -162,7 +163,7 @@ function handleTerminalInput(e) {
                     window.open(rawTarget, '_blank', 'noopener,noreferrer');
                     response = `Opening external URL: ${escapeHtml(rawTarget)}...`;
                 } else {
-                    response = `open: Application or project '${escapeHtml(rawTarget)}' not found.<br><span style="color:#888;">Try apps: <em>finder, safari, mail, notes, appstore, settings, resume, iris</em><br>Or projects: <em>omnidoc, sliver, sword, deepfake, helix, multiva, inflx, artifex</em></span>`;
+                    response = `open: Application or project '${escapeHtml(rawTarget)}' not found.<br><span style="color:#888;">Try apps: <em>finder, safari, mail, notes, appstore, settings, resume, iris</em><br>Or projects: <em>omnidoc, vlm, slam, sliver, sword, deepfake, veritas, helix, skyguard, multiva, artifex</em></span>`;
                 }
             }
         } else if (cmd.startsWith('cd ') || cmd === 'cd') {
@@ -308,17 +309,19 @@ TECHNICAL SKILLS (From Resume)
             if (args === 'projects' || args === 'projects/' || args === './projects' || args === './projects/' || args.includes('projects')) {
                 response = `
 <pre style="font-family:inherit;margin:0;line-height:1.45;">
-total 8 projects
+total 10 projects
 drwxr-xr-x   9 muditagrawal  staff   288B  Jan 15 14:20  <span style="color:#4facfe;font-weight:600;">OmniDoc</span>/            <span style="color:#888;"># Multimodal RAG Document Intelligence System</span>
+drwxr-xr-x   8 muditagrawal  staff   256B  Feb 12 16:30  <span style="color:#4facfe;font-weight:600;">VLM-Leads</span>/          <span style="color:#10b981;"># Live Vercel Vision-Language Lead Extraction</span>
+drwxr-xr-x   8 muditagrawal  staff   256B  Jan 28 12:15  <span style="color:#4facfe;font-weight:600;">Monocular-SLAM</span>/     <span style="color:#888;"># Sparse 3D Point Cloud Reconstruction SLAM</span>
 drwxr-xr-x   8 muditagrawal  staff   256B  Jan 10 11:05  <span style="color:#4facfe;font-weight:600;">Sliver.Ai</span>/          <span style="color:#888;"># Smart Video Clipping & Facial Highlights</span>
 drwxr-xr-x  11 muditagrawal  staff   352B  Dec 28 18:40  <span style="color:#4facfe;font-weight:600;">Project-S.W.O.R.D</span>/  <span style="color:#888;"># Real-Time Weapon Surveillance System</span>
-drwxr-xr-x   7 muditagrawal  staff   224B  Nov 20 09:15  <span style="color:#4facfe;font-weight:600;">Deepfake-Detector</span>/  <span style="color:#888;"># Media Forensics & Fake News Detection</span>
-drwxr-xr-x  14 muditagrawal  staff   448B  Oct 30 16:50  <span style="color:#4facfe;font-weight:600;">Helix-Compiler</span>/     <span style="color:#888;"># C-Based Language Compiler</span>
+drwxr-xr-x   7 muditagrawal  staff   224B  Nov 20 09:15  <span style="color:#4facfe;font-weight:600;">Deepfake-Detector</span>/  <span style="color:#888;"># Media Forensics & Fake News Detection (Live)</span>
+drwxr-xr-x  14 muditagrawal  staff   448B  Oct 30 16:50  <span style="color:#4facfe;font-weight:600;">Helix-Compiler</span>/     <span style="color:#888;"># C-Based Language Compiler (Live Space)</span>
+drwxr-xr-x   7 muditagrawal  staff   224B  Oct 22 15:40  <span style="color:#4facfe;font-weight:600;">Skyguard-AI</span>/        <span style="color:#888;"># Airspace Threat & Drone Detection (SIH 2026)</span>
 drwxr-xr-x   6 muditagrawal  staff   192B  Oct 12 13:30  <span style="color:#4facfe;font-weight:600;">Multiva.Ai</span>/         <span style="color:#888;"># Multilingual AI Voice Cloning (Whisper/XTTS)</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Sep 25 10:10  <span style="color:#4facfe;font-weight:600;">Inflx-AutoStream</span>/   <span style="color:#888;"># Autonomous AI Workflow & Streaming Agent</span>
 drwxr-xr-x   5 muditagrawal  staff   160B  Sep 05 12:00  <span style="color:#4facfe;font-weight:600;">Artifex</span>/            <span style="color:#888;"># Generative AI Creative Design Platform</span>
 </pre>
-<div style="color:#888;margin-top:6px;">💡 Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <span style="color:#43e97b">open omnidoc</span>) to navigate to its GitHub repo!</div>
+<div style="color:#888;margin-top:6px;">💡 Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <span style="color:#43e97b">open vlm</span>) to navigate to its live demo or GitHub!</div>
 `;
             } else if (args === 'experience' || args === 'experience/' || args.includes('experience')) {
                 response = `
@@ -566,7 +569,7 @@ To initiate collaboration:<br>
                     break;
                 }
                 case 'projects':
-                    response = '• <strong style="color:#4facfe;">OmniDoc</strong> — Multimodal RAG Document Intelligence System<br>• <strong style="color:#4facfe;">Sliver.Ai</strong> — Smart Video Clipping & Facial Highlights<br>• <strong style="color:#4facfe;">Project S.W.O.R.D</strong> — Real-Time Weapon Surveillance System<br>• <strong style="color:#4facfe;">Deepfake Detector</strong> — Media Forensics & Fake News Detection<br>• <strong style="color:#4facfe;">Helix-Compiler</strong> — C-Based Language Compiler<br>• <strong style="color:#4facfe;">Multiva.Ai</strong> — Multilingual AI Voice Cloning<br>• <strong style="color:#4facfe;">Inflx AutoStream</strong> — Autonomous AI Workflow Agent<br>• <strong style="color:#4facfe;">Artifex</strong> — Generative AI Creative Design Platform<br><span style="color:#888;">Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <em>open omnidoc</em>) to visit repo!</span>';
+                    response = '• <strong style="color:#4facfe;">OmniDoc</strong> — Multimodal RAG Document Intelligence System<br>• <strong style="color:#10b981;">VLM Leads (Live)</strong> — Vision-Language Business Card Lead Extraction (Vercel)<br>• <strong style="color:#4facfe;">Monocular SLAM</strong> — Sparse 3D Point Cloud Reconstruction<br>• <strong style="color:#4facfe;">Sliver.Ai</strong> — Smart Video Clipping & Facial Highlights<br>• <strong style="color:#4facfe;">Project S.W.O.R.D</strong> — Real-Time Weapon Surveillance System<br>• <strong style="color:#4facfe;">Deepfake Detector (Live)</strong> — Media Forensics & Fake News Detection<br>• <strong style="color:#4facfe;">Helix-Compiler (Live)</strong> — C-Based Language Compiler & Playground<br>• <strong style="color:#4facfe;">Skyguard AI</strong> — Airspace Threat & Drone Detection (SIH 2026)<br>• <strong style="color:#4facfe;">Multiva.Ai</strong> — Multilingual AI Voice Cloning<br>• <strong style="color:#4facfe;">Artifex</strong> — Generative AI Creative Design Platform<br><span style="color:#888;">Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <em>open vlm</em>) to launch demo or repo!</span>';
                     break;
                 case 'skills':
                     response = `

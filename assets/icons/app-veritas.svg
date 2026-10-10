@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="veritasBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fa709a"/>
+      <stop offset="100%" stop-color="#fee140"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#f1f5f9" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="veritasShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="26" fill="url(#veritasBg)" filter="url(#veritasShadow)"/>
+  <!-- Shield outline -->
+  <path d="M64 30 L88 38 C88 64 78 82 64 94 C50 82 40 64 40 38 Z" fill="url(#shieldGrad)" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.18))"/>
+  <!-- Checkmark + scan pulse -->
+  <path d="M54 62 L61 69 L74 53" fill="none" stroke="#e11d48" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Live badge indicator -->
+  <circle cx="86" cy="88" r="13" fill="#10b981"/>
+  <circle cx="86" cy="88" r="5" fill="#ffffff"/>
+</svg>

@@ -208,24 +208,26 @@
 .sidebar-v2-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     padding: 5px 10px;
     border-radius: 6px;
-    font-size: 12px;
-    color: #d1d1d6;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.78);
     cursor: pointer;
     transition: all 0.12s ease;
-    margin: 1px 0;
+    margin: 2px 6px;
 }
 
 .sidebar-v2-item:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.08);
     color: #fff;
 }
 
 .sidebar-v2-item.active {
-    background: #007aff;
-    color: #fff;
+    background: #007aff !important;
+    color: #fff !important;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.4);
 }
 
 .sidebar-v2-item.active i,
@@ -274,10 +276,10 @@
 .finder-view-icons {
     flex: 1;
     overflow-y: auto;
-    padding: 18px 20px;
+    padding: 20px 22px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-    gap: 18px 12px;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 20px 14px;
     align-content: flex-start;
 }
 
@@ -298,13 +300,13 @@
 }
 
 .finder-grid-item.selected {
-    background: rgba(0, 122, 255, 0.35);
-    outline: 1px solid rgba(0, 122, 255, 0.6);
+    background: rgba(0, 122, 255, 0.28);
+    outline: 1px solid rgba(0, 122, 255, 0.55);
 }
 
 .finder-grid-icon {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -312,15 +314,15 @@
 }
 
 .finder-grid-icon img {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
     transition: transform 0.15s ease;
 }
 
 .finder-grid-item:hover .finder-grid-icon img {
-    transform: scale(1.04);
+    transform: scale(1.05);
 }
 
 .finder-grid-name {
@@ -328,15 +330,16 @@
     color: #e5e5ea;
     line-height: 1.3;
     word-break: break-word;
-    max-width: 82px;
+    max-width: 90px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .finder-grid-item.selected .finder-grid-name {
     background: #007aff;
     border-radius: 4px;
-    padding: 1px 4px;
+    padding: 1px 5px;
     color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ── 2. List View (Table) ── */

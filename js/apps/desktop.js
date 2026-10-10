@@ -20,10 +20,28 @@ function renderDesktopFiles() {
         </div>
     `).join('');
 
+    let lastClickId = null;
+    let lastClickTime = 0;
+
     container.querySelectorAll('.desktop-icon').forEach(icon => {
         const id = icon.dataset.fileId;
-        icon.addEventListener('click', (e) => { e.stopPropagation(); selectDesktopFile(id); });
-        icon.addEventListener('dblclick', () => openDesktopFile(id));
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const now = Date.now();
+            if (lastClickId === id && (now - lastClickTime < 450)) {
+                openDesktopFile(id);
+                lastClickId = null;
+                lastClickTime = 0;
+            } else {
+                lastClickId = id;
+                lastClickTime = now;
+                selectDesktopFile(id);
+            }
+        });
+        icon.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            openDesktopFile(id);
+        });
         icon.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); openDesktopFile(id); }
         });

@@ -36,6 +36,38 @@ window.DESKTOP_FILES = [
         open: () => mountDiskImage('omnidoc')
     },
     {
+        id: 'vlm-app',
+        name: 'VLM Leads.app',
+        kind: 'Application (Live)',
+        icon: 'assets/icons/app-vlm.svg',
+        size: '28 MB',
+        open: () => window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer')
+    },
+    {
+        id: 'veritas-app',
+        name: 'Veritas Check.app',
+        kind: 'Application (Live)',
+        icon: 'assets/icons/app-veritas.svg',
+        size: '18 MB',
+        open: () => window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer')
+    },
+    {
+        id: 'helix-app',
+        name: 'Helix.app',
+        kind: 'Application (Live)',
+        icon: 'assets/icons/app-helix.svg',
+        size: '1.2 MB',
+        open: () => window.open('https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', '_blank', 'noopener,noreferrer')
+    },
+    {
+        id: 'slam-app',
+        name: 'SLAM 3D.app',
+        kind: 'Application',
+        icon: 'assets/icons/app-slam.svg',
+        size: '34 MB',
+        open: () => window.open('https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', '_blank', 'noopener,noreferrer')
+    },
+    {
         id: 'photos',
         name: 'Photos',
         kind: 'Folder',
