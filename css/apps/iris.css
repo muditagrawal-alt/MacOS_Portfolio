@@ -71,6 +71,21 @@
         inset 0 0 60px rgba(255, 255, 255, 0.2);
 }
 
+/* Reacts to Iris voice output */
+.iris-orb.speaking {
+    animation: irisOrbFloat 1.2s ease-in-out infinite, irisOrbSpeakingPulse 0.9s ease-in-out infinite, irisOrbGradient 2.2s ease infinite;
+    box-shadow:
+        0 0 90px rgba(0, 191, 255, 0.7),
+        0 0 170px rgba(138, 43, 226, 0.55),
+        0 0 240px rgba(255, 105, 180, 0.4),
+        inset 0 0 55px rgba(255, 255, 255, 0.35);
+}
+
+@keyframes irisOrbSpeakingPulse {
+    0%, 100% { transform: scale(1.02) translateY(0); filter: saturate(150%) brightness(1.1); }
+    50% { transform: scale(1.14) translateY(-5px); filter: saturate(200%) brightness(1.3); }
+}
+
 /* Glow ring around orb */
 .iris-orb::after {
     content: '';
@@ -80,6 +95,11 @@
     border-radius: 50%;
     border: 2px solid rgba(138, 43, 226, 0.2);
     animation: irisRingPulse 3s ease-in-out infinite;
+}
+
+.iris-orb.speaking::after {
+    border-color: rgba(0, 191, 255, 0.5);
+    animation: irisRingPulse 1.2s ease-in-out infinite;
 }
 
 @keyframes irisOrbFloat {
@@ -108,28 +128,35 @@
     50% { opacity: 0.7; transform: scale(1.05); }
 }
 
-/* ── Waveform Bars (under orb, listening state) ── */
+/* ── Waveform Bars (under orb, listening & speaking states) ── */
 .iris-waveform {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 3px;
-    height: 30px;
+    gap: 4px;
+    height: 32px;
     margin-top: -15px;
     margin-bottom: 15px;
     opacity: 0;
     transition: opacity 0.3s;
 }
 
-.iris-waveform.active {
+.iris-waveform.active,
+.iris-waveform.speaking {
     opacity: 1;
 }
 
 .iris-waveform-bar {
-    width: 3px;
+    width: 3.5px;
     background: linear-gradient(to top, #8a2be2, #00bfff);
-    border-radius: 2px;
+    border-radius: 3px;
     animation: waveformBounce 0.8s ease-in-out infinite;
+    transition: height 0.08s ease;
+}
+
+.iris-waveform.speaking .iris-waveform-bar {
+    background: linear-gradient(to top, #ff69b4, #00bfff, #8a2be2);
+    animation-duration: 0.45s;
 }
 
 .iris-waveform-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
@@ -141,8 +168,68 @@
 .iris-waveform-bar:nth-child(7) { height: 20px; animation-delay: 0.05s; }
 
 @keyframes waveformBounce {
-    0%, 100% { transform: scaleY(0.4); }
-    50% { transform: scaleY(1); }
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1.15); }
+}
+
+/* ── Live Speech Transcript Bubble ── */
+.iris-live-transcript {
+    width: 100%;
+    max-width: 580px;
+    padding: 9px 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: irisTranscriptIn 0.2s ease-out;
+}
+
+.iris-live-transcript.active {
+    display: flex;
+}
+
+@keyframes irisTranscriptIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Ambient "Hey Iris" Status Pill ── */
+.iris-wake-status {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.iris-wake-status:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.iris-wake-status.listening {
+    background: rgba(0, 122, 255, 0.25);
+    border-color: #007aff;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(0, 122, 255, 0.4);
 }
 
 /* ── Iris Label ── */
@@ -353,6 +440,142 @@
     background: rgba(138, 43, 226, 0.2);
     border-color: rgba(138, 43, 226, 0.4);
     color: #fff;
+}
+
+/* ── Microphone Button ── */
+.iris-mic-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #eee;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.iris-mic-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.iris-mic-btn.listening {
+    background: #ff3b30;
+    border-color: #ff3b30;
+    color: #fff;
+    animation: siriMicPulse 1.2s infinite;
+}
+
+@keyframes siriMicPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+    50% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(255, 59, 48, 0); }
+}
+
+/* ── Apple Intelligence Screen Border Glow ── */
+.iris-siri-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 94990;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.iris-siri-glow.active {
+    opacity: 1;
+    box-shadow: inset 0 0 45px 12px rgba(0, 191, 255, 0.5),
+                inset 0 0 110px 35px rgba(138, 43, 226, 0.4),
+                inset 0 0 180px 60px rgba(255, 105, 180, 0.3);
+    animation: siriEdgePulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes siriEdgePulse {
+    0% {
+        box-shadow: inset 0 0 35px 8px rgba(0, 191, 255, 0.4),
+                    inset 0 0 80px 25px rgba(138, 43, 226, 0.3),
+                    inset 0 0 140px 45px rgba(255, 105, 180, 0.2);
+    }
+    100% {
+        box-shadow: inset 0 0 60px 18px rgba(0, 191, 255, 0.65),
+                    inset 0 0 130px 45px rgba(138, 43, 226, 0.5),
+                    inset 0 0 200px 70px rgba(255, 105, 180, 0.38);
+    }
+}
+
+/* ── Action Card in Siri Responses ── */
+.iris-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.iris-action-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.iris-action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #007aff, #5856d6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.iris-action-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.iris-action-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.iris-action-subtitle {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+}
+
+.iris-action-btn {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: none;
+    background: #007aff;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.iris-action-btn:hover {
+    opacity: 0.9;
 }
 
 /* ── Dock Icon Gradient ── */
