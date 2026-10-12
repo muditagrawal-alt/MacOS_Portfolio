@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="pbBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a4a52"/>
+      <stop offset="100%" stop-color="#1e1e24"/>
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a75d3"/>
+      <stop offset="50%" stop-color="#16325c"/>
+      <stop offset="100%" stop-color="#0a1220"/>
+    </linearGradient>
+    <linearGradient id="stripGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e2e8"/>
+    </linearGradient>
+    <filter id="pbShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+  </defs>
+  <!-- App Icon Base Squircle -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#pbBg)" filter="url(#pbShadow)"/>
+  
+  <!-- Red Photo Booth Curtain / Ribbon -->
+  <path d="M 8 20 C 25 15, 35 30, 48 20 C 60 12, 75 25, 88 18 C 100 12, 110 24, 120 18 L 120 8 C 115 8, 105 8, 96 8 L 8 8 Z" fill="#d32f2f" opacity="0.9"/>
+  
+  <!-- 4-Photo Filmstrip tilted -->
+  <g transform="rotate(-8 64 64)">
+    <rect x="22" y="22" width="84" height="84" rx="10" fill="url(#stripGrad)" stroke="#cccccc" stroke-width="1.5"/>
+    <!-- 4 Photo frames -->
+    <rect x="28" y="28" width="34" height="34" rx="4" fill="#3b82f6"/>
+    <circle cx="45" cy="42" r="7" fill="#ffffff" opacity="0.9"/>
+    <path d="M 32 58 C 36 50, 42 50, 45 54 C 48 48, 54 48, 58 58 Z" fill="#1d4ed8"/>
+    
+    <rect x="66" y="28" width="34" height="34" rx="4" fill="#ec4899"/>
+    <circle cx="83" cy="42" r="7" fill="#ffffff" opacity="0.9"/>
+    <path d="M 70 58 C 74 50, 80 50, 83 54 C 86 48, 92 48, 96 58 Z" fill="#be185d"/>
+    
+    <rect x="28" y="66" width="34" height="34" rx="4" fill="#10b981"/>
+    <circle cx="45" cy="80" r="7" fill="#ffffff" opacity="0.9"/>
+    <path d="M 32 96 C 36 88, 42 88, 45 92 C 48 86, 54 86, 58 96 Z" fill="#047857"/>
+    
+    <rect x="66" y="66" width="34" height="34" rx="4" fill="#f59e0b"/>
+    <circle cx="83" cy="80" r="7" fill="#ffffff" opacity="0.9"/>
+    <path d="M 70 96 C 74 88, 80 88, 83 92 C 86 86, 92 86, 96 96 Z" fill="#b45309"/>
+  </g>
+  
+  <!-- Camera Lens Badge in bottom corner -->
+  <circle cx="94" cy="94" r="18" fill="url(#lensGrad)" stroke="#ffffff" stroke-width="2.5" filter="url(#pbShadow)"/>
+  <circle cx="94" cy="94" r="10" fill="#1e293b"/>
+  <circle cx="91" cy="91" r="3.5" fill="#60a5fa" opacity="0.8"/>
+  <circle cx="97" cy="97" r="1.5" fill="#ffffff" opacity="0.6"/>
+</svg>
