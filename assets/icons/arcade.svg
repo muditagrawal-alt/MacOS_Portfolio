@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="arcBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#d946ef"/>
+    </linearGradient>
+    <filter id="arcGlow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#arcBg)" filter="url(#arcGlow)"/>
+  
+  <!-- Joystick Gamepad Icon -->
+  <rect x="26" y="44" width="76" height="46" rx="20" fill="#ffffff" opacity="0.95"/>
+  
+  <!-- D-Pad -->
+  <path d="M 46 56 L 46 63 L 39 63 L 39 71 L 46 71 L 46 78 L 54 78 L 54 71 L 61 71 L 61 63 L 54 63 L 54 56 Z" fill="#64748b"/>
+  
+  <!-- Action Buttons A B X Y -->
+  <circle cx="84" cy="61" r="4" fill="#ef4444"/>
+  <circle cx="92" cy="67" r="4" fill="#3b82f6"/>
+  <circle cx="76" cy="67" r="4" fill="#eab308"/>
+  <circle cx="84" cy="73" r="4" fill="#10b981"/>
+</svg>
