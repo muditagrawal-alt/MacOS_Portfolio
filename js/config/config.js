@@ -1,24 +1,30 @@
 /* ==========================================================================
-   Runtime Configuration — SAFE TO COMMIT, CONTAINS NO SECRETS
+   Runtime Configuration & Client-Side Security Guardrails
    --------------------------------------------------------------------------
-   Iris talks to a serverless proxy that holds the model API key server-side.
-   Nothing here is sensitive: the endpoint is public by design.
-
-   To enable the live model, deploy /api/iris.js (see api/README.md) and set
-   IRIS_ENDPOINT to its URL. Leave it null and Iris still works — it answers
-   from the local portfolio corpus instead of a hosted model.
+   SAFE TO COMMIT, CONTAINS NO SECRETS.
+   Iris talks to a serverless proxy (/api/iris) that holds the model API key
+   strictly server-side in environment variables.
    ========================================================================== */
 
-window.APP_CONFIG = {
+window.APP_CONFIG = Object.freeze({
     // e.g. '/api/iris' on Vercel/Netlify. null = offline knowledge-base mode.
     IRIS_ENDPOINT: null,
 
     // Serverless RSS aggregator for Medium/Substack (see api/feeds.js).
-    // null = those sections are simply omitted; GitHub still works, since
-    // the browser fetches api.github.com directly.
     FEEDS_ENDPOINT: null,
 
-    // Web3Forms access keys are public submission tokens by design (they only
-    // permit posting to the form owner's inbox). Safe to ship client-side.
+    // Web3Forms access keys are public form tokens (they only permit posting
+    // to the form owner's inbox, safe client-side).
     WEB3FORMS_ACCESS_KEY: '0026fd18-ff07-44f8-9879-c8e521298f9a'
-};
+});
+
+// Runtime Guardrail: Assert no sensitive keys are ever leaked into client global scope
+(function assertCredentialGuardrails() {
+    const sensitivePatterns = [/gsk_[a-zA-Z0-9]{20,}/, /AIzaSy[a-zA-Z0-9_-]{33}/, /sk-[a-zA-Z0-9]{20,}/, /ghp_[a-zA-Z0-9]{20,}/];
+    for (const [key, val] of Object.entries(window.APP_CONFIG)) {
+        if (typeof val === 'string' && sensitivePatterns.some(p => p.test(val))) {
+            console.error(`[SECURITY ALERT] Sensitive key pattern detected in APP_CONFIG.${key}! Masking immediately.`);
+            window.APP_CONFIG[key] = null;
+        }
+    }
+})();

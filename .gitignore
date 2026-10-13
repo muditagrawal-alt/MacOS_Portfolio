@@ -20,9 +20,20 @@ build/
 # Temp Word files
 ~$*.docx
 
-# API Keys
-js/config/api-keys.js
+# API Keys & Secrets Guardrails
 .env
+.env.*
+!.env.example
+*.env
+*.key
+*.pem
+*.cert
+*.crt
+*.pfx
+*.token
+*.secret
+js/config/api-keys.js
+scratch/
 
 # Wallpaper masters — the optimized .jpg files are what ship.
 # Regenerate with:
