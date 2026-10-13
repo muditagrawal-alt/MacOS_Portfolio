@@ -19,6 +19,26 @@ body {
     height: 100dvh;
     overflow: hidden;
     color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* SOTA Keyboard Focus Ring Parity */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex="0"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .menu-bar, .dock-container, .window-header, .title-bar, .desktop-icon, .sidebar {
@@ -118,4 +138,40 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.35);
+}
+
+/* SOTA Typography Utilities */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+.text-balance {
+    text-wrap: balance;
+}
+
+.text-pretty {
+    text-wrap: pretty;
+}
+
+/* ==========================================================================
+   Universal Reduced Motion Accessibility (WCAG 2.1 AA)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .window.minimized {
+        transition: none !important;
+        opacity: 0 !important;
+    }
+
+    .desktop-icon:hover {
+        transform: none !important;
+    }
 }

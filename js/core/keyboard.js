@@ -228,3 +228,19 @@ function focusableSearchField() {
     if (!active) return null;
     return active.querySelector('input[type="text"][placeholder*="Search" i], input[type="search"]');
 }
+
+// SOTA Accessibility: Keyboard activation (Enter / Space) for role="button", .dock-item, and .desktop-icon
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        const target = document.activeElement;
+        if (target && target !== document.body) {
+            const isClickable = target.classList.contains('dock-item') ||
+                                target.classList.contains('desktop-icon') ||
+                                target.getAttribute('role') === 'button';
+            if (isClickable && target.tagName !== 'BUTTON' && target.tagName !== 'A' && target.tagName !== 'INPUT') {
+                e.preventDefault();
+                target.click();
+            }
+        }
+    }
+});

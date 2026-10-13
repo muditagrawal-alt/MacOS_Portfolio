@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mudit Agrawal - macOS Portfolio</title>
+    <meta name="description" content="Mudit Agrawal's interactive macOS portfolio. Experience an authentic macOS Sequoia desktop environment featuring Finder, Safari, Terminal, Apple Music with live radio, Photo Booth, retro arcade games, and Iris AI assistant.">
+    <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:title" content="Mudit Agrawal - macOS Portfolio">
+    <meta property="og:description" content="Explore Mudit Agrawal's interactive macOS portfolio with native desktop apps, live projects, games, and voice agent.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mudit Agrawal - macOS Portfolio">
+    <meta name="twitter:description" content="Explore Mudit Agrawal's interactive macOS portfolio with native desktop apps, live projects, games, and voice agent.">
+    <!-- Resource hints for external typography and icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <!-- Wallpaper: fetched at highest priority so the desktop never flashes black -->
     <link rel="preload" as="image" href="assets/Wallpapers/26-Tahoe-Beach-Day.jpg" fetchpriority="high">
     <!-- Stylesheets (linked individually — parallel fetch, no @import waterfall, no duplicates) -->
@@ -1413,69 +1428,69 @@ C 890,381 908,392 928,394"/>
     <div class="dock-container">
         <div class="dock">
             <!-- Finder.app -->
-            <div class="dock-item is-running" id="dock-finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
+            <div class="dock-item is-running" id="dock-finder" role="button" tabindex="0" aria-label="Open Finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
                 <img src="assets/icons/finder.png" alt="Finder">
             </div>
             <!-- Launchpad.app -->
-            <div class="dock-item" id="dock-launchpad" onclick="toggleLaunchpad()" data-tooltip="Launchpad (⌥L)">
+            <div class="dock-item" id="dock-launchpad" role="button" tabindex="0" aria-label="Open Launchpad" onclick="toggleLaunchpad()" data-tooltip="Launchpad (⌥L)">
                 <img src="assets/icons/launchpad.svg" alt="Launchpad">
             </div>
             <!-- Mission Control -->
-            <div class="dock-item" id="dock-missioncontrol" onclick="toggleMissionControl()" data-tooltip="Mission Control (F3)">
+            <div class="dock-item" id="dock-missioncontrol" role="button" tabindex="0" aria-label="Toggle Mission Control" onclick="toggleMissionControl()" data-tooltip="Mission Control (F3)">
                 <img src="assets/icons/launchpad.svg" style="filter: hue-rotate(210deg) saturate(180%);" alt="Mission Control">
             </div>
             <!-- Safari.app -->
-            <div class="dock-item" id="dock-safari" onclick="openWindow('safari-window')" data-tooltip="Safari">
+            <div class="dock-item" id="dock-safari" role="button" tabindex="0" aria-label="Open Safari" onclick="openWindow('safari-window')" data-tooltip="Safari">
                 <img src="assets/icons/safari.png" alt="Safari">
             </div>
             <!-- Mail.app -->
-            <div class="dock-item" id="dock-mail" onclick="openWindow('mail-window')" data-tooltip="Mail">
+            <div class="dock-item" id="dock-mail" role="button" tabindex="0" aria-label="Open Mail" onclick="openWindow('mail-window')" data-tooltip="Mail">
                 <img src="assets/icons/mail.png" alt="Mail">
                 <span class="dock-badge">1</span>
             </div>
             <!-- Notes.app -->
-            <div class="dock-item" id="dock-notes" onclick="openWindow('notes-window')" data-tooltip="Notes">
+            <div class="dock-item" id="dock-notes" role="button" tabindex="0" aria-label="Open Notes" onclick="openWindow('notes-window')" data-tooltip="Notes">
                 <img src="assets/icons/notes.png" alt="Notes">
             </div>
             <!-- Photos.app -->
-            <div class="dock-item" id="dock-photos" onclick="openWindow('photos-window')" data-tooltip="Photos">
+            <div class="dock-item" id="dock-photos" role="button" tabindex="0" aria-label="Open Photos" onclick="openWindow('photos-window')" data-tooltip="Photos">
                 <img src="assets/icons/photos.png" alt="Photos">
             </div>
             <!-- Photo Booth.app -->
-            <div class="dock-item" id="dock-photobooth" onclick="openPhotoBooth()" data-tooltip="Photo Booth">
+            <div class="dock-item" id="dock-photobooth" role="button" tabindex="0" aria-label="Open Photo Booth" onclick="openPhotoBooth()" data-tooltip="Photo Booth">
                 <img src="assets/icons/photobooth.svg" alt="Photo Booth">
             </div>
             <!-- Apple Music.app -->
-            <div class="dock-item" id="dock-music" onclick="openMusic()" data-tooltip="Music">
+            <div class="dock-item" id="dock-music" role="button" tabindex="0" aria-label="Open Apple Music" onclick="openMusic()" data-tooltip="Music">
                 <img src="assets/icons/music.png" alt="Music">
             </div>
             <!-- Breakout Arcade -->
-            <div class="dock-item" id="dock-breakout" onclick="openBreakout()" data-tooltip="Breakout (1976 Arcade)">
+            <div class="dock-item" id="dock-breakout" role="button" tabindex="0" aria-label="Open Breakout Arcade Game" onclick="openBreakout()" data-tooltip="Breakout (1976 Arcade)">
                 <img src="assets/icons/breakout.svg" alt="Breakout">
             </div>
             <!-- Snake Arcade -->
-            <div class="dock-item" id="dock-snake" onclick="openSnake()" data-tooltip="Snake (Retro Arcade)">
+            <div class="dock-item" id="dock-snake" role="button" tabindex="0" aria-label="Open Snake Retro Arcade Game" onclick="openSnake()" data-tooltip="Snake (Retro Arcade)">
                 <img src="assets/icons/snake.svg" alt="Snake">
             </div>
             <!-- App Store.app -->
-            <div class="dock-item" id="dock-appstore" onclick="openWindow('appstore-window')" data-tooltip="App Store">
+            <div class="dock-item" id="dock-appstore" role="button" tabindex="0" aria-label="Open App Store" onclick="openWindow('appstore-window')" data-tooltip="App Store">
                 <img src="assets/icons/app-store.png" alt="App Store">
             </div>
             <!-- Terminal.app -->
-            <div class="dock-item" id="dock-terminal" onclick="openWindow('terminal-window')" data-tooltip="Terminal">
+            <div class="dock-item" id="dock-terminal" role="button" tabindex="0" aria-label="Open Terminal" onclick="openWindow('terminal-window')" data-tooltip="Terminal">
                 <img src="assets/icons/terminal.png" alt="Terminal">
             </div>
             <!-- System Settings.app -->
-            <div class="dock-item" id="dock-settings" onclick="openWindow('settings-window')" data-tooltip="System Settings">
+            <div class="dock-item" id="dock-settings" role="button" tabindex="0" aria-label="Open System Settings" onclick="openWindow('settings-window')" data-tooltip="System Settings">
                 <img src="assets/icons/settings.png" alt="System Settings">
             </div>
             <!-- Iris AI Assistant -->
-            <div class="dock-item" id="dock-iris" onclick="toggleIris()" data-tooltip="Iris">
+            <div class="dock-item" id="dock-iris" role="button" tabindex="0" aria-label="Activate Iris AI Voice Assistant" onclick="toggleIris()" data-tooltip="Iris">
                 <img src="assets/icons/siri.png" alt="Iris">
             </div>
-            <div class="dock-divider"></div>
+            <div class="dock-divider" role="separator" aria-orientation="vertical"></div>
             <!-- Trash.app -->
-            <div class="dock-item" id="dock-trash" onclick="openWindow('trash-window')" data-tooltip="Trash">
+            <div class="dock-item" id="dock-trash" role="button" tabindex="0" aria-label="Open Trash" onclick="openWindow('trash-window')" data-tooltip="Trash">
                 <img src="assets/icons/trash-full.png" alt="Trash" id="dock-trash-img">
             </div>
         </div>

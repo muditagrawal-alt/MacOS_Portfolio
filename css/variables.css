@@ -3,6 +3,7 @@
    ========================================================================== */
 
 :root {
+    /* Base Color Tokens */
     --bg-color: #000;
     --window-bg: rgba(30, 30, 30, 0.7);
     --window-border: rgba(255, 255, 255, 0.1);
@@ -13,11 +14,39 @@
     --titlebar-bg: rgba(40, 40, 40, 0.8);
     --dock-bg: rgba(255, 255, 255, 0.15);
     --dock-border: rgba(255, 255, 255, 0.2);
+
+    /* Semantic & Perceptually Uniform Brand Accents */
     --accent: #007aff;
     --accent-hover: #0062cc;
+    --accent-oklch: oklch(0.58 0.22 250);
+    --color-focus-ring: rgba(0, 122, 255, 0.85);
+
+    /* macOS Window Traffic Lights */
     --traffic-close: #ff5f56;
     --traffic-minimize: #ffbd2e;
     --traffic-maximize: #27c93f;
+
+    /* Semantic Status Colors */
+    --status-success: #34c759;
+    --status-warning: #ff9500;
+    --status-danger: #ff3b30;
     --mail-unread-blue: #0a84ff;
     --mail-star-yellow: #ffd60a;
+
+    /* SOTA Motion Timing & Easing Curves */
+    --ease-macos: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-instant: 100ms;
+    --duration-snappy: 160ms;
+    --duration-smooth: 240ms;
+    --duration-deliberate: 360ms;
+
+    /* Surfaces, Blur & Elevation Depths */
+    --blur-subtle: blur(12px);
+    --blur-glass: blur(25px);
+    --shadow-window: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    --shadow-window-active: 0 28px 75px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    --shadow-floating: 0 12px 35px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
 }

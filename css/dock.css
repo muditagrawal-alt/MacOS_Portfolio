@@ -102,6 +102,18 @@ body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container:hove
     transform: scale(1.42) translateY(-15px);
 }
 
+.dock-item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
+    transform: scale(1.3) translateY(-10px);
+}
+
+.dock-item:focus-visible::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(0.72) translateY(-2px);
+}
+
 /* Neighbour falloff — the real dock scales adjacent icons too. */
 .dock-item:hover + .dock-item,
 .dock-item:has(+ .dock-item:hover) {
@@ -212,7 +224,7 @@ body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container:hove
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
     backdrop-filter: blur(10px);
 }
 
@@ -241,4 +253,18 @@ body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container:hove
 
 .dock-item.bouncing {
     animation: dockBounce 0.72s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dock-item:hover,
+    .dock-item:hover + .dock-item,
+    .dock-item:has(+ .dock-item:hover),
+    .dock-item:hover + .dock-item + .dock-item,
+    .dock-item:has(+ .dock-item + .dock-item:hover),
+    .dock-item:focus-visible {
+        transform: none !important;
+    }
+    .dock-item.bouncing {
+        animation: none !important;
+    }
 }

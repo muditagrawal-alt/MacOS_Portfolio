@@ -142,7 +142,7 @@
     font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pb-mode-btn.active {
@@ -198,7 +198,7 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pb-effects-toggle:hover, .pb-effects-toggle.active {
@@ -231,7 +231,7 @@
     border-radius: 8px;
     padding: 6px 4px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pb-effect-card:hover {
@@ -287,7 +287,7 @@
     overflow: hidden;
     border: 2px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pb-thumb-item:hover {
@@ -343,7 +343,7 @@
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     text-decoration: none;
 }
 

@@ -61,7 +61,7 @@
     justify-content: center;
     font-size: 11px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .finder-nav-btn:hover:not(:disabled) {
@@ -114,7 +114,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .finder-view-btn:hover {
@@ -214,7 +214,7 @@
     font-size: 12.5px;
     color: rgba(255, 255, 255, 0.78);
     cursor: pointer;
-    transition: all 0.12s ease;
+    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
     margin: 2px 6px;
 }
 
