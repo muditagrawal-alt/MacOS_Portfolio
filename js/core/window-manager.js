@@ -16,7 +16,11 @@ function updateDockRunningIndicators() {
         'settings-window': 'dock-settings',
         'terminal-window': 'dock-terminal',
         'trash-window': 'dock-trash',
-        'photos-window': 'dock-photos'
+        'photos-window': 'dock-photos',
+        'photobooth-window': 'dock-photobooth',
+        'music-window': 'dock-music',
+        'breakout-window': 'dock-breakout',
+        'snake-window': 'dock-snake'
     };
 
     Object.keys(dockMap).forEach(winId => {
@@ -103,12 +107,32 @@ function openWindow(windowId) {
         bringToFront(windowId);
         updateDockRunningIndicators();
         syncFullscreenState();
+        if (typeof playSystemSound === 'function') playSystemSound('windowOpen');
+
+        // Authentic macOS dock bounce on open
+        const dockMapLookup = {
+            'finder-window': 'dock-finder', 'mail-window': 'dock-mail', 'notes-window': 'dock-notes',
+            'safari-window': 'dock-safari', 'appstore-window': 'dock-appstore', 'settings-window': 'dock-settings',
+            'terminal-window': 'dock-terminal', 'trash-window': 'dock-trash', 'photos-window': 'dock-photos',
+            'photobooth-window': 'dock-photobooth', 'music-window': 'dock-music', 'breakout-window': 'dock-breakout',
+            'snake-window': 'dock-snake'
+        };
+        const dockEl = document.getElementById(dockMapLookup[windowId]);
+        if (dockEl) {
+            dockEl.classList.remove('bouncing');
+            void dockEl.offsetWidth;
+            dockEl.classList.add('bouncing');
+            setTimeout(() => dockEl.classList.remove('bouncing'), 750);
+        }
         
         if (windowId === 'safari-window' && typeof renderSafariTabs === 'function') {
             renderSafariTabs();
             if (typeof activeSafariTabId !== 'undefined' && typeof switchSafariTab === 'function') {
                 switchSafariTab(activeSafariTabId);
             }
+        }
+        if (windowId === 'photobooth-window' && typeof initPhotoBoothCamera === 'function') {
+            initPhotoBoothCamera();
         }
     }
 }
@@ -119,8 +143,18 @@ function closeWindow(windowId) {
         win.classList.add('hidden');
         win.classList.remove('is-active');
         delete win.dataset.placed;
+        if (typeof playSystemSound === 'function') playSystemSound('windowClose');
         if (windowId === 'safari-window' && typeof stopSafariMedia === 'function') {
             stopSafariMedia();
+        }
+        if (windowId === 'photobooth-window' && typeof stopPhotoBoothCamera === 'function') {
+            stopPhotoBoothCamera();
+        }
+        if (windowId === 'breakout-window' && typeof closeBreakout === 'function') {
+            closeBreakout();
+        }
+        if (windowId === 'snake-window' && typeof closeSnake === 'function') {
+            closeSnake();
         }
         updateDockRunningIndicators();
         updateWindowFocusStates();
@@ -132,9 +166,16 @@ function minimizeWindow(windowId) {
     const win = document.getElementById(windowId);
     if (!win) return;
     win.classList.add('minimized');
+    if (typeof playSystemSound === 'function') playSystemSound('windowMinimize');
     // A minimised Safari kept playing audio from an invisible window.
     if (windowId === 'safari-window' && typeof stopSafariMedia === 'function') {
         stopSafariMedia();
+    }
+    if (windowId === 'breakout-window' && typeof toggleBreakoutPause === 'function') {
+        toggleBreakoutPause();
+    }
+    if (windowId === 'snake-window' && typeof toggleSnakePause === 'function') {
+        toggleSnakePause();
     }
     updateDockRunningIndicators();
     updateWindowFocusStates();

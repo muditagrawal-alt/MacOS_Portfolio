@@ -1,0 +1,127 @@
+/* ==========================================================================
+   macOS Mission Control (Exposé) — Interactive Window Spread Overview
+   ========================================================================== */
+
+/* Mission Control Top Bar */
+.mission-control-bar {
+    position: fixed;
+    top: 28px;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(20, 20, 24, 0.72);
+    backdrop-filter: blur(35px) saturate(180%);
+    -webkit-backdrop-filter: blur(35px) saturate(180%);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+    z-index: 99995;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mission-control-active .mission-control-bar {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.mc-space-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.mc-space-thumb {
+    width: 104px;
+    height: 60px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)), url('../assets/wallpapers/sonoma.jpg') center/cover;
+    border: 2px solid #007aff;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+    transition: transform 0.15s ease;
+}
+
+.mc-space-item:hover .mc-space-thumb {
+    transform: scale(1.05);
+}
+
+.mc-space-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+/* Background Dimmer when Mission Control is Active */
+.mission-control-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9990;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.mission-control-active .mission-control-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Windows during Mission Control */
+.window.in-mission-control {
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
+    cursor: pointer !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+    z-index: 9992 !important;
+}
+
+.window.in-mission-control:hover {
+    transform: scale(var(--mc-scale, 0.55)) translateY(-8px) !important;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 2px #007aff, 0 0 24px rgba(0, 122, 255, 0.45) !important;
+}
+
+/* Floating Window Title Pill in Mission Control */
+.mc-window-badge {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(28, 28, 32, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9998;
+}
+
+.mission-control-active .mc-window-badge {
+    opacity: 1;
+}
+
+.mc-window-badge img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}

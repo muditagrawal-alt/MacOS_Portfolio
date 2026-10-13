@@ -33,6 +33,13 @@
     <link rel="stylesheet" href="css/apps/resume.css">
     <link rel="stylesheet" href="css/apps/iris.css">
     <link rel="stylesheet" href="css/apps/launchpad.css">
+    <link rel="stylesheet" href="css/apps/photobooth.css">
+    <link rel="stylesheet" href="css/apps/breakout.css">
+    <link rel="stylesheet" href="css/apps/snake.css">
+    <link rel="stylesheet" href="css/apps/music.css">
+    <link rel="stylesheet" href="css/apps/control-center.css">
+    <link rel="stylesheet" href="css/mission-control.css">
+    <link rel="stylesheet" href="css/desktop-widgets.css">
     <link rel="stylesheet" href="css/responsive.css">
     <!-- FontAwesome 6 for macOS & Brand Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -146,9 +153,16 @@ C 890,381 908,392 928,394"/>
             <div id="menubar-app-menus" class="menubar-app-menus"></div>
         </div>
         <div class="menu-right">
-            <img src="assets/icons/siri.png" class="menu-icon siri-menu-icon" style="width: 17px; height: 17px; cursor: pointer; object-fit: contain; vertical-align: middle; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));" onclick="toggleIris()" data-tooltip="Siri AI Assistant" alt="Siri">
-            <i class="fas fa-wifi menu-icon" id="wifi-icon" data-tooltip="Wi-Fi: Checking status..."></i>
-            <i class="fas fa-battery-full menu-icon" id="battery-icon" data-tooltip="Battery: Checking status..."></i>
+            <i class="fas fa-volume-high menu-icon sound-status-icon" id="sound-icon" onclick="toggleSystemMute()" data-tooltip="Sound: Toggle Mute" title="Sound Volume"></i>
+            <i class="fas fa-magnifying-glass menu-icon" id="spotlight-menu-icon" onclick="toggleSpotlight()" data-tooltip="Spotlight Search (⌘Space)" title="Spotlight Search"></i>
+            <span class="menu-icon control-center-trigger" id="control-center-trigger" onclick="toggleControlCenter()" data-tooltip="Control Centre" title="Control Centre" style="display:inline-flex;align-items:center;cursor:pointer;">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2 4.5a1.5 1.5 0 0 1 3 0v.25H14a.75.75 0 0 1 0 1.5H5v.25a1.5 1.5 0 0 1-3 0v-2zm12 5.5a.75.75 0 0 1 0 1.5h-3v.25a1.5 1.5 0 0 1-3 0v-2a1.5 1.5 0 0 1 3 0v.25h3zM2 10.75a.75.75 0 0 1 .75-.75H6a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75z"/>
+                </svg>
+            </span>
+            <img src="assets/icons/siri.png" class="menu-icon siri-menu-icon" id="menubar-siri-icon" style="width: 17px; height: 17px; cursor: pointer; object-fit: contain; vertical-align: middle; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));" onclick="toggleIris()" data-tooltip="Siri AI Assistant ('Hey Iris' Active)" alt="Siri" title="Siri AI Assistant ('Hey Iris' Active)">
+            <i class="fas fa-wifi menu-icon" id="wifi-icon" data-tooltip="Wi-Fi: Connected"></i>
+            <i class="fas fa-battery-full menu-icon" id="battery-icon" data-tooltip="Battery: 85%"></i>
             <span id="clock" class="menu-time" role="button" tabindex="0" title="Notification Centre" onclick="toggleNotificationCenter()">Loading...</span>
         </div>
     </div>
@@ -313,7 +327,7 @@ C 890,381 908,392 928,394"/>
                     <button type="button" class="control maximize" aria-label="Zoom Resume" title="Zoom" onclick="maximizeWindow('resume-window')"></button>
                 </div>
                 <div class="window-title">Resume PDF</div>
-                <button type="button" onmousedown="event.stopPropagation()" onclick="downloadResume(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); color: #eee; font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;"><i class="fas fa-download"></i> Download</button>
+                <button type="button" id="resume-download-btn" onmousedown="event.stopPropagation()" onclick="downloadResume(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); color: #eee; font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;"><i class="fas fa-download"></i> Download</button>
             </div>
             <div class="window-content" style="overflow: auto; background: white; display: block;">
                 <img loading="lazy" decoding="async" src="assets/MuditAgrawalResumePreview.png" alt="Resume PDF preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
@@ -747,18 +761,43 @@ C 890,381 908,392 928,394"/>
                             </div>
                             <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
                         </div>
-                        <!-- App Card 7 -->
-                        <div class="app-card" data-cat="systems">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);"><i class="fas fa-chart-line"></i></div>
+                        <!-- App Card 7 (Live Web App) -->
+                        <div class="app-card" data-cat="ai">
+                            <div class="app-card-icon" style="background: linear-gradient(135deg, #4f46e5, #06b6d4);"><i class="fas fa-id-card"></i></div>
                             <div class="app-card-details">
-                                <h3>Inflx AutoStream</h3>
-                                <div class="app-category">Productivity • Autonomous Agents</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.8</span></div>
-                                <p class="app-desc">AutoStream agent service for workflow automation.</p>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <h3>VLM Lead Extraction</h3>
+                                    <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#10b981;color:#fff;font-weight:700;">LIVE</span>
+                                </div>
+                                <div class="app-category">AI • Vision-Language Model</div>
+                                <div class="app-stars">★★★★★ <span class="rating-num">5.0</span></div>
+                                <p class="app-desc">Bulk business card OCR & structured CRM extractor on Vercel.</p>
                             </div>
-                            <a href="https://github.com/muditagrawal-alt/iNFLX-AutoStream-Agent-ServiceHive-" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
+                            <a href="https://muditagrawal-lead-extraction.vercel.app" target="_blank" rel="noopener noreferrer" class="appstore-get-btn" style="background:#10b981;">OPEN</a>
                         </div>
                         <!-- App Card 8 -->
+                        <div class="app-card" data-cat="vision">
+                            <div class="app-card-icon" style="background: linear-gradient(135deg, #0ea5e9, #6366f1);"><i class="fas fa-cube"></i></div>
+                            <div class="app-card-details">
+                                <h3>Monocular RGB SLAM</h3>
+                                <div class="app-category">Vision • 3D Point Cloud</div>
+                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
+                                <p class="app-desc">Sparse 3D point cloud reconstruction from monocular camera feed.</p>
+                            </div>
+                            <a href="https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
+                        </div>
+                        <!-- App Card 9 -->
+                        <div class="app-card" data-cat="defense">
+                            <div class="app-card-icon" style="background: linear-gradient(135deg, #059669, #10b981);"><i class="fas fa-shield-virus"></i></div>
+                            <div class="app-card-details">
+                                <h3>Skyguard AI</h3>
+                                <div class="app-category">Defense • Drone Surveillance</div>
+                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
+                                <p class="app-desc">Edge airspace drone detection & threat tracking for SIH 2026.</p>
+                            </div>
+                            <a href="https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
+                        </div>
+                        <!-- App Card 10 -->
                         <div class="app-card" data-cat="ai">
                             <div class="app-card-icon" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee);"><i class="fas fa-palette"></i></div>
                             <div class="app-card-details">
@@ -984,6 +1023,306 @@ C 890,381 908,392 928,394"/>
             </div>
         </div>
 
+        <!-- Photo Booth.app — macOS Camera Studio -->
+        <div class="window hidden" id="photobooth-window" style="top: 8%; left: 16%; width: 820px; height: 590px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'photobooth-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Photo Booth" title="Close" onclick="closePhotoBooth()"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Photo Booth" title="Minimize" onclick="minimizeWindow('photobooth-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Photo Booth" title="Zoom" onclick="maximizeWindow('photobooth-window')"></button>
+                </div>
+                <div class="window-title" id="photobooth-window-title">Photo Booth</div>
+            </div>
+            <div class="pb-stage">
+                <div class="pb-viewfinder-container">
+                    <video id="pb-video" autoplay playsinline muted></video>
+                    <canvas id="pb-preview-canvas" style="display:none;"></canvas>
+                    <canvas id="pb-canvas"></canvas>
+                    <div class="pb-flash" id="pb-flash"></div>
+                    <div class="pb-countdown" id="pb-countdown">3</div>
+                    <div class="pb-sim-badge" id="pb-sim-badge"><i class="fas fa-circle"></i> Camera Initializing</div>
+                </div>
+                <div class="pb-effects-grid" id="pb-effects-grid">
+                    <div class="pb-effect-card active" data-filter="normal" onclick="setPhotoBoothFilter('normal')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #4b5563, #9ca3af);"></div>
+                        <span class="pb-effect-name">Normal</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="comic" onclick="setPhotoBoothFilter('comic')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #f59e0b, #ef4444);"></div>
+                        <span class="pb-effect-name">Comic</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="thermal" onclick="setPhotoBoothFilter('thermal')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #06b6d4, #f43f5e);"></div>
+                        <span class="pb-effect-name">Thermal</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="noir" onclick="setPhotoBoothFilter('noir')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #111827, #6b7280);"></div>
+                        <span class="pb-effect-name">Noir</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="sepia" onclick="setPhotoBoothFilter('sepia')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #78350f, #d97706);"></div>
+                        <span class="pb-effect-name">Sepia</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="xray" onclick="setPhotoBoothFilter('xray')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #0284c7, #e0e7ff);"></div>
+                        <span class="pb-effect-name">X-Ray</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="cyberpunk" onclick="setPhotoBoothFilter('cyberpunk')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #a855f7, #ec4899);"></div>
+                        <span class="pb-effect-name">Cyberpunk</span>
+                    </div>
+                    <div class="pb-effect-card" data-filter="pixelate" onclick="setPhotoBoothFilter('pixelate')">
+                        <div class="pb-effect-thumb" style="background:linear-gradient(135deg, #10b981, #3b82f6);"></div>
+                        <span class="pb-effect-name">8-Bit</span>
+                    </div>
+                </div>
+                <div class="pb-controls-bar">
+                    <div class="pb-modes">
+                        <button type="button" class="pb-mode-btn active" data-mode="single" onclick="setPhotoBoothMode('single')"><i class="fas fa-camera"></i> Single</button>
+                    </div>
+                    <div class="pb-shutter-container">
+                        <button type="button" class="pb-shutter-btn" id="pb-shutter-btn" onclick="takePhotoBoothPicture()" title="Take Photo" aria-label="Take Photo">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="pb-effects-toggle" id="pb-effects-toggle" onclick="togglePhotoBoothEffects()">
+                        <i class="fas fa-wand-magic-sparkles"></i> Effects
+                    </button>
+                </div>
+                <div class="pb-tray-container" id="pb-tray">
+                    <div class="pb-tray-empty">No photos taken yet. Click the red button to snap a photo!</div>
+                </div>
+                <div class="pb-modal" id="pb-modal">
+                    <img class="pb-modal-img" id="pb-modal-img" alt="Captured photo">
+                    <div class="pb-modal-actions">
+                        <a class="pb-btn pb-btn-save" id="pb-download-btn" href="#" download="PhotoBooth.png" title="Save picture to your computer">
+                            <i class="fas fa-download"></i> Save to PC
+                        </a>
+                        <button type="button" class="pb-btn pb-btn-secondary" onclick="setPhotoAsWallpaper()">
+                            <i class="fas fa-desktop"></i> Set as Wallpaper
+                        </button>
+                        <button type="button" class="pb-btn pb-btn-delete" onclick="deleteActivePhoto()">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        <button type="button" class="pb-btn pb-btn-secondary" onclick="closePhotoModal()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breakout.app — Steve Jobs & Wozniak Heritage 1976 Classic Arcade -->
+        <div class="window hidden" id="breakout-window" style="top: 10%; left: 20%; width: 660px; height: 580px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'breakout-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Breakout" title="Close" onclick="closeBreakout()"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Breakout" title="Minimize" onclick="minimizeWindow('breakout-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Breakout" title="Zoom" onclick="maximizeWindow('breakout-window')"></button>
+                </div>
+                <div class="window-title" id="breakout-window-title">Breakout — 1976 Arcade</div>
+            </div>
+            <div class="breakout-container">
+                <div class="breakout-header">
+                    <div class="breakout-stat-group">
+                        <div class="breakout-stat">
+                            <span class="breakout-stat-label">Score</span>
+                            <span class="breakout-stat-val" id="breakout-score">0</span>
+                        </div>
+                        <div class="breakout-stat">
+                            <span class="breakout-stat-label">High Score</span>
+                            <span class="breakout-stat-val" id="breakout-highscore">0</span>
+                        </div>
+                        <div class="breakout-stat">
+                            <span class="breakout-stat-label">Level</span>
+                            <span class="breakout-stat-val" id="breakout-level">1</span>
+                        </div>
+                        <div class="breakout-stat">
+                            <span class="breakout-stat-label">Lives</span>
+                            <span class="breakout-lives" id="breakout-lives">❤️❤️❤️</span>
+                        </div>
+                    </div>
+                    <div class="breakout-header-actions">
+                        <button type="button" class="breakout-btn" onclick="toggleBreakoutPause()"><i class="fas fa-pause"></i> Pause</button>
+                        <button type="button" class="breakout-btn active" onclick="startBreakoutGame()"><i class="fas fa-redo"></i> Restart</button>
+                    </div>
+                </div>
+                <div class="breakout-stage">
+                    <canvas id="breakout-canvas"></canvas>
+                    <div class="breakout-overlay" id="breakout-overlay">
+                        <div class="breakout-overlay-badge"><i class="fas fa-trophy"></i> Steve Jobs &amp; Wozniak Heritage</div>
+                        <div class="breakout-overlay-title" id="breakout-overlay-title">Breakout</div>
+                        <div class="breakout-overlay-desc" id="breakout-overlay-desc">Move mouse or Left/Right arrow keys to deflect the ball and smash bricks!</div>
+                        <button type="button" class="breakout-play-btn" id="breakout-overlay-btn" onclick="startBreakoutGame()">Start Game</button>
+                        <div class="breakout-tip">Tip: Hit bricks to release Multi-Ball &amp; Laser powerups.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Snake.app — Retro macOS Arcade -->
+        <div class="window hidden" id="snake-window" style="top: 12%; left: 22%; width: 620px; height: 620px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'snake-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Snake" title="Close" onclick="closeSnake()"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Snake" title="Minimize" onclick="minimizeWindow('snake-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Snake" title="Zoom" onclick="maximizeWindow('snake-window')"></button>
+                </div>
+                <div class="window-title" id="snake-window-title">Snake — Retro Arcade</div>
+            </div>
+            <div class="snake-container">
+                <div class="snake-header">
+                    <div class="snake-stat-group">
+                        <div class="snake-stat">
+                            <span class="snake-stat-label">Score</span>
+                            <span class="snake-stat-val" id="snake-score">0</span>
+                        </div>
+                        <div class="snake-stat">
+                            <span class="snake-stat-label">High Score</span>
+                            <span class="snake-stat-val" id="snake-highscore">0</span>
+                        </div>
+                        <div class="snake-stat">
+                            <span class="snake-stat-label">Length</span>
+                            <span class="snake-stat-val" id="snake-length">3</span>
+                        </div>
+                    </div>
+                    <div class="breakout-header-actions">
+                        <button type="button" class="snake-btn" onclick="toggleSnakePause()"><i class="fas fa-pause"></i> Pause</button>
+                        <button type="button" class="snake-btn" onclick="startSnakeGame()"><i class="fas fa-redo"></i> Restart</button>
+                    </div>
+                </div>
+                <div class="snake-stage">
+                    <canvas id="snake-canvas"></canvas>
+                    <div class="snake-overlay" id="snake-overlay">
+                        <div class="snake-overlay-badge"><i class="fas fa-gamepad"></i> Classic Macintosh Arcade</div>
+                        <div class="snake-overlay-title" id="snake-overlay-title">Snake</div>
+                        <div class="snake-overlay-desc" id="snake-overlay-desc">Use Arrow Keys or WASD to eat apples, grow longer, and catch golden apples!</div>
+                        <button type="button" class="snake-play-btn" id="snake-overlay-btn" onclick="startSnakeGame()">Start Game</button>
+                        <div class="snake-tip">Tip: Press Space anytime to pause.</div>
+                    </div>
+                </div>
+                <div class="snake-dpad">
+                    <button type="button" class="snake-dpad-btn snake-dpad-up" onclick="snakeControl('up')" aria-label="Up"><i class="fas fa-chevron-up"></i></button>
+                    <button type="button" class="snake-dpad-btn snake-dpad-left" onclick="snakeControl('left')" aria-label="Left"><i class="fas fa-chevron-left"></i></button>
+                    <button type="button" class="snake-dpad-btn snake-dpad-down" onclick="snakeControl('down')" aria-label="Down"><i class="fas fa-chevron-down"></i></button>
+                    <button type="button" class="snake-dpad-btn snake-dpad-right" onclick="snakeControl('right')" aria-label="Right"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music.app — macOS Apple Music Native Clone -->
+        <div class="window hidden" id="music-window" style="top: 8%; left: 14%; width: 940px; height: 620px;">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'music-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close Music" title="Close" onclick="closeMusic()"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize Music" title="Minimize" onclick="minimizeWindow('music-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom Music" title="Zoom" onclick="maximizeWindow('music-window')"></button>
+                </div>
+                <div class="window-title" id="music-window-title">Music</div>
+            </div>
+            <div class="music-app-container">
+                <!-- Top Player Transport Bar -->
+                <div class="music-player-bar">
+                    <div class="music-controls-left">
+                        <button type="button" class="music-btn-ctrl" onclick="prevMusicTrack()" title="Previous"><i class="fas fa-backward-step"></i></button>
+                        <button type="button" class="music-play-circle-btn" id="music-play-btn" onclick="toggleMusicPlay()" title="Play / Pause"><i class="fas fa-play" style="margin-left:2px;"></i></button>
+                        <button type="button" class="music-btn-ctrl" onclick="nextMusicTrack()" title="Next"><i class="fas fa-forward-step"></i></button>
+                    </div>
+                    <div class="music-lcd-display">
+                        <div class="music-lcd-info">
+                            <div class="music-lcd-track">
+                                <span id="music-lcd-track-title">Moonlight Sonata (Adagio)</span>
+                                <span class="music-lcd-artist" id="music-lcd-artist">Ludwig van Beethoven</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="music-eq-bars" id="music-eq-bars">
+                                    <div class="music-eq-bar"></div>
+                                    <div class="music-eq-bar"></div>
+                                    <div class="music-eq-bar"></div>
+                                    <div class="music-eq-bar"></div>
+                                </div>
+                                <span class="music-lcd-time" id="music-lcd-time">0:00 / 5:12</span>
+                            </div>
+                        </div>
+                        <div class="music-scrubber-wrap">
+                            <div class="music-progress-bar" id="music-progress-bar">
+                                <div class="music-progress-fill" id="music-progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="music-controls-right">
+                        <div class="music-volume-wrap">
+                            <button type="button" class="music-btn-ctrl" onclick="toggleMusicMute()" style="padding:2px;"><i class="fas fa-volume-high" id="music-vol-icon"></i></button>
+                            <input type="range" class="music-volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setMusicVolume(this.value)" aria-label="Volume">
+                        </div>
+                    </div>
+                </div>
+                <!-- Body with Sidebar and Track Table -->
+                <div class="music-body">
+                    <div class="music-sidebar">
+                        <div class="music-sidebar-title">Apple Music</div>
+                        <div class="music-nav-item active" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-play-circle"></i> Listen Now</div>
+                        <div class="music-nav-item" data-view="browse" onclick="switchMusicNav('browse')"><i class="fas fa-compass"></i> Browse</div>
+                        <div class="music-nav-item" data-view="radio" onclick="switchMusicNav('radio')"><i class="fas fa-broadcast-tower"></i> Radio</div>
+                        <div class="music-sidebar-title">Library</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-clock"></i> Recently Added</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-user"></i> Artists</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-compact-disc"></i> Albums</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-music"></i> Songs</div>
+                        <div class="music-sidebar-title">Playlists</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(0);"><i class="fas fa-list"></i> Classical Masters</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(6);"><i class="fas fa-list"></i> Coding Lo-Fi Beats</div>
+                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(7);"><i class="fas fa-list"></i> Cupertino Sunset 80s</div>
+                    </div>
+                    <div class="music-content">
+                        <!-- Tracks / Album View -->
+                        <div id="music-view-tracks">
+                            <div class="music-hero-banner">
+                                <div class="music-hero-cover"><i class="fas fa-record-vinyl"></i></div>
+                                <div class="music-hero-details">
+                                    <h2>Classical &amp; Coding Essentials</h2>
+                                    <div class="music-hero-subtitle">Curated by Apple Music • 8 Famous Masterpieces &amp; Lo-Fi Tracks</div>
+                                    <div class="music-hero-actions">
+                                        <button type="button" class="music-hero-play-btn" onclick="window.playMusicTrackIndex(0)"><i class="fas fa-play"></i> Play Album</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="music-section-title">Top Tracks</div>
+                            <table class="music-track-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:32px;">#</th>
+                                        <th>Title</th>
+                                        <th>Album</th>
+                                        <th style="width:60px;text-align:right;"><i class="fas fa-clock"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="music-track-tbody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Live Radio Station Hub View -->
+                        <div id="music-view-radio" style="display:none;">
+                            <div class="music-radio-header">
+                                <div>
+                                    <h2 style="font-size:24px;font-weight:800;margin:0 0 4px 0;">Apple Music Live Radio</h2>
+                                    <div style="font-size:12px;color:rgba(255,255,255,0.6);">Direct streaming live broadcasts from India and across the globe</div>
+                                </div>
+                                <div class="music-country-selector">
+                                    <span class="music-country-label"><i class="fas fa-location-dot" style="color:#fa243c;"></i> Station Region:</span>
+                                    <select class="music-country-select" id="music-country-select" onchange="window.switchRadioCountry(this.value)" aria-label="Select Radio Country">
+                                        <option value="IN">🇮🇳 India Live Radio</option>
+                                        <option value="GLOBAL">🌐 Global Top Stations</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="music-radio-grid" id="music-radio-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <!-- /desktop -->
 
@@ -1022,6 +1361,7 @@ C 890,381 908,392 928,394"/>
 
         <!-- Iris AI Assistant Overlay -->
         <div class="iris-overlay" id="iris-overlay">
+            <div class="iris-wake-status" id="iris-wake-status" onclick="toggleHeyIrisListening()" title="Click to toggle Hey Iris ambient wake listener"><i class="fas fa-satellite-dish"></i> <span>"Hey Iris" Active</span></div>
             <button class="iris-close-btn" onclick="closeIris()">✕</button>
             <div class="iris-orb-container" onclick="document.getElementById('iris-input').focus()">
                 <div class="iris-orb"></div>
@@ -1038,12 +1378,17 @@ C 890,381 908,392 928,394"/>
             <div class="iris-label">Iris</div>
             <div class="iris-suggestions" id="iris-suggestions"></div>
             <div class="iris-conversation" id="iris-conversation"></div>
+            <!-- Real-time speech-to-text transcript caption -->
+            <div class="iris-live-transcript" id="iris-live-transcript"><i class="fas fa-microphone" style="color:#ff3b30;font-size:12px;"></i> <span id="iris-live-transcript-text">Listening...</span></div>
             <div class="iris-input-area">
                 <div class="iris-input-wrapper">
-                    <input type="text" class="iris-input" id="iris-input" placeholder="Ask Iris anything about Mudit..." onkeydown="handleIrisInput(event)" autocomplete="off">
-                    <button class="iris-send-btn" id="iris-send-btn" onclick="sendIrisMessage()"><i class="fas fa-arrow-up"></i></button>
+                    <input type="text" class="iris-input" id="iris-input" placeholder="Ask Iris or say a command..." onkeydown="handleIrisInput(event)" autocomplete="off">
+                    <button class="iris-mic-btn" id="iris-mic-btn" onclick="toggleIrisVoice()" title="Speak with Siri / Iris" aria-label="Voice input"><i class="fas fa-microphone"></i></button>
+                    <button class="iris-send-btn" id="iris-send-btn" onclick="sendIrisMessage()" title="Send"><i class="fas fa-arrow-up"></i></button>
                 </div>
             </div>
+            <!-- Apple Intelligence edge glow ring -->
+            <div class="iris-siri-glow" id="iris-siri-glow"></div>
         </div>
 
     <!-- macOS Launchpad Overlay -->
@@ -1075,6 +1420,10 @@ C 890,381 908,392 928,394"/>
             <div class="dock-item" id="dock-launchpad" onclick="toggleLaunchpad()" data-tooltip="Launchpad (⌥L)">
                 <img src="assets/icons/launchpad.svg" alt="Launchpad">
             </div>
+            <!-- Mission Control -->
+            <div class="dock-item" id="dock-missioncontrol" onclick="toggleMissionControl()" data-tooltip="Mission Control (F3)">
+                <img src="assets/icons/launchpad.svg" style="filter: hue-rotate(210deg) saturate(180%);" alt="Mission Control">
+            </div>
             <!-- Safari.app -->
             <div class="dock-item" id="dock-safari" onclick="openWindow('safari-window')" data-tooltip="Safari">
                 <img src="assets/icons/safari.png" alt="Safari">
@@ -1091,6 +1440,22 @@ C 890,381 908,392 928,394"/>
             <!-- Photos.app -->
             <div class="dock-item" id="dock-photos" onclick="openWindow('photos-window')" data-tooltip="Photos">
                 <img src="assets/icons/photos.png" alt="Photos">
+            </div>
+            <!-- Photo Booth.app -->
+            <div class="dock-item" id="dock-photobooth" onclick="openPhotoBooth()" data-tooltip="Photo Booth">
+                <img src="assets/icons/photobooth.svg" alt="Photo Booth">
+            </div>
+            <!-- Apple Music.app -->
+            <div class="dock-item" id="dock-music" onclick="openMusic()" data-tooltip="Music">
+                <img src="assets/icons/music.png" alt="Music">
+            </div>
+            <!-- Breakout Arcade -->
+            <div class="dock-item" id="dock-breakout" onclick="openBreakout()" data-tooltip="Breakout (1976 Arcade)">
+                <img src="assets/icons/breakout.svg" alt="Breakout">
+            </div>
+            <!-- Snake Arcade -->
+            <div class="dock-item" id="dock-snake" onclick="openSnake()" data-tooltip="Snake (Retro Arcade)">
+                <img src="assets/icons/snake.svg" alt="Snake">
             </div>
             <!-- App Store.app -->
             <div class="dock-item" id="dock-appstore" onclick="openWindow('appstore-window')" data-tooltip="App Store">
@@ -1137,24 +1502,34 @@ C 890,381 908,392 928,394"/>
     <script src="js/core/quick-look.js"></script>
 
     <!-- Feature Application Scripts -->
-    <script src="js/apps/desktop.js"></script>
-    <script src="js/apps/textedit.js"></script>
-    <script src="js/apps/photos.js"></script>
-    <script src="js/apps/disk-image.js"></script>
-    <script src="js/apps/finder-v2.js"></script>
-    <script src="js/apps/mail.js"></script>
-    <script src="js/apps/safari.js"></script>
-    <script src="js/apps/notes.js"></script>
-    <script src="js/apps/appstore.js"></script>
-    <script src="js/apps/settings.js"></script>
-    <script src="js/apps/terminal.js"></script>
-    <script src="js/apps/trash.js"></script>
-    <script src="js/apps/resume.js"></script>
-    <script src="js/apps/iris.js"></script>
-    <script src="js/apps/launchpad.js"></script>
-    <script src="js/apps/notification-center.js"></script>
+    <script src="js/apps/desktop.js?v=2.3"></script>
+    <script src="js/apps/textedit.js?v=2.3"></script>
+    <script src="js/apps/photos.js?v=2.3"></script>
+    <script src="js/apps/disk-image.js?v=2.3"></script>
+    <script src="js/apps/finder-v2.js?v=2.3"></script>
+    <script src="js/apps/mail.js?v=2.3"></script>
+    <script src="js/apps/safari.js?v=2.3"></script>
+    <script src="js/apps/notes.js?v=2.3"></script>
+    <script src="js/apps/appstore.js?v=2.3"></script>
+    <script src="js/apps/settings.js?v=2.3"></script>
+    <script src="js/apps/terminal.js?v=2.3"></script>
+    <script src="js/apps/trash.js?v=2.3"></script>
+    <script src="js/apps/resume.js?v=2.3"></script>
+    <script src="js/apps/iris.js?v=2.3"></script>
+    <script src="js/apps/launchpad.js?v=2.3"></script>
+    <script src="js/apps/notification-center.js?v=2.3"></script>
+    <script src="js/apps/photobooth.js?v=2.3"></script>
+    <script src="js/apps/breakout.js?v=2.3"></script>
+    <script src="js/apps/snake.js?v=2.3"></script>
+    <script src="js/apps/music.js?v=2.3"></script>
+
+    <!-- Core Systems & Awwwards Enhancements -->
+    <script src="js/core/sound-effects.js"></script>
+    <script src="js/core/control-center.js"></script>
+    <script src="js/core/mission-control.js"></script>
+    <script src="js/core/desktop-widgets.js"></script>
 
     <!-- App Bootstrap -->
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=2.3"></script>
 </body>
 </html>

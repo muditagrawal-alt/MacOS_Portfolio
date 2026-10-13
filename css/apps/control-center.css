@@ -1,0 +1,308 @@
+/* ==========================================================================
+   macOS Control Center — Authentic Big Sur / Sequoia Glassmorphic Panel
+   ========================================================================== */
+
+.control-center-panel {
+    position: fixed;
+    top: 36px;
+    right: 12px;
+    width: 330px;
+    background: rgba(36, 36, 42, 0.76);
+    backdrop-filter: blur(45px) saturate(190%);
+    -webkit-backdrop-filter: blur(45px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    padding: 14px;
+    z-index: 99990;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.control-center-panel.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* ── Top Grid (Connectivity & Quick Toggles) ─────────────────────────── */
+.cc-grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cc-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.cc-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.cc-connectivity-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cc-toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: background 0.12s ease;
+}
+
+.cc-toggle-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.cc-toggle-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #ffffff;
+    transition: background 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.cc-toggle-item.active .cc-toggle-icon {
+    background: #007aff;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+}
+
+.cc-toggle-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.cc-toggle-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.cc-toggle-sub {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* Right Quick Action Cards */
+.cc-quick-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cc-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.cc-action-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.cc-action-btn.active {
+    background: rgba(0, 122, 255, 0.22);
+    border-color: rgba(0, 122, 255, 0.45);
+}
+
+.cc-action-btn.active .cc-toggle-icon {
+    background: #007aff;
+}
+
+/* ── Sliders (Display & Sound) ───────────────────────────────────────── */
+.cc-slider-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cc-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cc-slider-track-wrap {
+    position: relative;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.cc-slider-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 14px;
+    pointer-events: none;
+    transition: width 0.05s linear;
+}
+
+.cc-slider-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+    z-index: 2;
+}
+
+.cc-slider-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 12px;
+    color: #1c1c1e;
+    z-index: 3;
+    pointer-events: none;
+    transition: color 0.1s ease;
+}
+
+.cc-slider-track-wrap:hover .cc-slider-fill {
+    background: #e5e5ea;
+}
+
+/* ── Now Playing Card ─────────────────────────────────────────────────── */
+.cc-now-playing-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cc-music-art {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #fa243c, #ff5e62);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(250, 36, 60, 0.35);
+}
+
+.cc-music-meta {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.cc-music-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cc-music-artist {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cc-music-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cc-music-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.cc-music-btn:hover {
+    transform: scale(1.15);
+}
+
+.cc-music-play-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.cc-music-play-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Battery & System Status Pill ────────────────────────────────────── */
+.cc-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px 0;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.cc-battery-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}

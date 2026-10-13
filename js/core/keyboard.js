@@ -24,14 +24,18 @@ function isTypingTarget() {
 /* ── Cmd+Tab application switcher ───────────────────────────────────────── */
 
 const APP_ORDER = [
-    { id: 'finder-window',   name: 'Finder',          icon: 'assets/icons/finder.png' },
-    { id: 'safari-window',   name: 'Safari',          icon: 'assets/icons/safari.png' },
-    { id: 'mail-window',     name: 'Mail',            icon: 'assets/icons/mail.png' },
-    { id: 'notes-window',    name: 'Notes',           icon: 'assets/icons/notes.png' },
-    { id: 'appstore-window', name: 'App Store',       icon: 'assets/icons/app-store.png' },
-    { id: 'terminal-window', name: 'Terminal',        icon: 'assets/icons/terminal.png' },
-    { id: 'settings-window', name: 'System Settings', icon: 'assets/icons/settings.png' },
-    { id: 'trash-window',    name: 'Trash',           icon: 'assets/icons/trash-full.png' }
+    { id: 'finder-window',     name: 'Finder',          icon: 'assets/icons/finder.png' },
+    { id: 'safari-window',     name: 'Safari',          icon: 'assets/icons/safari.png' },
+    { id: 'music-window',      name: 'Apple Music',     icon: 'assets/icons/app-store.png' },
+    { id: 'photobooth-window', name: 'Photo Booth',     icon: 'assets/icons/photobooth.svg' },
+    { id: 'breakout-window',   name: 'Breakout',        icon: 'assets/icons/breakout.svg' },
+    { id: 'snake-window',      name: 'Snake',           icon: 'assets/icons/snake.svg' },
+    { id: 'mail-window',       name: 'Mail',            icon: 'assets/icons/mail.png' },
+    { id: 'notes-window',      name: 'Notes',           icon: 'assets/icons/notes.png' },
+    { id: 'appstore-window',   name: 'App Store',       icon: 'assets/icons/app-store.png' },
+    { id: 'terminal-window',   name: 'Terminal',        icon: 'assets/icons/terminal.png' },
+    { id: 'settings-window',   name: 'System Settings', icon: 'assets/icons/settings.png' },
+    { id: 'trash-window',      name: 'Trash',           icon: 'assets/icons/trash-full.png' }
 ];
 
 let switcherOpen = false;

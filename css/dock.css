@@ -230,3 +230,15 @@ body:has(.window.is-maximized:not(.hidden):not(.minimized)) .dock-container:hove
     background: var(--accent-hover);
     filter: brightness(1.15);
 }
+
+/* Authentic macOS Dock Icon Bounce on Launch */
+@keyframes dockBounce {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-16px); }
+    50% { transform: translateY(-3px); }
+    75% { transform: translateY(-9px); }
+}
+
+.dock-item.bouncing {
+    animation: dockBounce 0.72s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
