@@ -1,0 +1,38 @@
+name: Continuous Integration & Automated Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Code Quality & Component Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Gate 1 - JavaScript Syntax Validation
+        run: npm run test:syntax
+
+      - name: Gate 2 - Static Asset Integrity & Link Verification
+        run: npm run test:assets
+
+      - name: Gate 3 - Comprehensive Component & Window Lifecycle Suite
+        run: npm run test:components
