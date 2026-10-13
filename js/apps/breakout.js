@@ -633,7 +633,10 @@
     window.closeBreakout = function() {
         isRunning = false;
         if (animId) cancelAnimationFrame(animId);
-        if (typeof closeWindow === 'function') closeWindow('breakout-window');
+        const win = document.getElementById('breakout-window');
+        if (win && !win.classList.contains('hidden') && typeof closeWindow === 'function') {
+            closeWindow('breakout-window');
+        }
     };
 
     window.startBreakoutGame = startNewGame;

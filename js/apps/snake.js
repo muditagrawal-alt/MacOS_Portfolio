@@ -435,7 +435,10 @@
     window.closeSnake = function() {
         isRunning = false;
         if (gameLoopId) clearTimeout(gameLoopId);
-        if (typeof closeWindow === 'function') closeWindow('snake-window');
+        const win = document.getElementById('snake-window');
+        if (win && !win.classList.contains('hidden') && typeof closeWindow === 'function') {
+            closeWindow('snake-window');
+        }
     };
 
     window.startSnakeGame = startNewGame;

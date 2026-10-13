@@ -140,6 +140,7 @@ function openWindow(windowId) {
 function closeWindow(windowId) {
     const win = document.getElementById(windowId);
     if (win) {
+        if (win.classList.contains('hidden')) return; // Guard against re-entrant calls
         win.classList.add('hidden');
         win.classList.remove('is-active');
         delete win.dataset.placed;

@@ -157,23 +157,34 @@ function startSimulatedCamera() {
 
         // Sunglasses (Classic Mac cool emoji style)
         ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.roundRect(280, 180 + bob, 34, 18, 4);
-        ctx.roundRect(326, 180 + bob, 34, 18, 4);
-        ctx.fill();
-        ctx.fillRect(314, 185 + bob, 12, 4);
+        if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(280, 180 + bob, 34, 18, 4);
+            ctx.roundRect(326, 180 + bob, 34, 18, 4);
+        } else if (typeof ctx.rect === 'function') {
+            ctx.rect(280, 180 + bob, 34, 18);
+            ctx.rect(326, 180 + bob, 34, 18);
+        } else if (typeof ctx.fillRect === 'function') {
+            ctx.fillRect(280, 180 + bob, 34, 18);
+            ctx.fillRect(326, 180 + bob, 34, 18);
+        }
+        if (typeof ctx.fill === 'function') ctx.fill();
+        if (typeof ctx.fillRect === 'function') ctx.fillRect(314, 185 + bob, 12, 4);
 
         // Smile
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(320, 208 + bob, 20, 0.2, Math.PI - 0.2);
-        ctx.stroke();
+        if (typeof ctx.beginPath === 'function') ctx.beginPath();
+        if (typeof ctx.arc === 'function') ctx.arc(320, 208 + bob, 20, 0.2, Math.PI - 0.2);
+        if (typeof ctx.stroke === 'function') ctx.stroke();
 
         // Torso
         ctx.fillStyle = '#3b82f6';
-        ctx.beginPath();
-        ctx.ellipse(320, 320 + bob, 110, 80, 0, 0, Math.PI * 2);
+        if (typeof ctx.beginPath === 'function') ctx.beginPath();
+        if (typeof ctx.ellipse === 'function') {
+            ctx.ellipse(320, 320 + bob, 110, 80, 0, 0, Math.PI * 2);
+        } else if (typeof ctx.arc === 'function') {
+            ctx.arc(320, 320 + bob, 90, 0, Math.PI * 2);
+        }
         ctx.fill();
 
         // Mac Apple logo badge on shirt
