@@ -19,7 +19,7 @@ npm install    # tools for the test suites; the site itself has no dependencies
 npm start      # the first run opens the questionnaire at http://localhost:8000/setup/
 ```
 
-You can also click **Use this template** on GitHub and clone your copy. You'll need Node 18 or later.
+You can also click **Use this template** on GitHub and clone your copy. You'll need Node 22 or later.
 
 | Step | What you give it |
 | --- | --- |
@@ -348,7 +348,7 @@ before a website ever sees them (⌘W would close your tab), so window commands 
 ## Testing
 
 ```bash
-npm install
+npm install                       # Node 22.22+ or 24.15+ (jsdom's requirement)
 npx playwright install chromium   # once, for the browser suite
 npm run test:all
 ```
