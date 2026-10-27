@@ -1,566 +1,571 @@
 /* ==========================================================================
-   Apple Music.app — macOS Apple Music Native Clone Controller
-   With Location-Aware Live Radio & Global Station Streaming
+   Music.app — library, live radio and a generative Web Audio engine
+   --------------------------------------------------------------------------
+   What changed and why (all verified in a real browser):
+   • Five of the six recordings pointed at Wikimedia URLs that 404, so they
+     silently fell back to a beeping sine arpeggio labelled "Mozart". Every
+     URL below was resolved through the Commons API and plays.
+   • Resume after pause restarted the song (src was reassigned on every
+     play), and a 1s setInterval raced the audio clock. One clock now: the
+     <audio> element's own currentTime.
+   • Radio errors were swallowed and the UI still said "LIVE". Failures now
+     surface, and stations come from the open Radio Browser directory (with a
+     verified fallback list) instead of a hardcoded set with duplicates.
+   • System volume / mute (Control Centre, menu bar) now apply to Music.
    ========================================================================== */
 
 (function() {
-    // Curated Library Tracks
-    const TRACKS = [
-        {
-            id: 'beethoven-moonlight',
-            title: 'Moonlight Sonata (Adagio)',
-            artist: 'Ludwig van Beethoven',
-            album: 'Piano Sonata No. 14 in C-Sharp Minor',
-            duration: 312,
-            durationStr: '5:12',
-            color: 'linear-gradient(135deg, #4a00e0, #8e2de2)',
-            icon: 'fa-moon',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/eb/Beethoven_Moonlight_1st_movement.ogg/Beethoven_Moonlight_1st_movement.ogg.mp3',
-            synthScale: [277.18, 329.63, 415.30, 554.37, 493.88, 440.00],
-            tempo: 75
-        },
-        {
-            id: 'mozart-symphony40',
-            title: 'Symphony No. 40 in G Minor',
-            artist: 'Wolfgang Amadeus Mozart',
-            album: 'Great Orchestral Masterpieces',
-            duration: 270,
-            durationStr: '4:30',
-            color: 'linear-gradient(135deg, #fa709a, #fee140)',
-            icon: 'fa-feather-pointed',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Mozart_-_Symphony_No._40_in_G_minor%2C_K._550_-_I._Molto_allegro.ogg',
-            synthScale: [311.13, 293.66, 293.66, 311.13, 293.66, 293.66, 392.00],
-            tempo: 120
-        },
-        {
-            id: 'chopin-nocturne',
-            title: 'Nocturne in E-Flat Major',
-            artist: 'Frédéric Chopin',
-            album: 'Nocturnes, Op. 9 No. 2',
-            duration: 272,
-            durationStr: '4:32',
-            color: 'linear-gradient(135deg, #0ba360, #3cba92)',
-            icon: 'fa-music',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/9/9b/Fr%C3%A9d%C3%A9ric_Chopin_-_Nocturne_in_E-flat_major%2C_Op._9%2C_No._2.ogg/Fr%C3%A9d%C3%A9ric_Chopin_-_Nocturne_in_E-flat_major%2C_Op._9%2C_No._2.ogg.mp3',
-            synthScale: [311.13, 349.23, 392.00, 466.16, 523.25, 466.16],
-            tempo: 80
-        },
-        {
-            id: 'vivaldi-spring',
-            title: 'The Four Seasons: Spring',
-            artist: 'Antonio Vivaldi',
-            album: 'Le quattro stagioni',
-            duration: 216,
-            durationStr: '3:36',
-            color: 'linear-gradient(135deg, #ff0844, #ffb199)',
-            icon: 'fa-sun',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/3c/Vivaldi_Spring_mvt_1_Allegro.ogg/Vivaldi_Spring_mvt_1_Allegro.ogg.mp3',
-            synthScale: [659.25, 830.61, 830.61, 830.61, 739.99, 659.25, 493.88],
-            tempo: 110
-        },
-        {
-            id: 'satie-gymnopedie',
-            title: 'Gymnopédie No. 1',
-            artist: 'Erik Satie',
-            album: 'Atmospheric French Piano',
-            duration: 190,
-            durationStr: '3:10',
-            color: 'linear-gradient(135deg, #13547a, #80d0c7)',
-            icon: 'fa-cloud',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e6/Erik_Satie_-_Gymnopedie_No._1.ogg/Erik_Satie_-_Gymnopedie_No._1.ogg.mp3',
-            synthScale: [392.00, 493.88, 587.33, 739.99, 587.33, 493.88],
-            tempo: 65
-        },
-        {
-            id: 'debussy-clairdelune',
-            title: 'Clair de Lune',
-            artist: 'Claude Debussy',
-            album: 'Suite bergamasque',
-            duration: 304,
-            durationStr: '5:04',
-            color: 'linear-gradient(135deg, #667eea, #764ba2)',
-            icon: 'fa-star',
-            audioUrl: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/2/26/Debussy_-_Clair_de_Lune.ogg/Debussy_-_Clair_de_Lune.ogg.mp3',
-            synthScale: [415.30, 466.16, 554.37, 622.25, 830.61, 622.25],
-            tempo: 70
-        },
-        {
-            id: 'lofi-midnight',
-            title: 'Midnight Code & Chill',
-            artist: 'Mudit & Chillhop Radio',
-            album: 'Late Night Developer Sessions',
-            duration: 168,
-            durationStr: '2:48',
-            color: 'linear-gradient(135deg, #f857a6, #ff5858)',
-            icon: 'fa-laptop-code',
-            audioUrl: null,
-            synthScale: [261.63, 329.63, 392.00, 493.88, 523.25, 392.00],
-            tempo: 84
-        },
-        {
-            id: 'synthwave-neon',
-            title: 'Retro Neon Drive 1984',
-            artist: 'Macintosh Arcade Synth',
-            album: 'Cupertino Sunset Drive',
-            duration: 195,
-            durationStr: '3:15',
-            color: 'linear-gradient(135deg, #00f2fe, #4facfe)',
-            icon: 'fa-car-side',
-            audioUrl: null,
-            synthScale: [220.00, 261.63, 329.63, 440.00, 523.25, 659.25],
-            tempo: 125
-        }
-    ];
-
-    // Live Radio Stations by Country
-    const RADIO_STATIONS = {
-        IN: [
-            {
-                id: 'air-vividh-bharati',
-                name: 'AIR Vividh Bharati',
-                desc: 'All India Radio • National Hindi Broadcast & Classic Hits',
-                dial: '102.8 FM',
-                country: 'India 🇮🇳',
-                streamUrl: 'https://stream.zeno.fm/6n6ewddtad0uv',
-                color: 'linear-gradient(135deg, #ff9933, #138808)',
-                icon: 'fa-radio'
-            },
-            {
-                id: 'radio-mirchi-hits',
-                name: 'Radio Mirchi Top 20',
-                desc: 'Bollywood Trending Hits & Desi Chartbusters',
-                dial: '98.3 FM',
-                country: 'India 🇮🇳',
-                streamUrl: 'https://stream.zeno.fm/f3wvbbqmdg8uv',
-                color: 'linear-gradient(135deg, #e11d48, #be123c)',
-                icon: 'fa-fire'
-            },
-            {
-                id: 'air-gold',
-                name: 'AIR FM Gold',
-                desc: 'Evergreen Melodies & National Hindi News',
-                dial: '106.4 FM',
-                country: 'India 🇮🇳',
-                streamUrl: 'https://stream.zeno.fm/s49uq9c8h0hvv',
-                color: 'linear-gradient(135deg, #d97706, #b45309)',
-                icon: 'fa-gem'
-            },
-            {
-                id: 'bollywood-retro',
-                name: 'Bollywood Gaane Purane',
-                desc: 'Golden Era 70s, 80s & 90s Kishore, Lata, Rafi Classics',
-                dial: 'Web Live',
-                country: 'India 🇮🇳',
-                streamUrl: 'https://stream.zeno.fm/6n6ewddtad0uv',
-                color: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                icon: 'fa-record-vinyl'
-            },
-            {
-                id: 'desi-dance',
-                name: 'Club Mirchi & Punjabi Hits',
-                desc: 'High Voltage Bhangra, Indi-Pop & Bollywood Remixes',
-                dial: 'Club HD',
-                country: 'India 🇮🇳',
-                streamUrl: 'https://stream.zeno.fm/f3wvbbqmdg8uv',
-                color: 'linear-gradient(135deg, #ec4899, #f43f5e)',
-                icon: 'fa-bolt'
-            }
-        ],
-        GLOBAL: [
-            {
-                id: 'radio-paradise',
-                name: 'Radio Paradise',
-                desc: 'Eclectic Mellow Rock, World, & Acoustic • California',
-                dial: 'Global HD',
-                country: 'United States 🇺🇸',
-                streamUrl: 'https://stream.radioparadise.com/mp3-128',
-                color: 'linear-gradient(135deg, #0284c7, #0369a1)',
-                icon: 'fa-tree'
-            },
-            {
-                id: 'bbc-world-service',
-                name: 'BBC World Service',
-                desc: 'Global News, Live Documentary & Culture • London',
-                dial: 'World Live',
-                country: 'United Kingdom 🇬🇧',
-                streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service',
-                color: 'linear-gradient(135deg, #dc2626, #991b1b)',
-                icon: 'fa-globe'
-            },
-            {
-                id: 'dance-wave',
-                name: 'Dance Wave 100%',
-                desc: 'Global Dance Hits, EDM, Pop & Future House',
-                dial: 'Dance HD',
-                country: 'Global 🌐',
-                streamUrl: 'https://dancewave.online/dance.mp3',
-                color: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
-                icon: 'fa-compact-disc'
-            },
-            {
-                id: 'classic-fm',
-                name: 'Classic FM London',
-                desc: 'The World’s Greatest Music • Mozart, Chopin, Beethoven',
-                dial: '100.9 FM',
-                country: 'United Kingdom 🇬🇧',
-                streamUrl: 'https://media-ice.musicradio.com/ClassicFMMP3',
-                color: 'linear-gradient(135deg, #059669, #047857)',
-                icon: 'fa-music'
-            },
-            {
-                id: 'chillout-lofi',
-                name: 'Chillout & Lo-Fi Lounge',
-                desc: '24/7 Relaxing Beats, Coffee Shop Study & Ambient',
-                dial: 'Lo-Fi HD',
-                country: 'Global 🌐',
-                streamUrl: 'https://stream.radioparadise.com/mellow-128',
-                color: 'linear-gradient(135deg, #d946ef, #a855f7)',
-                icon: 'fa-headphones'
-            }
-        ]
-    };
+    // Catalogue shared with the iPhone version: js/data/music.js
+    const TRACKS = window.MUSIC_TRACKS;
+    const FALLBACK_STATIONS = window.RADIO_FALLBACK_STATIONS;
+    const STATION_COLORS = window.RADIO_STATION_COLORS;
 
     let currentTrackIndex = 0;
     let isPlaying = false;
     let isRadioMode = false;
     let activeRadioStation = null;
-    let userCountry = 'IN'; // Defaults to India, auto-detects dynamically
-    let currentTime = 0;
-    let volume = 0.8;
+    let userCountry = 'IN';
+    let appVolume = 0.8;
     let isMuted = false;
+    let currentView = 'listen';
+    let viewTrackIndices = TRACKS.map((_, i) => i);
+    let stationsByRegion = {};
 
     let audioElement = null;
-    let synthTimer = null;
-    let progressTimer = null;
-    let audioCtx = null;
+    let loadedSrc = null;
+    let synth = null;          // running generative engine
+    let synthElapsed = 0;      // seconds into the current generative track
+    let synthTicker = null;
 
-    // Detect user country/locale
+    /* ── Volume: app volume × system volume (and system mute) ─────────── */
+    function effectiveVolume() {
+        const master = typeof window.getMasterVolume === 'function' ? window.getMasterVolume() : 1;
+        const sysMuted = typeof window.isSystemMuted === 'function' && window.isSystemMuted();
+        return (isMuted || sysMuted) ? 0 : Math.max(0, Math.min(1, appVolume * master));
+    }
+
+    function applyVolume() {
+        const v = effectiveVolume();
+        if (audioElement) audioElement.volume = v;
+        if (synth) synth.setVolume(v);
+    }
+    window.addEventListener('master-volume-changed', applyVolume);
+
     function detectUserCountry() {
         try {
-            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-            const lang = navigator.language || '';
-            if (timeZone.includes('Calcutta') || timeZone.includes('Kolkata') || timeZone.includes('India') || lang.includes('IN')) {
-                userCountry = 'IN';
-            } else if (timeZone.includes('America') || lang.includes('US')) {
-                userCountry = 'GLOBAL';
-            } else {
-                userCountry = 'GLOBAL';
-            }
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+            userCountry = /Calcutta|Kolkata/.test(tz) ? 'IN' : 'GLOBAL';
         } catch (e) {
-            userCountry = 'IN';
+            userCountry = 'GLOBAL';
         }
+        const sel = document.getElementById('music-country-select');
+        if (sel) sel.value = userCountry;
     }
 
     function initAudio() {
         audioElement = new Audio();
-        audioElement.volume = volume;
-
+        audioElement.preload = 'none';
         audioElement.addEventListener('timeupdate', () => {
-            if (!isRadioMode && audioElement && audioElement.duration) {
-                currentTime = Math.floor(audioElement.currentTime);
-                updateProgressUI(currentTime, Math.floor(audioElement.duration));
-            }
+            if (!isRadioMode) updateProgressUI(audioElement.currentTime, trackDuration());
         });
-
-        audioElement.addEventListener('ended', () => {
-            if (!isRadioMode) nextTrack();
+        audioElement.addEventListener('loadedmetadata', () => {
+            if (!isRadioMode) updateProgressUI(audioElement.currentTime, trackDuration());
         });
-
-        audioElement.addEventListener('error', (e) => {
-            console.warn('Audio stream fallback triggered:', e);
-            if (!isRadioMode) {
-                startProceduralSynth();
-            }
+        audioElement.addEventListener('ended', () => { if (!isRadioMode) nextTrack(); });
+        audioElement.addEventListener('playing', () => { setStatus(''); broadcastState(); });
+        audioElement.addEventListener('waiting', () => setStatus(isRadioMode ? 'Connecting…' : 'Buffering…'));
+        audioElement.addEventListener('error', () => {
+            if (!audioElement.getAttribute('src')) return;
+            const what = isRadioMode && activeRadioStation ? activeRadioStation.name : (TRACKS[currentTrackIndex] || {}).title;
+            handlePlaybackFailure(what);
         });
     }
 
-    /* ── Procedural Web Audio Synthesizer Engine ───────────────────────── */
+    function trackDuration() {
+        const t = TRACKS[currentTrackIndex];
+        if (audioElement && isFinite(audioElement.duration) && audioElement.duration > 0) return audioElement.duration;
+        return t ? t.duration : 0;
+    }
+
+    function handlePlaybackFailure(what) {
+        setPlayingUI(false);
+        isPlaying = false;
+        setStatus(isRadioMode ? 'Station unavailable' : 'Couldn’t load this track');
+        if (typeof showToast === 'function') {
+            showToast(isRadioMode ? 'Station unavailable' : 'Track unavailable', { body: `${what} couldn’t be reached. Try another.`, icon: 'fas fa-triangle-exclamation' });
+        }
+        broadcastState();
+    }
+
+    /* ── Generative engine (Web Audio) ────────────────────────────────── */
+    let audioCtx = null;
     function getAudioContext() {
         if (!audioCtx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (AudioCtx) audioCtx = new AudioCtx();
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx) audioCtx = new Ctx();
         }
-        if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         return audioCtx;
     }
 
-    function playNote(freq, duration = 0.6, type = 'sine') {
+    function createGenerativeEngine(spec, startBeat) {
         const ctx = getAudioContext();
-        if (!ctx) return;
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        if (!ctx) return null;
+        const out = ctx.createGain();
+        out.gain.value = 0;
+        out.gain.linearRampToValueAtTime(effectiveVolume() * 0.55, ctx.currentTime + 0.4);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = spec.cutoff;
+        filter.Q.value = 0.7;
+        filter.connect(out);
+        out.connect(ctx.destination);
 
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, now);
+        // A short feedback delay gives the plucks some space.
+        const delay = ctx.createDelay(1);
+        delay.delayTime.value = 60 / spec.bpm * 0.75;
+        const fb = ctx.createGain();
+        fb.gain.value = spec.delay;
+        delay.connect(fb); fb.connect(delay); delay.connect(filter);
 
-        const actualVol = isMuted ? 0 : volume * 0.18;
-        gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(actualVol, now + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        const beatLen = 60 / spec.bpm;
+        let beat = startBeat || 0;
+        let nextTime = ctx.currentTime + 0.08;
+        let noiseBuf = null;
 
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + duration);
-    }
-
-    function startProceduralSynth() {
-        stopProceduralSynth();
-        const track = TRACKS[currentTrackIndex];
-        if (!track) return;
-        const scale = track.synthScale || [261.63, 329.63, 392.00];
-        const stepMs = Math.floor((60 / (track.tempo || 80)) * 1000);
-        let noteIdx = 0;
-
-        synthTimer = setInterval(() => {
-            if (!isPlaying || isRadioMode) return;
-            const freq = scale[noteIdx % scale.length];
-            const oscType = track.id.includes('synthwave') ? 'sawtooth' : (track.id.includes('lofi') ? 'triangle' : 'sine');
-            playNote(freq, stepMs / 1000 * 1.8, oscType);
-            noteIdx++;
-        }, stepMs);
-    }
-
-    function stopProceduralSynth() {
-        if (synthTimer) {
-            clearInterval(synthTimer);
-            synthTimer = null;
+        function noise() {
+            if (noiseBuf) return noiseBuf;
+            noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+            const d = noiseBuf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            return noiseBuf;
         }
+
+        function tone(freq, t, dur, type, gain, dest) {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = type;
+            o.frequency.setValueAtTime(freq, t);
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(gain, t + Math.min(0.04, dur / 4));
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(g); g.connect(dest || filter);
+            o.start(t); o.stop(t + dur + 0.05);
+        }
+
+        function scheduleBeat(t) {
+            const bar = Math.floor(beat / 4) % spec.chords.length;
+            const chord = spec.chords[bar];
+            const inBar = beat % 4;
+            if (inBar === 0) {
+                // Pad: the whole chord, slow attack, detuned pair for width.
+                chord.forEach(f => {
+                    tone(f, t, beatLen * 4.2, 'triangle', 0.05);
+                    tone(f * 1.003, t, beatLen * 4.2, 'sine', 0.035);
+                });
+                tone(chord[0] / 2, t, beatLen * 3.6, 'sine', 0.12);       // bass
+            }
+            // Arpeggio: two plucks per beat, an octave up, into the delay.
+            for (let k = 0; k < 2; k++) {
+                const swing = k === 1 ? spec.swing * beatLen : 0;
+                const f = chord[(inBar * 2 + k) % chord.length] * 2;
+                tone(f, t + k * beatLen / 2 + swing, beatLen * 0.9, spec.wave || 'triangle', 0.06, delay);
+                tone(f, t + k * beatLen / 2 + swing, beatLen * 0.9, spec.wave || 'triangle', 0.05);
+            }
+            if (spec.drums) {
+                if (inBar === 0 || inBar === 2) {            // kick
+                    const o = ctx.createOscillator(); const g = ctx.createGain();
+                    o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+                    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+                    o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+                }
+                const h = ctx.createBufferSource(); h.buffer = noise();     // hat on the off-beat
+                const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+                const hg = ctx.createGain();
+                const ht = t + beatLen / 2 + spec.swing * beatLen;
+                hg.gain.setValueAtTime(0.05, ht); hg.gain.exponentialRampToValueAtTime(0.0001, ht + 0.05);
+                h.connect(hp); hp.connect(hg); hg.connect(out); h.start(ht); h.stop(ht + 0.06);
+            }
+        }
+
+        // Look-ahead scheduler: robust to timer jitter.
+        const timer = setInterval(() => {
+            while (nextTime < ctx.currentTime + 0.25) {
+                scheduleBeat(nextTime);
+                nextTime += beatLen;
+                beat++;
+            }
+        }, 60);
+
+        return {
+            setVolume(v) { out.gain.setTargetAtTime(v * 0.55, ctx.currentTime, 0.05); },
+            stop() {
+                clearInterval(timer);
+                const t = ctx.currentTime;
+                out.gain.cancelScheduledValues(t);
+                out.gain.setTargetAtTime(0, t, 0.08);
+                setTimeout(() => { try { out.disconnect(); } catch (e) { /* already gone */ } }, 600);
+            },
+            beatAt(seconds) { return Math.floor(seconds / beatLen); }
+        };
     }
 
-    /* ── Player Logic ─────────────────────────────────────────────────── */
+    function startSynth(track) {
+        stopSynth();
+        synth = createGenerativeEngine(track.synth, Math.floor(synthElapsed / (60 / track.synth.bpm)));
+        synthTicker = setInterval(() => {
+            synthElapsed += 0.25;
+            updateProgressUI(synthElapsed, track.duration);
+            if (synthElapsed >= track.duration) nextTrack();
+        }, 250);
+    }
+
+    function stopSynth() {
+        if (synth) { synth.stop(); synth = null; }
+        if (synthTicker) { clearInterval(synthTicker); synthTicker = null; }
+    }
+
+    /* ── Player logic ─────────────────────────────────────────────────── */
     function loadTrack(index, autoPlay = true) {
         isRadioMode = false;
         activeRadioStation = null;
         currentTrackIndex = (index + TRACKS.length) % TRACKS.length;
         const track = TRACKS[currentTrackIndex];
-        currentTime = 0;
-
+        stopSynth();
+        synthElapsed = 0;
         if (audioElement) {
             audioElement.pause();
-            audioElement.currentTime = 0;
+            if (track.audioUrl) {
+                audioElement.src = track.audioUrl;
+                loadedSrc = track.audioUrl;
+            } else {
+                audioElement.removeAttribute('src');
+                loadedSrc = null;
+            }
         }
-        stopProceduralSynth();
-
         updateTrackInfoUI(track);
         updateProgressUI(0, track.duration);
         highlightActiveTrackRow();
-
-        if (autoPlay) {
-            playTrack();
-        } else {
-            pauseTrack();
-        }
+        document.querySelectorAll('.music-station-card').forEach(c => c.classList.remove('active'));
+        setStatus('');
+        if (autoPlay) playTrack();
+        else { isPlaying = false; setPlayingUI(false); broadcastState(); }
     }
 
     function playTrack() {
-        isPlaying = true;
         const track = TRACKS[currentTrackIndex];
-        const playBtn = document.getElementById('music-play-btn');
-        const eqBars = document.getElementById('music-eq-bars');
+        if (!track) return;
+        isPlaying = true;
+        setPlayingUI(true);
+        applyVolume();
 
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        if (eqBars) eqBars.classList.add('playing');
-
-        if (track && track.audioUrl) {
-            audioElement.src = track.audioUrl;
-            audioElement.play().catch(() => {
-                startProceduralSynth();
+        if (track.audioUrl) {
+            // Only (re)assign src when the track actually changed — assigning
+            // it again is what made "resume" restart the song from 0:00.
+            if (loadedSrc !== track.audioUrl) {
+                audioElement.src = track.audioUrl;
+                loadedSrc = track.audioUrl;
+            }
+            audioElement.play().catch(err => {
+                if (err && err.name === 'NotAllowedError') { isPlaying = false; setPlayingUI(false); setStatus('Click play to start'); broadcastState(); }
             });
         } else {
-            startProceduralSynth();
+            startSynth(track);
         }
-
-        if (progressTimer) clearInterval(progressTimer);
-        progressTimer = setInterval(() => {
-            if (isPlaying && !isRadioMode && track) {
-                currentTime++;
-                if (currentTime >= track.duration) {
-                    nextTrack();
-                } else {
-                    updateProgressUI(currentTime, track.duration);
-                }
-            }
-        }, 1000);
+        broadcastState();
     }
 
     function playRadioStation(station) {
         isRadioMode = true;
         activeRadioStation = station;
-        stopProceduralSynth();
+        stopSynth();
+        isPlaying = true;
+        setPlayingUI(true);
 
-        const playBtn = document.getElementById('music-play-btn');
-        const eqBars = document.getElementById('music-eq-bars');
         const titleEl = document.getElementById('music-lcd-track-title');
         const artistEl = document.getElementById('music-lcd-artist');
         const timeEl = document.getElementById('music-lcd-time');
         const fillEl = document.getElementById('music-progress-fill');
-
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        if (eqBars) eqBars.classList.add('playing');
-
-        if (titleEl) titleEl.innerHTML = `<span style="color:#fa243c;margin-right:6px;"><i class="fas fa-broadcast-tower"></i></span> ${station.name}`;
-        if (artistEl) artistEl.textContent = `${station.dial} • ${station.country}`;
-        if (timeEl) timeEl.innerHTML = `<span style="color:#ff3b30;font-weight:700;">● LIVE ON AIR</span>`;
+        if (titleEl) titleEl.textContent = station.name;
+        if (artistEl) artistEl.textContent = `${station.desc || 'Live radio'}${station.country ? ' · ' + station.country : ''}`;
+        if (timeEl) timeEl.innerHTML = '<span class="music-live-pill">● LIVE</span>';
         if (fillEl) fillEl.style.width = '100%';
+        setStatus('Connecting…');
 
-        if (audioElement) {
-            audioElement.pause();
-            audioElement.src = station.streamUrl;
-            audioElement.play().then(() => {
-                isPlaying = true;
-            }).catch(err => {
-                console.warn('Radio stream connect notice:', err);
-                // Harmless retry with alternative stream
-                isPlaying = true;
-            });
-        }
+        audioElement.pause();
+        audioElement.src = station.streamUrl;
+        loadedSrc = station.streamUrl;
+        applyVolume();
+        audioElement.play().catch(err => {
+            if (err && err.name === 'NotAllowedError') { isPlaying = false; setPlayingUI(false); setStatus('Click play to start'); }
+            else handlePlaybackFailure(station.name);
+            broadcastState();
+        });
 
-        // Highlight active station card
         document.querySelectorAll('.music-station-card').forEach(c => {
             c.classList.toggle('active', c.dataset.stationId === station.id);
         });
+        highlightActiveTrackRow();
+        broadcastState();
     }
 
     function pauseTrack() {
         isPlaying = false;
-        const playBtn = document.getElementById('music-play-btn');
-        const eqBars = document.getElementById('music-eq-bars');
-
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-play" style="margin-left:2px;"></i>';
-        if (eqBars) eqBars.classList.remove('playing');
-
+        setPlayingUI(false);
         if (audioElement) audioElement.pause();
-        stopProceduralSynth();
-        if (progressTimer) clearInterval(progressTimer);
+        if (isRadioMode) {
+            // Live streams can't be resumed from a buffer — drop the connection.
+            audioElement.removeAttribute('src');
+            audioElement.load();
+            loadedSrc = null;
+        }
+        stopSynth();
+        setStatus('');
+        broadcastState();
     }
 
     function togglePlay() {
-        if (isPlaying) {
-            pauseTrack();
-        } else {
-            if (isRadioMode && activeRadioStation) {
-                playRadioStation(activeRadioStation);
-            } else {
-                playTrack();
-            }
-        }
+        if (isPlaying) pauseTrack();
+        else if (isRadioMode && activeRadioStation) playRadioStation(activeRadioStation);
+        else playTrack();
     }
 
     function nextTrack() {
         if (isRadioMode) {
-            const list = RADIO_STATIONS[userCountry] || RADIO_STATIONS.IN;
-            const currentIdx = list.findIndex(s => s.id === activeRadioStation?.id);
-            const nextIdx = (currentIdx + 1) % list.length;
-            playRadioStation(list[nextIdx]);
+            const list = stationsByRegion[userCountry] || FALLBACK_STATIONS[userCountry] || [];
+            if (!list.length) return;
+            const i = list.findIndex(s => s.id === (activeRadioStation && activeRadioStation.id));
+            playRadioStation(list[(i + 1) % list.length]);
         } else {
-            loadTrack(currentTrackIndex + 1, true);
+            const order = viewTrackIndices.length ? viewTrackIndices : TRACKS.map((_, i) => i);
+            const pos = order.indexOf(currentTrackIndex);
+            loadTrack(order[(pos + 1) % order.length], true);
         }
     }
 
     function prevTrack() {
         if (isRadioMode) {
-            const list = RADIO_STATIONS[userCountry] || RADIO_STATIONS.IN;
-            const currentIdx = list.findIndex(s => s.id === activeRadioStation?.id);
-            const prevIdx = (currentIdx - 1 + list.length) % list.length;
-            playRadioStation(list[prevIdx]);
-        } else {
-            if (currentTime > 4) {
-                seekToTime(0);
-            } else {
-                loadTrack(currentTrackIndex - 1, true);
-            }
+            const list = stationsByRegion[userCountry] || FALLBACK_STATIONS[userCountry] || [];
+            if (!list.length) return;
+            const i = list.findIndex(s => s.id === (activeRadioStation && activeRadioStation.id));
+            playRadioStation(list[(i - 1 + list.length) % list.length]);
+            return;
         }
+        const elapsed = TRACKS[currentTrackIndex].audioUrl ? audioElement.currentTime : synthElapsed;
+        if (elapsed > 4) { seekToTime(0); return; }
+        const order = viewTrackIndices.length ? viewTrackIndices : TRACKS.map((_, i) => i);
+        const pos = order.indexOf(currentTrackIndex);
+        loadTrack(order[(pos - 1 + order.length) % order.length], true);
     }
 
     function seekToTime(seconds) {
-        if (isRadioMode) return; // Live stream cannot seek past
-        currentTime = seconds;
+        if (isRadioMode) return; // live streams can't seek
         const track = TRACKS[currentTrackIndex];
-        if (audioElement && audioElement.duration) {
-            audioElement.currentTime = seconds;
+        if (track.audioUrl) {
+            if (audioElement && isFinite(audioElement.duration)) audioElement.currentTime = seconds;
+        } else {
+            synthElapsed = seconds;
+            if (isPlaying) startSynth(track);
         }
-        if (track) updateProgressUI(currentTime, track.duration);
+        updateProgressUI(seconds, trackDuration());
     }
 
     function setVolume(val) {
-        volume = parseFloat(val);
+        appVolume = Math.max(0, Math.min(1, parseFloat(val) || 0));
         isMuted = false;
-        if (audioElement) audioElement.volume = volume;
-        const icon = document.getElementById('music-vol-icon');
-        if (icon) {
-            if (volume === 0) icon.className = 'fas fa-volume-xmark';
-            else if (volume < 0.5) icon.className = 'fas fa-volume-low';
-            else icon.className = 'fas fa-volume-high';
-        }
+        applyVolume();
+        updateVolumeIcon();
     }
 
     function toggleMute() {
         isMuted = !isMuted;
-        if (audioElement) audioElement.volume = isMuted ? 0 : volume;
-        const icon = document.getElementById('music-vol-icon');
-        if (icon) {
-            icon.className = isMuted ? 'fas fa-volume-xmark' : (volume > 0.5 ? 'fas fa-volume-high' : 'fas fa-volume-low');
-        }
+        applyVolume();
+        updateVolumeIcon();
     }
 
-    /* ── Navigation Views (Listen Now vs Radio) ───────────────────────── */
-    function switchMusicView(viewName) {
+    function updateVolumeIcon() {
+        const icon = document.getElementById('music-vol-icon');
+        if (!icon) return;
+        icon.className = (isMuted || appVolume === 0) ? 'fas fa-volume-xmark' : (appVolume < 0.5 ? 'fas fa-volume-low' : 'fas fa-volume-high');
+    }
+
+    function shuffleMusic() {
+        const order = (viewTrackIndices.length ? viewTrackIndices : TRACKS.map((_, i) => i)).slice();
+        for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+        viewTrackIndices = order;
+        loadTrack(order[0], true);
+    }
+
+    /* ── Views ────────────────────────────────────────────────────────── */
+    function switchMusicView(view, navKey) {
+        currentView = view;
         document.querySelectorAll('.music-nav-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.view === viewName);
+            item.classList.toggle('active', item.dataset.nav === (navKey || view));
         });
 
         const tracksView = document.getElementById('music-view-tracks');
+        const gridView = document.getElementById('music-view-grid');
         const radioView = document.getElementById('music-view-radio');
+        [tracksView, gridView, radioView].forEach(v => { if (v) v.style.display = 'none'; });
 
-        if (viewName === 'radio') {
-            if (tracksView) tracksView.style.display = 'none';
-            if (radioView) {
-                radioView.style.display = 'block';
-                renderRadioStations();
-            }
-        } else {
-            if (radioView) radioView.style.display = 'none';
-            if (tracksView) tracksView.style.display = 'block';
+        if (view === 'radio') {
+            radioView.style.display = 'block';
+            renderRadioStations();
+            return;
         }
+        if (view === 'artists' || view === 'albums') {
+            gridView.style.display = 'block';
+            renderCardGrid(view);
+            return;
+        }
+
+        tracksView.style.display = 'block';
+        const hero = document.getElementById('music-hero');
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        if (view.startsWith('playlist:')) {
+            const pl = view.split(':')[1];
+            viewTrackIndices = TRACKS.map((t, i) => t.playlist === pl ? i : -1).filter(i => i >= 0);
+            set('music-hero-title', pl === 'classical' ? 'Classical Masters' : 'Generative Beats');
+            set('music-hero-subtitle', pl === 'classical' ? 'Public-domain recordings from Wikimedia Commons' : 'Synthesised live in your browser — no audio files');
+            set('music-section-title', `${viewTrackIndices.length} songs`);
+            if (hero) hero.style.display = '';
+        } else if (view === 'songs') {
+            viewTrackIndices = TRACKS.map((_, i) => i);
+            set('music-section-title', 'Songs');
+            if (hero) hero.style.display = 'none';
+        } else {
+            viewTrackIndices = TRACKS.map((_, i) => i);
+            set('music-hero-title', 'Classical & Coding Essentials');
+            set('music-hero-subtitle', 'Six public-domain recordings and two generative tracks');
+            set('music-section-title', 'Top Tracks');
+            if (hero) hero.style.display = '';
+        }
+        renderTrackTable();
     }
 
-    function renderRadioStations() {
+    function playMusicView() {
+        const order = viewTrackIndices.length ? viewTrackIndices : TRACKS.map((_, i) => i);
+        loadTrack(order[0], true);
+    }
+
+    function renderCardGrid(kind) {
+        const grid = document.getElementById('music-card-grid');
+        const title = document.getElementById('music-grid-title');
+        if (!grid) return;
+        if (title) title.textContent = kind === 'artists' ? 'Artists' : 'Albums';
+        const groups = new Map();
+        TRACKS.forEach((t, i) => {
+            const key = kind === 'artists' ? t.artist : t.album;
+            if (!groups.has(key)) groups.set(key, { first: i, track: t, count: 0 });
+            groups.get(key).count++;
+        });
+        grid.innerHTML = [...groups.entries()].map(([name, g]) => `
+            <button type="button" class="music-card" onclick="window.playMusicTrackIndex(${g.first})">
+                <div class="music-card-art ${kind === 'artists' ? 'round' : ''}" style="background:${g.track.color};"><i class="fas ${g.track.icon}"></i></div>
+                <div class="music-card-name">${escapeHtml(name)}</div>
+                <div class="music-card-sub">${escapeHtml(kind === 'artists' ? `${g.count} song${g.count > 1 ? 's' : ''}` : g.track.artist)}</div>
+            </button>`).join('');
+    }
+
+    /* ── Radio directory ──────────────────────────────────────────────── */
+    async function loadStations(region) {
+        if (stationsByRegion[region]) return stationsByRegion[region];
+        const cacheKey = `music-stations-${region}`;
+        try {
+            const hit = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
+            if (hit && Date.now() - hit.t < 3600000) return (stationsByRegion[region] = hit.list);
+        } catch (e) { /* no cache */ }
+
+        const path = region === 'IN'
+            ? '/json/stations/search?countrycode=IN&hidebroken=true&order=clickcount&reverse=true&limit=60'
+            : '/json/stations/search?hidebroken=true&order=clickcount&reverse=true&limit=80';
+        const servers = ['https://de1.api.radio-browser.info', 'https://nl1.api.radio-browser.info', 'https://at1.api.radio-browser.info'];
+        for (const base of servers) {
+            try {
+                const ctrl = new AbortController();
+                const to = setTimeout(() => ctrl.abort(), 5000);
+                const res = await fetch(base + path, { signal: ctrl.signal });
+                clearTimeout(to);
+                if (!res.ok) continue;
+                const raw = await res.json();
+                const seen = new Set();
+                const list = raw
+                    // HTTPS only (an http stream is blocked on an https page),
+                    // direct audio only (no HLS/playlist wrappers), healthy only.
+                    .filter(s => s.lastcheckok === 1 && /^https:\/\//.test(s.url_resolved || '') && !/\.(m3u8?|pls)(\?|$)/i.test(s.url_resolved) && /MP3|AAC/i.test(s.codec || ''))
+                    .filter(s => { const k = (s.name || '').trim().toLowerCase(); if (!k || seen.has(k) || seen.has(s.url_resolved)) return false; seen.add(k); seen.add(s.url_resolved); return true; })
+                    .slice(0, 12)
+                    .map(s => ({
+                        id: s.stationuuid,
+                        name: (s.name || '').trim(),
+                        desc: (s.tags || '').split(',').filter(Boolean).slice(0, 3).join(' · ') || 'Live radio',
+                        country: s.country || '',
+                        streamUrl: s.url_resolved,
+                        favicon: /^https:\/\//.test(s.favicon || '') ? s.favicon : ''
+                    }));
+                if (list.length >= 4) {
+                    try { sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), list })); } catch (e) { /* non-fatal */ }
+                    return (stationsByRegion[region] = list);
+                }
+            } catch (e) { /* try the next mirror */ }
+        }
+        return (stationsByRegion[region] = FALLBACK_STATIONS[region] || FALLBACK_STATIONS.GLOBAL);
+    }
+
+    async function renderRadioStations() {
         const grid = document.getElementById('music-radio-grid');
         if (!grid) return;
-
-        const stations = RADIO_STATIONS[userCountry] || RADIO_STATIONS.IN;
-        grid.innerHTML = stations.map(s => `
-            <div class="music-station-card ${activeRadioStation?.id === s.id ? 'active' : ''}" data-station-id="${s.id}" onclick="window.playAppleRadio('${s.id}')">
-                <div class="music-station-banner" style="background:${s.color};">
-                    <i class="fas ${s.icon}"></i>
+        const region = userCountry;
+        if (!stationsByRegion[region]) {
+            grid.innerHTML = Array.from({ length: 6 }, () => '<div class="music-station-card skeleton"><div class="music-station-banner"></div><div class="music-station-name">&nbsp;</div></div>').join('');
+        }
+        const stations = await loadStations(region);
+        if (region !== userCountry) return;   // the visitor switched region meanwhile
+        grid.innerHTML = stations.map((s, i) => `
+            <button type="button" class="music-station-card ${activeRadioStation && activeRadioStation.id === s.id ? 'active' : ''}" data-station-id="${escapeHtml(s.id)}" onclick="window.playAppleRadio('${escapeAttr(s.id)}')">
+                <div class="music-station-banner" style="background:${STATION_COLORS[i % STATION_COLORS.length]};">
+                    ${s.favicon ? `<img src="${escapeHtml(s.favicon)}" alt="" loading="lazy" onerror="this.remove()">` : '<i class="fas fa-radio"></i>'}
                     <div class="music-live-badge"><span class="music-live-badge-dot"></span> LIVE</div>
                 </div>
-                <div class="music-station-name">${s.name}</div>
-                <div class="music-station-desc">${s.desc}</div>
-            </div>
-        `).join('');
+                <div class="music-station-name">${escapeHtml(s.name)}</div>
+                <div class="music-station-desc">${escapeHtml(s.desc)}</div>
+            </button>`).join('');
     }
 
     window.switchRadioCountry = function(c) {
-        userCountry = c;
+        userCountry = c === 'IN' ? 'IN' : 'GLOBAL';
         renderRadioStations();
     };
 
     window.playAppleRadio = function(stationId) {
-        const all = [...(RADIO_STATIONS.IN || []), ...(RADIO_STATIONS.GLOBAL || [])];
+        const all = [...Object.values(stationsByRegion).flat(), ...FALLBACK_STATIONS.IN, ...FALLBACK_STATIONS.GLOBAL];
         const found = all.find(s => s.id === stationId);
         if (found) playRadioStation(found);
     };
 
-    /* ── UI Helpers ───────────────────────────────────────────────────── */
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    /* ── UI helpers ───────────────────────────────────────────────────── */
+    function setStatus(text) {
+        const timeEl = document.getElementById('music-lcd-time');
+        if (!timeEl) return;
+        if (text) {
+            timeEl.dataset.status = '1';
+            timeEl.textContent = text;
+        } else if (timeEl.dataset.status) {
+            delete timeEl.dataset.status;
+            if (isRadioMode) timeEl.innerHTML = '<span class="music-live-pill">● LIVE</span>';
+            else updateProgressUI(TRACKS[currentTrackIndex].audioUrl ? audioElement.currentTime : synthElapsed, trackDuration());
+        }
+    }
+
+    function setPlayingUI(playing) {
+        const playBtn = document.getElementById('music-play-btn');
+        const eqBars = document.getElementById('music-eq-bars');
+        if (playBtn) {
+            playBtn.innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play" style="margin-left:2px;"></i>';
+            playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+        }
+        if (eqBars) eqBars.classList.toggle('playing', playing);
+        document.querySelectorAll('.music-track-row').forEach(r => r.classList.toggle('is-playing', playing && r.classList.contains('active')));
     }
 
     function updateTrackInfoUI(track) {
@@ -568,69 +573,120 @@
         const artistEl = document.getElementById('music-lcd-artist');
         if (titleEl) titleEl.textContent = track.title;
         if (artistEl) artistEl.textContent = track.artist;
+        const cover = document.getElementById('music-hero-cover');
+        if (cover && currentView === 'listen') cover.style.background = track.color;
     }
 
     function updateProgressUI(cur, total) {
         if (isRadioMode) return;
         const timeEl = document.getElementById('music-lcd-time');
         const fillEl = document.getElementById('music-progress-fill');
-        if (timeEl) timeEl.textContent = `${formatTime(cur)} / ${formatTime(total)}`;
-        if (fillEl && total > 0) {
-            const pct = Math.min(100, Math.max(0, (cur / total) * 100));
-            fillEl.style.width = pct + '%';
-        }
+        const bar = document.getElementById('music-progress-bar');
+        if (timeEl && !timeEl.dataset.status) timeEl.textContent = `${formatClockTime(cur)} / ${formatClockTime(total)}`;
+        const pct = total > 0 ? Math.min(100, Math.max(0, (cur / total) * 100)) : 0;
+        if (fillEl) fillEl.style.width = pct + '%';
+        if (bar) { bar.setAttribute('aria-valuenow', String(Math.round(cur))); bar.setAttribute('aria-valuemax', String(Math.round(total))); }
     }
 
     function renderTrackTable() {
         const tbody = document.getElementById('music-track-tbody');
         if (!tbody) return;
-
-        tbody.innerHTML = TRACKS.map((t, idx) => `
-            <tr class="music-track-row ${idx === currentTrackIndex && !isRadioMode ? 'active' : ''}" onclick="window.playMusicTrackIndex(${idx})">
-                <td class="music-track-num">${idx + 1}</td>
+        const indices = viewTrackIndices.length ? viewTrackIndices : TRACKS.map((_, i) => i);
+        tbody.innerHTML = indices.map((idx, n) => {
+            const t = TRACKS[idx];
+            const active = idx === currentTrackIndex && !isRadioMode;
+            return `
+            <tr class="music-track-row ${active ? 'active' : ''} ${active && isPlaying ? 'is-playing' : ''}" data-track-index="${idx}" tabindex="0" onclick="window.playMusicTrackIndex(${idx})" onkeydown="if(event.key==='Enter'){window.playMusicTrackIndex(${idx})}">
+                <td class="music-track-num"><span class="num">${n + 1}</span><i class="fas fa-volume-high playing-glyph" aria-hidden="true"></i></td>
                 <td>
                     <div class="music-track-info-cell">
-                        <div class="music-track-cover" style="background:${t.color};">
-                            <i class="fas ${t.icon}"></i>
-                        </div>
+                        <div class="music-track-cover" style="background:${t.color};"><i class="fas ${t.icon}"></i></div>
                         <div class="music-track-title-wrap">
-                            <span class="music-track-name">${t.title}</span>
-                            <span class="music-track-artist-sub">${t.artist}</span>
+                            <span class="music-track-name">${escapeHtml(t.title)}</span>
+                            <span class="music-track-artist-sub">${escapeHtml(t.artist)}</span>
                         </div>
                     </div>
                 </td>
-                <td style="color:rgba(255,255,255,0.6);">${t.album}</td>
-                <td class="music-track-dur">${t.durationStr}</td>
-            </tr>
-        `).join('');
+                <td style="color:rgba(255,255,255,0.6);">${escapeHtml(t.album)}</td>
+                <td class="music-track-dur">${formatClockTime(t.duration)}</td>
+            </tr>`;
+        }).join('');
     }
 
     function highlightActiveTrackRow() {
-        const rows = document.querySelectorAll('.music-track-row');
-        rows.forEach((r, idx) => {
-            r.classList.toggle('active', idx === currentTrackIndex && !isRadioMode);
+        document.querySelectorAll('.music-track-row').forEach(r => {
+            const active = Number(r.dataset.trackIndex) === currentTrackIndex && !isRadioMode;
+            r.classList.toggle('active', active);
+            r.classList.toggle('is-playing', active && isPlaying);
         });
     }
 
-    function setupScrubberClick() {
+    function setupScrubber() {
         const bar = document.getElementById('music-progress-bar');
         if (!bar) return;
-        bar.addEventListener('click', (e) => {
+        bar.setAttribute('role', 'slider');
+        bar.setAttribute('tabindex', '0');
+        bar.setAttribute('aria-label', 'Playback position');
+        const seekFromEvent = (e) => {
             if (isRadioMode) return;
             const rect = bar.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const pct = Math.max(0, Math.min(1, clickX / rect.width));
-            const track = TRACKS[currentTrackIndex];
-            if (track) seekToTime(Math.floor(pct * track.duration));
+            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            seekToTime(pct * trackDuration());
+        };
+        let dragging = false;
+        bar.addEventListener('pointerdown', (e) => { dragging = true; bar.setPointerCapture(e.pointerId); seekFromEvent(e); });
+        bar.addEventListener('pointermove', (e) => { if (dragging) seekFromEvent(e); });
+        bar.addEventListener('pointerup', () => { dragging = false; });
+        bar.addEventListener('keydown', (e) => {
+            if (isRadioMode) return;
+            const cur = TRACKS[currentTrackIndex].audioUrl ? audioElement.currentTime : synthElapsed;
+            if (e.key === 'ArrowRight') { e.preventDefault(); seekToTime(Math.min(trackDuration(), cur + 5)); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); seekToTime(Math.max(0, cur - 5)); }
         });
     }
+
+    /* ── State broadcast (Control Centre, Media Session) ─────────────── */
+    function currentState() {
+        const t = TRACKS[currentTrackIndex];
+        return isRadioMode && activeRadioStation
+            ? { playing: isPlaying, title: activeRadioStation.name, subtitle: 'Live Radio', color: 'linear-gradient(135deg,#fa243c,#ff7a59)' }
+            : { playing: isPlaying, title: t.title, subtitle: t.artist, color: t.color };
+    }
+
+    function broadcastState() {
+        const s = currentState();
+        window.dispatchEvent(new CustomEvent('music-state', { detail: s }));
+        if ('mediaSession' in navigator && window.MediaMetadata) {
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({ title: s.title, artist: s.subtitle, album: isRadioMode ? 'Radio' : TRACKS[currentTrackIndex].album });
+                navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+            } catch (e) { /* unsupported */ }
+        }
+    }
+
+    function setupMediaSession() {
+        if (!('mediaSession' in navigator)) return;
+        const set = (a, fn) => { try { navigator.mediaSession.setActionHandler(a, fn); } catch (e) { /* unsupported action */ } };
+        set('play', () => { if (!isPlaying) togglePlay(); });
+        set('pause', () => { if (isPlaying) togglePlay(); });
+        set('nexttrack', nextTrack);
+        set('previoustrack', prevTrack);
+    }
+
+    // Space toggles playback while Music is frontmost.
+    document.addEventListener('keydown', (e) => {
+        if (e.code !== 'Space') return;
+        const win = typeof getActiveWindow === 'function' ? getActiveWindow() : null;
+        if (!win || win.id !== 'music-window') return;
+        const t = document.activeElement;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'BUTTON' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+        e.preventDefault();
+        togglePlay();
+    });
 
     // Window lifecycle
     window.openMusic = function() {
         if (typeof openWindow === 'function') openWindow('music-window');
-        if (!isPlaying) {
-            loadTrack(0, false);
-        }
     };
 
     window.closeMusic = function() {
@@ -639,11 +695,16 @@
     };
 
     window.toggleMusicPlay = togglePlay;
+    window.pauseMusic = function() { if (isPlaying) pauseTrack(); };
     window.nextMusicTrack = nextTrack;
     window.prevMusicTrack = prevTrack;
     window.setMusicVolume = setVolume;
     window.toggleMusicMute = toggleMute;
     window.switchMusicNav = switchMusicView;
+    window.playMusicView = playMusicView;
+    window.shuffleMusic = shuffleMusic;
+    window.getMusicVolume = effectiveVolume;
+    window.getMusicState = currentState;
     window.playMusicTrackIndex = function(idx) {
         loadTrack(idx, true);
     };
@@ -652,7 +713,8 @@
         detectUserCountry();
         initAudio();
         renderTrackTable();
-        setupScrubberClick();
+        setupScrubber();
+        setupMediaSession();
         loadTrack(0, false);
     });
 })();

@@ -1281,62 +1281,67 @@ C 890,381 908,392 928,394"/>
                         </div>
                     </div>
                 </div>
-                <!-- Body with Sidebar and Track Table -->
+                <!-- Body with Sidebar and Content -->
                 <div class="music-body">
-                    <div class="music-sidebar">
+                    <div class="music-sidebar" role="navigation" aria-label="Music library">
                         <div class="music-sidebar-title">Apple Music</div>
-                        <div class="music-nav-item active" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-play-circle"></i> Listen Now</div>
-                        <div class="music-nav-item" data-view="browse" onclick="switchMusicNav('browse')"><i class="fas fa-compass"></i> Browse</div>
-                        <div class="music-nav-item" data-view="radio" onclick="switchMusicNav('radio')"><i class="fas fa-broadcast-tower"></i> Radio</div>
+                        <div class="music-nav-item active" data-nav="listen" onclick="switchMusicNav('listen', 'listen')"><i class="fas fa-play-circle"></i> Listen Now</div>
+                        <div class="music-nav-item" data-nav="radio" onclick="switchMusicNav('radio', 'radio')"><i class="fas fa-broadcast-tower"></i> Radio</div>
                         <div class="music-sidebar-title">Library</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-clock"></i> Recently Added</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-user"></i> Artists</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-compact-disc"></i> Albums</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen')"><i class="fas fa-music"></i> Songs</div>
+                        <div class="music-nav-item" data-nav="songs" onclick="switchMusicNav('songs', 'songs')"><i class="fas fa-music"></i> Songs</div>
+                        <div class="music-nav-item" data-nav="artists" onclick="switchMusicNav('artists', 'artists')"><i class="fas fa-user"></i> Artists</div>
+                        <div class="music-nav-item" data-nav="albums" onclick="switchMusicNav('albums', 'albums')"><i class="fas fa-compact-disc"></i> Albums</div>
                         <div class="music-sidebar-title">Playlists</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(0);"><i class="fas fa-list"></i> Classical Masters</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(6);"><i class="fas fa-list"></i> Coding Lo-Fi Beats</div>
-                        <div class="music-nav-item" data-view="listen" onclick="switchMusicNav('listen'); window.playMusicTrackIndex(7);"><i class="fas fa-list"></i> Cupertino Sunset 80s</div>
+                        <div class="music-nav-item" data-nav="pl-classical" onclick="switchMusicNav('playlist:classical', 'pl-classical')"><i class="fas fa-list"></i> Classical Masters</div>
+                        <div class="music-nav-item" data-nav="pl-generative" onclick="switchMusicNav('playlist:generative', 'pl-generative')"><i class="fas fa-list"></i> Generative Beats</div>
                     </div>
-                    <div class="music-content">
+                    <div class="music-content" id="music-content">
                         <!-- Tracks / Album View -->
                         <div id="music-view-tracks">
-                            <div class="music-hero-banner">
-                                <div class="music-hero-cover"><i class="fas fa-record-vinyl"></i></div>
+                            <div class="music-hero-banner" id="music-hero">
+                                <div class="music-hero-cover" id="music-hero-cover"><i class="fas fa-record-vinyl"></i></div>
                                 <div class="music-hero-details">
-                                    <h2>Classical &amp; Coding Essentials</h2>
-                                    <div class="music-hero-subtitle">Curated by Apple Music • 8 Famous Masterpieces &amp; Lo-Fi Tracks</div>
+                                    <h2 id="music-hero-title">Classical &amp; Coding Essentials</h2>
+                                    <div class="music-hero-subtitle" id="music-hero-subtitle">Six public-domain recordings and two generative tracks</div>
                                     <div class="music-hero-actions">
-                                        <button type="button" class="music-hero-play-btn" onclick="window.playMusicTrackIndex(0)"><i class="fas fa-play"></i> Play Album</button>
+                                        <button type="button" class="music-hero-play-btn" onclick="playMusicView()"><i class="fas fa-play"></i> Play</button>
+                                        <button type="button" class="music-hero-play-btn secondary" onclick="shuffleMusic()"><i class="fas fa-shuffle"></i> Shuffle</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="music-section-title">Top Tracks</div>
+                            <div class="music-section-title" id="music-section-title">Top Tracks</div>
                             <table class="music-track-table">
                                 <thead>
                                     <tr>
                                         <th style="width:32px;">#</th>
                                         <th>Title</th>
                                         <th>Album</th>
-                                        <th style="width:60px;text-align:right;"><i class="fas fa-clock"></i></th>
+                                        <th style="width:60px;text-align:right;"><i class="fas fa-clock" aria-label="Duration"></i></th>
                                     </tr>
                                 </thead>
                                 <tbody id="music-track-tbody"></tbody>
                             </table>
+                            <p class="music-credits">Recordings via Wikimedia Commons (public domain and CC BY-SA). Generative tracks are synthesised live in your browser with the Web Audio API.</p>
                         </div>
 
-                        <!-- Live Radio Station Hub View -->
+                        <!-- Artists / Albums grid -->
+                        <div id="music-view-grid" style="display:none;">
+                            <h2 class="music-grid-title" id="music-grid-title">Artists</h2>
+                            <div class="music-card-grid" id="music-card-grid"></div>
+                        </div>
+
+                        <!-- Live Radio -->
                         <div id="music-view-radio" style="display:none;">
                             <div class="music-radio-header">
                                 <div>
-                                    <h2 style="font-size:24px;font-weight:800;margin:0 0 4px 0;">Apple Music Live Radio</h2>
-                                    <div style="font-size:12px;color:rgba(255,255,255,0.6);">Direct streaming live broadcasts from India and across the globe</div>
+                                    <h2 style="font-size:24px;font-weight:800;margin:0 0 4px 0;">Radio</h2>
+                                    <div style="font-size:12px;color:rgba(255,255,255,0.6);" id="music-radio-sub">Live stations from the open Radio Browser directory</div>
                                 </div>
                                 <div class="music-country-selector">
-                                    <span class="music-country-label"><i class="fas fa-location-dot" style="color:#fa243c;"></i> Station Region:</span>
-                                    <select class="music-country-select" id="music-country-select" onchange="window.switchRadioCountry(this.value)" aria-label="Select Radio Country">
-                                        <option value="IN">🇮🇳 India Live Radio</option>
-                                        <option value="GLOBAL">🌐 Global Top Stations</option>
+                                    <span class="music-country-label"><i class="fas fa-location-dot" style="color:#fa243c;"></i> Region</span>
+                                    <select class="music-country-select" id="music-country-select" onchange="window.switchRadioCountry(this.value)" aria-label="Select radio region">
+                                        <option value="IN">🇮🇳 India</option>
+                                        <option value="GLOBAL">🌐 Worldwide</option>
                                     </select>
                                 </div>
                             </div>
@@ -1511,6 +1516,7 @@ C 890,381 908,392 928,394"/>
     <script src="js/data/desktop-files.js"></script>
     <script src="js/data/filesystem.js"></script>
     <script src="js/data/notes.js"></script>
+    <script src="js/data/music.js"></script>
 
     <!-- Runtime config: endpoint for the serverless AI proxy. Contains no secrets. -->
     <script src="js/config/config.js"></script>
