@@ -354,7 +354,7 @@ C 890,381 908,392 928,394"/>
         </div>
 
         <!-- Terminal Window -->
-        <div class="window hidden" id="terminal-window" style="top: 20%; left: 40%; width: 600px; height: 350px; background: rgba(0, 0, 0, 0.9);">
+        <div class="window hidden" id="terminal-window" style="top: 14%; left: 30%; width: 780px; height: 480px; background: rgba(0, 0, 0, 0.9);">
             <div class="title-bar" style="background: rgba(30, 30, 30, 0.9);" onmousedown="dragMouseDown(event, 'terminal-window')">
                 <div class="window-controls">
                     <button type="button" class="control close" aria-label="Close Terminal" title="Close" onclick="closeWindow('terminal-window')"></button>
@@ -363,13 +363,14 @@ C 890,381 908,392 928,394"/>
                 </div>
                 <div class="window-title" style="color: #bbb;">muditagrawal@macbook ~ zsh</div>
             </div>
-            <div class="window-content" style="flex-direction: column; padding: 10px; font-family: 'Courier New', Courier, monospace; overflow-y: auto;" id="terminal-content" onclick="document.getElementById('terminal-input').focus()">
+            <div class="window-content" style="flex-direction: column; padding: 10px; font-family: var(--font-mono); font-size: 13px; overflow-y: auto;" id="terminal-content" onclick="document.getElementById('terminal-input').focus()">
                 <div id="terminal-output">
-                    <div style="color: #4facfe; margin-bottom: 10px;">Welcome to Mudit's Terminal. Type 'help' to see available commands.</div>
+                    <div style="color: #8e8e93;" id="terminal-last-login">Last login on ttys000</div>
+                    <div style="color: #4facfe; margin-bottom: 10px;">Welcome to Mudit's Terminal. Type 'help' to see available commands, or 'neofetch' for the system card.</div>
                 </div>
                 <div style="display: flex; align-items: center; margin-top: 5px;">
                     <span style="color: #43e97b; margin-right: 8px;">muditagrawal@macbook</span> <span style="color: #4facfe;">~ %</span>
-                    <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" style="flex: 1; background: transparent; border: none; color: #fff; font-family: inherit; font-size: 14px; outline: none; margin-left: 8px;" onkeydown="handleTerminalInput(event)">
+                    <input type="text" id="terminal-input" aria-label="Terminal command" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex: 1; background: transparent; border: none; color: #fff; font-family: inherit; font-size: 13px; outline: none; margin-left: 8px; caret-color: #43e97b;" onkeydown="handleTerminalInput(event)">
                 </div>
             </div>
         </div>

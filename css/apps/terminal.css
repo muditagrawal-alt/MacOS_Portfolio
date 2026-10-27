@@ -18,7 +18,7 @@
     height: calc(100% - 38px);
     min-height: 0;
     padding: 12px 14px;
-    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    font-family: var(--font-mono);
     overflow-y: auto;
     overflow-x: hidden;
     background: transparent;
@@ -45,7 +45,7 @@
 }
 
 #terminal-output pre {
-    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    font-family: var(--font-mono);
     white-space: pre;
     overflow-x: auto;
 }

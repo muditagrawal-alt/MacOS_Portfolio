@@ -1,5 +1,5 @@
 const TERMINAL_COMMANDS = [
-    'help', 'whoami', 'clear', 'ls', 'ls projects/', 'ls experience/',
+    'help', 'neofetch', 'whoami', 'clear', 'ls', 'ls projects/', 'ls experience/',
     'ls education/', 'ls skills/', 'ls documents/', 'pwd', 'cd', 'date', 'uname',
     'echo', 'history', 'about me', 'experience', 'education', 'projects',
     'skills', 'contact', 'cat resume.txt', 'cat README.txt', 'cat Philosophy.txt',
@@ -7,7 +7,7 @@ const TERMINAL_COMMANDS = [
     'open settings', 'open trash', 'open resume', 'open iris', 'open omnidoc',
     'open vlm', 'open slam', 'open sliver', 'open sword', 'open deepfake', 'open veritas',
     'open helix', 'open skyguard', 'open multiva', 'open artifex', 'sudo hire-me', 'brew install talent',
-    'git status', 'git log', 'matrix', 'curl'
+    'git status', 'git log', 'matrix', 'curl mudit.dev', 'exit'
 ];
 
 /* ==========================================================================
@@ -158,7 +158,8 @@ function handleTerminalInput(e) {
                 const proj = PROJECT_REPOS[cleanKey];
                 if (proj) {
                     window.open(proj.url, '_blank', 'noopener,noreferrer');
-                    response = `<span style="color:#27c93f;">→ Opened <strong>${escapeHtml(proj.name)}</strong> on GitHub:</span> <a href="${escapeHtml(proj.url)}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;text-decoration:underline;">${escapeHtml(proj.url)}</a> 🚀`;
+                    const where = typeof linkHostLabel === 'function' ? linkHostLabel(proj.url) : 'the web';
+                    response = `<span style="color:#27c93f;">→ Opened <strong>${escapeHtml(proj.name)}</strong> on ${escapeHtml(where)}:</span> <a href="${escapeHtml(proj.url)}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;text-decoration:underline;">${escapeHtml(proj.url)}</a>`;
                 } else if (target.startsWith('http://') || target.startsWith('https://')) {
                     window.open(rawTarget, '_blank', 'noopener,noreferrer');
                     response = `Opening external URL: ${escapeHtml(rawTarget)}...`;
@@ -435,6 +436,7 @@ To initiate collaboration:<br>
                     response = `
                         <strong style="color:#fff;">Available CLI Commands:</strong><br>
                         <span style="color:#888;">── Core Information ──</span><br>
+                        • <span style="color:#4facfe">neofetch</span> — System card<br>
                         • <span style="color:#4facfe">whoami</span> — Display author identity<br>
                         • <span style="color:#4facfe">cat resume.txt</span> — Rich text-formatted resume<br>
                         • <span style="color:#4facfe">history</span> — Chronological career & project timeline<br>
@@ -456,10 +458,73 @@ To initiate collaboration:<br>
                         <span style="color:#888;">── Builtins & Easter Eggs ──</span><br>
                         • <span style="color:#27c93f">sudo hire-me</span> — Candidate hiring transmission protocol<br>
                         • <span style="color:#27c93f">brew install talent</span> — Homebrew talent package manager<br>
+                        • <span style="color:#4facfe">curl mudit.dev</span> — The profile, as JSON<br>
                         • <span style="color:#4facfe">date / uname / echo / clear</span> — Standard shell builtins<br>
-                        <span style="color:#666;">↑/↓ recalls history &nbsp;·&nbsp; Tab completes commands</span>
+                        <span style="color:#666;">↑/↓ recalls history &nbsp;·&nbsp; Tab completes commands &nbsp;·&nbsp; ⌃L clears</span>
                     `;
                     break;
+                case 'neofetch': {
+                    const p = window.PROFILE_DATA || {};
+                    const e = p.education || {};
+                    const orgs = (p.experience || []).map(x => x.org.split(' (')[0].replace(' Pvt. Ltd.', '')).join(' · ');
+                    const row = (k, v) => `<span style="color:#f6d365;font-weight:600;">${k}:</span> ${escapeHtml(v)}`;
+                    const logo = [
+                        ['#34c759', "                    'c.          "],
+                        ['#34c759', "                 ,xNMM.          "],
+                        ['#34c759', "               .OMMMMo           "],
+                        ['#34c759', "               OMMM0,            "],
+                        ['#ffcc00', "     .;loddo:' loolloddol;.      "],
+                        ['#ffcc00', "   cKMMMMMMMMMMNWMMMMMMMMMM0:    "],
+                        ['#ff9500', " .KMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
+                        ['#ff9500', " XMMMMMMMMMMMMMMMMMMMMMMMX.      "],
+                        ['#ff3b30', ";MMMMMMMMMMMMMMMMMMMMMMMM:       "],
+                        ['#ff3b30', ":MMMMMMMMMMMMMMMMMMMMMMMM:       "],
+                        ['#af52de', ".MMMMMMMMMMMMMMMMMMMMMMMMX.      "],
+                        ['#af52de', " kMMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
+                        ['#007aff', " .XMMMMMMMMMMMMMMMMMMMMMMMMMMk   "],
+                        ['#007aff', "  .XMMMMMMMMMMMMMMMMMMMMMMMMK.   "],
+                        ['#007aff', "    kMMMMMMMMMMMMMMMMMMMMMMd     "],
+                        ['#007aff', "     ;KMMMMMMMWXXWMMMMMMMk.      "],
+                        ['#007aff', "       .cooc,.    .,coo:.        "]
+                    ];
+                    const info = [
+                        `<span style="color:#fff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>`,
+                        `<span style="color:#555;">-------------------------</span>`,
+                        row('OS', 'macOS Portfolio Edition'),
+                        row('Host', 'Vanilla HTML · CSS · JavaScript'),
+                        row('Shell', 'zsh 5.9'),
+                        row('Role', p.tagline || 'AI/ML Engineer'),
+                        row('Education', `${e.degree || ''} @ ${e.university || ''}`),
+                        row('CGPA', e.cgpa || ''),
+                        row('Experience', orgs),
+                        row('Focus', 'Agentic & RAG systems, computer vision'),
+                        row('Email', (p.contact || {}).email || ''),
+                        row('GitHub', ((p.contact || {}).github || '').replace(/^https?:\/\//, '')),
+                        '',
+                        ['#ff5f56', '#ffbd2e', '#27c93f', '#4facfe', '#00f2fe', '#af52de', '#ff758c', '#ffffff'].map(c => `<span style="color:${c};">███</span>`).join('')
+                    ];
+                    const lines = logo.map(([c, art], i) => `<span style="color:${c};">${escapeHtml(art)}</span>  ${info[i] || ''}`);
+                    response = `<pre style="font-family:inherit;line-height:1.3;margin:0;">${lines.join('\n')}</pre>`;
+                    break;
+                }
+                case 'curl mudit.dev':
+                case 'curl -i mudit.dev':
+                case 'curl https://mudit.dev': {
+                    const p = window.PROFILE_DATA || {};
+                    const body = {
+                        name: p.name, role: p.tagline,
+                        now: (p.experience || [])[0] ? `${p.experience[0].role} @ ${p.experience[0].org}` : undefined,
+                        education: p.education ? `${p.education.degree}, ${p.education.university}` : undefined,
+                        contact: p.contact,
+                        hiring: 'open — try `sudo hire-me`'
+                    };
+                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;"><span style="color:#888;">HTTP/2 200
+content-type: application/json; charset=utf-8
+x-powered-by: curiosity</span>
+
+${escapeHtml(JSON.stringify(body, null, 2))}</pre>`;
+                    break;
+                }
                 case 'whoami':
                     response = 'Mudit Agrawal';
                     break;
@@ -598,7 +663,7 @@ To initiate collaboration:<br>
                     response = `<div style="color:#27c93f;font-family:monospace;line-height:1.2;font-size:11px;">01001101 01110101 01100100 01101001 01110100<br>W A K E   U P ,   N E O . . .<br>T H E   M A T R I X   H A S   Y O U . . .<br>F O L L O W   T H E   W H I T E   R A B B I T 🐇</div>`;
                     break;
                 case 'curl':
-                    response = `curl: try <em>curl mudit.dev</em> or <em>curl -I github.com</em>`;
+                    response = `curl: try <em>curl mudit.dev</em>`;
                     break;
                 case 'clear':
                     outputDiv.innerHTML = '';
@@ -623,3 +688,23 @@ To initiate collaboration:<br>
         if (contentDiv) contentDiv.scrollTop = contentDiv.scrollHeight;
     }
 }
+
+
+/** Runs a command as if typed (used by the Terminal ▸ Shell menu). */
+function runTerminalCommand(cmd) {
+    if (typeof openWindow === 'function') openWindow('terminal-window');
+    const input = document.getElementById('terminal-input');
+    if (!input) return;
+    input.value = cmd;
+    handleTerminalInput({ key: 'Enter', preventDefault() {} });
+    input.focus();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('terminal-last-login');
+    if (el) {
+        const d = new Date();
+        const fmt = d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        el.textContent = `Last login: ${fmt.replace(/,/g, '')} on ttys000`;
+    }
+});
