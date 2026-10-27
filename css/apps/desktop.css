@@ -2,19 +2,27 @@
    Desktop Files — macOS-style icon grid
    ========================================================================== */
 
+/* Finder's desktop grid: icons fill the right-hand column top to bottom, then
+   wrap into the next column to the LEFT — they never slide under the Dock
+   (the last icon used to sit behind it on a 900px-tall screen). */
 .desktop-files {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(auto-fill, 106px);
+    grid-auto-columns: 110px;
+    direction: rtl;
+    gap: 2px 4px;
+    align-content: start;
+    height: calc(100% - 96px);
 }
 
 .desktop-icon {
+    direction: ltr;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 104px;
-    padding: 7px 5px 5px;
+    width: 110px;
+    padding: 7px 4px 5px;
     border-radius: 7px;
     cursor: default;
     text-align: center;
@@ -53,9 +61,10 @@
     font-weight: 500;
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.8);
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 6px;
     max-width: 100%;
+    text-wrap: balance;
     word-break: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -81,7 +90,9 @@
 }
 
 @media (max-width: 768px) {
-    .desktop-icon { width: 78px; }
+    .desktop-files { grid-template-rows: repeat(auto-fill, 100px); grid-auto-columns: 86px; height: calc(100% - 84px); }
+    .desktop-icon { width: 86px; padding: 5px 2px 3px; }
+    .desktop-icon-label { font-size: 10.5px; padding: 1px 3px; overflow-wrap: normal; word-break: normal; }
     .desktop-icon-art { width: 48px; height: 48px; }
     .desktop-icon-label { font-size: 11px; }
 }

@@ -17,7 +17,11 @@ window.DESKTOP_FILES = [
         kind: 'Plain Text Document',
         icon: 'assets/icons/filetype-txt.svg',
         size: '2 KB',
-        open: () => openTextFile('readme')
+        open: () => openTextFile('readme'),
+        preview: () => ({
+            html: `<pre class="ql-plain-text">${escapeHtml(window.TEXT_FILES.readme.body)}</pre>`,
+            openLabel: 'Open with TextEdit'
+        })
     },
     {
         id: 'resume',
@@ -25,7 +29,11 @@ window.DESKTOP_FILES = [
         kind: 'PDF Document',
         icon: 'assets/icons/filetype-pdf.svg',
         size: '58 KB',
-        open: () => openResumeWindow()
+        open: () => openResumeWindow(),
+        preview: () => ({
+            imageSrc: 'assets/MuditAgrawalResumePreview.png',
+            openLabel: 'Open with Preview'
+        })
     },
     {
         id: 'omnidoc-dmg',
@@ -33,7 +41,9 @@ window.DESKTOP_FILES = [
         kind: 'Disk Image',
         icon: 'assets/icons/filetype-dmg.svg',
         size: '1.4 GB',
-        open: () => mountDiskImage('omnidoc')
+        open: () => mountDiskImage('omnidoc'),
+        preview: () => appPreviewCard('proj-omnidoc', 'assets/icons/filetype-dmg.svg', 'Disk Image · OmniDoc 1.0'),
+        previewOpenLabel: 'Mount'
     },
     {
         id: 'vlm-app',
@@ -41,7 +51,8 @@ window.DESKTOP_FILES = [
         kind: 'Application (Live)',
         icon: 'assets/icons/app-vlm.svg',
         size: '28 MB',
-        open: () => window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer')
+        open: () => window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer'),
+        preview: () => appPreviewCard('proj-vlm')
     },
     {
         id: 'veritas-app',
@@ -49,7 +60,8 @@ window.DESKTOP_FILES = [
         kind: 'Application (Live)',
         icon: 'assets/icons/app-veritas.svg',
         size: '18 MB',
-        open: () => window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer')
+        open: () => window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer'),
+        preview: () => appPreviewCard('proj-deepfake')
     },
     {
         id: 'helix-app',
@@ -57,7 +69,8 @@ window.DESKTOP_FILES = [
         kind: 'Application (Live)',
         icon: 'assets/icons/app-helix.svg',
         size: '1.2 MB',
-        open: () => window.open('https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', '_blank', 'noopener,noreferrer')
+        open: () => window.open('https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', '_blank', 'noopener,noreferrer'),
+        preview: () => appPreviewCard('proj-helix')
     },
     {
         id: 'slam-app',
@@ -65,17 +78,44 @@ window.DESKTOP_FILES = [
         kind: 'Application',
         icon: 'assets/icons/app-slam.svg',
         size: '34 MB',
-        open: () => window.open('https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', '_blank', 'noopener,noreferrer')
+        open: () => window.open('https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', '_blank', 'noopener,noreferrer'),
+        preview: () => appPreviewCard('proj-slam')
     },
     {
         id: 'photos',
         name: 'Photos',
         kind: 'Folder',
         icon: 'assets/icons/folder-photos.svg',
-        size: '11 items',
-        open: () => openWindow('photos-window')
+        size: '7 items',
+        open: () => openWindow('photos-window'),
+        preview: () => ({
+            html: `<div class="ql-folder-grid">${(window.PHOTO_LIBRARY.certificates.items || []).map(c => `
+                <figure><img src="${escapeHtml(c.thumb)}" alt="" loading="lazy"><figcaption>${escapeHtml(c.title)}</figcaption></figure>`).join('')}</div>`,
+            openLabel: 'Open in Photos'
+        })
     }
 ];
+
+/**
+ * Quick Look card for an app/project: big icon, name, kind and the project's
+ * own description (single source: the Finder filesystem's preview text).
+ */
+function appPreviewCard(fsId, iconOverride, kindOverride) {
+    const item = (typeof FS_ITEMS === 'object' && FS_ITEMS[fsId]) || {};
+    const p = item.preview || {};
+    let host = '';
+    try { host = item.link ? new URL(item.link).host.replace(/^www\./, '') : ''; } catch (e) { host = ''; }
+    return {
+        html: `<div class="ql-app-card">
+                 <img class="ql-app-icon" src="${escapeHtml(iconOverride || item.icon || '')}" alt="">
+                 <h2>${escapeHtml(p.title || item.name || '')}</h2>
+                 <div class="ql-app-kind">${escapeHtml(kindOverride || p.subtitle || item.kind || '')}</div>
+                 <p>${escapeHtml(p.desc || '')}</p>
+                 ${host ? `<div class="ql-app-host"><i class="fas fa-link"></i> ${escapeHtml(host)}</div>` : ''}
+               </div>`,
+        openLabel: item.link ? 'Open' : null
+    };
+}
 
 /* ── README.txt contents ─────────────────────────────────────────────────
    Rendered in a TextEdit-style window. Kept as plain text on purpose — it is
@@ -127,8 +167,10 @@ WHAT I CARE ABOUT
 
 GETTING AROUND THIS DESKTOP
 ---------------------------
-  Cmd + Space    Spotlight - search everything here
-  Cmd + Tab      Switch between open apps
+  Cmd + K        Spotlight - search everything here
+  Option + Tab   Switch between open apps
+  Option + L     Launchpad - every app in one place
+  F3             Mission Control
   Space          Quick Look the selected file
   Right click    Context menus, same as the real thing
 
@@ -188,23 +230,6 @@ window.PHOTO_LIBRARY = {
             thumb: `assets/photos/thumbs/${c.file}.jpg`,
             full:  `assets/photos/certificates/${c.file}.pdf`
         }))
-    },
-    workspace: {
-        title: 'Workspace',
-        items: [
-            { title: 'Desktop — Tahoe', issuer: 'Wallpaper',
-              thumb: 'assets/Wallpapers/thumbs/26-Tahoe-Beach-Day.jpg',
-              full:  'assets/Wallpapers/26-Tahoe-Beach-Day.jpg' },
-            { title: 'Golden Gate Bridge', issuer: 'Wallpaper',
-              thumb: 'assets/Wallpapers/thumbs/27-Golden-Gate-Bridge.jpg',
-              full:  'assets/Wallpapers/27-Golden-Gate-Bridge.jpg' },
-            { title: 'Mountain Pass', issuer: 'Wallpaper',
-              thumb: 'assets/Wallpapers/thumbs/jack-anstey-XVoyX7l9ocY-unsplash.jpg',
-              full:  'assets/Wallpapers/jack-anstey-XVoyX7l9ocY-unsplash.jpg' },
-            { title: 'Coastline', issuer: 'Wallpaper',
-              thumb: 'assets/Wallpapers/thumbs/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg',
-              full:  'assets/Wallpapers/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg' }
-        ]
     }
 };
 

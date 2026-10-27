@@ -4,11 +4,11 @@
 
 .desktop-widgets-column {
     position: absolute;
-    top: 48px;
-    right: 32px;
+    top: 20px;
+    left: 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     z-index: 2; /* Below windows (z-index: 10+) but above wallpaper */
     pointer-events: auto;
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -16,8 +16,8 @@
     -webkit-user-select: none;
 }
 
-/* Hide widgets on narrow mobile screens to preserve desktop icon layout */
-@media (max-width: 1024px) {
+/* Hide widgets where they'd crowd the windows. */
+@media (max-width: 1100px), (max-height: 640px) {
     .desktop-widgets-column {
         display: none !important;
     }
@@ -36,7 +36,13 @@
     width: 250px;
     position: relative;
     overflow: hidden;
+    color: #fff;
+    text-align: left;
+    font: inherit;
 }
+
+button.mac-widget-card { cursor: pointer; display: block; }
+button.mac-widget-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .mac-widget-card:hover {
     background: rgba(36, 36, 44, 0.55);
@@ -155,8 +161,13 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 }
 
-.weather-icon-sun {
-    font-size: 28px;
+.weather-icon {
+    font-size: 26px;
+    color: rgba(255, 255, 255, 0.92);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.weather-icon.is-sun {
     color: #ffb300;
     filter: drop-shadow(0 2px 8px rgba(255, 179, 0, 0.4));
     animation: weatherSunGlow 4s ease-in-out infinite alternate;
@@ -174,58 +185,55 @@
     gap: 8px;
 }
 
-/* ── 3. System Specs & Activity Widget ───────────────────────────────── */
-.widget-system-header {
+/* ── 3. GitHub activity ──────────────────────────────────────────────── */
+.widget-github-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.system-chip-badge {
-    background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    padding: 3px 8px;
+    gap: 7px;
     font-size: 11px;
     font-weight: 700;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.system-chip-badge i {
-    color: #007aff;
-}
-
-.widget-bar-row {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.72);
     margin-bottom: 8px;
 }
 
-.widget-bar-label {
+.widget-github-header img { filter: invert(1); opacity: 0.85; }
+
+.widget-github-list { display: flex; flex-direction: column; gap: 2px; }
+
+.widget-github-row {
     display: flex;
-    justify-content: space-between;
-    font-size: 10px;
+    flex-direction: column;
+    padding: 6px 8px;
+    margin: 0 -8px;
+    border-radius: 9px;
+    transition: background 0.15s ease;
+}
+
+.widget-github-row:hover { background: rgba(255, 255, 255, 0.1); }
+
+.widget-github-name {
+    font-size: 12.5px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.widget-meter-track {
-    height: 5px;
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 3px;
+    color: #fff;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.widget-meter-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.8s ease;
+.widget-github-meta { font-size: 11px; color: rgba(255, 255, 255, 0.55); }
+
+.widget-github-skel {
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.13), rgba(255,255,255,0.06));
+    background-size: 200% 100%;
+    animation: widgetShimmer 1.4s linear infinite;
+    margin-bottom: 4px;
 }
+.widget-github-skel.short { width: 60%; }
+
+@keyframes widgetShimmer { to { background-position: -200% 0; } }
 
 /* ── 4. Welcome Sticky Note Widget ───────────────────────────────────── */
 .mac-sticky-note {
@@ -247,6 +255,18 @@
 
 .sticky-text {
     font-size: 12px;
-    line-height: 1.45;
+    line-height: 1.5;
     color: rgba(255, 255, 255, 0.9);
+}
+
+.sticky-text kbd {
+    font: 600 11px/1 var(--font-ui);
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 0.5px solid rgba(255, 255, 255, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weather-icon.is-sun, .widget-github-skel { animation: none; }
 }

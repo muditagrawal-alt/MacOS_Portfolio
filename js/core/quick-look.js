@@ -5,6 +5,9 @@
 
 let selectedQuickLookItem = null;
 let quickLookOpen = false;
+// Where the open preview came from ('desktop' lets arrow keys step through
+// the desktop's files, the way Quick Look steps through a Finder selection).
+let qlSource = null;
 
 const QUICKLOOK_DATA = {
     'about': {
@@ -142,6 +145,20 @@ function initQuickLook() {
             return;
         }
 
+        // Arrow keys step through the desktop's files while a preview is up.
+        if (quickLookOpen && qlSource === 'desktop' && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) {
+            const files = window.DESKTOP_FILES || [];
+            const i = files.findIndex(f => f.id === selectedQuickLookItem);
+            if (i !== -1) {
+                e.preventDefault();
+                const step = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
+                const next = files[(i + step + files.length) % files.length];
+                if (typeof selectDesktopFile === 'function') selectDesktopFile(next.id);
+                openQuickLook(next.id);
+            }
+            return;
+        }
+
         // Zoom shortcuts while a preview is open, matching Preview.app.
         if (quickLookOpen && qlZoomable) {
             if (e.key === '+' || e.key === '=') { e.preventDefault(); stepQuickLookZoom(1); return; }
@@ -265,6 +282,10 @@ function quickLookFinderSelection() {
  * text pane.
  */
 function openQuickLookForFile(item) {
+    // Items in Finder's Desktop folder ARE the desktop files — preview them
+    // exactly as Space on the desktop would.
+    if (item.deskId) { openQuickLook(item.deskId); return; }
+
     const isPdf   = item.ext === 'pdf' || item.kind === 'PDF Document';
     const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(item.ext);
 
@@ -389,6 +410,26 @@ function toggleQuickLookZoom() {
    the exact same renderer. They used to be two separate code paths, which
    is why the resume was zoomable from one place and not the other. */
 function openQuickLook(key) {
+    // Desktop files describe their own preview. Previously only the résumé had
+    // an entry here, so Space / "Quick Look" / "Get Info" on README.txt, the
+    // .dmg, the four .app bundles and the Photos folder silently did nothing.
+    const file = (window.DESKTOP_FILES || []).find(f => f.id === key);
+    if (file && typeof file.preview === 'function') {
+        const d = file.preview() || {};
+        const label = file.previewOpenLabel || d.openLabel;
+        openQuickLookData({
+            title: file.name,
+            icon: file.kind === 'Folder' ? 'fas fa-folder' : (file.kind === 'Disk Image' ? 'fas fa-hard-drive' : (/Application/.test(file.kind) ? 'fas fa-cube' : 'fas fa-file-lines')),
+            meta: `${file.kind} — ${file.size}`,
+            html: d.html,
+            imageSrc: d.imageSrc,
+            openLabel: label || null,
+            onOpen: label ? () => { closeQuickLook(); file.open(); } : null
+        });
+        qlSource = 'desktop';
+        return;
+    }
+
     const data = QUICKLOOK_DATA[key];
     if (!data) return;
 
@@ -425,6 +466,7 @@ function openQuickLookData({ title, icon, meta, html, imageSrc, openLabel, onOpe
     // on top of it. Previously the old document's nodes, zoom level and
     // Open-button handler all survived into the new preview.
     if (quickLookOpen) resetQuickLookContent();
+    qlSource = null;
 
     const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
     set('ql-title', el => el.textContent = title || 'Preview');
@@ -490,6 +532,7 @@ function closeQuickLook() {
     const overlay = document.getElementById('quicklook-overlay');
     if (overlay) overlay.classList.remove('active');
     quickLookOpen = false;
+    qlSource = null;
     resetQuickLookContent();
 }
 

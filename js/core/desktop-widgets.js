@@ -1,8 +1,31 @@
 /* ==========================================================================
-   macOS Desktop Widgets Controller — Sonoma / Sequoia Floating Desktop Widgets
+   Desktop Widgets — Sonoma / Sequoia style, all backed by live data
+   --------------------------------------------------------------------------
+   Every number on these cards is real: the clock is the visitor's own clock,
+   the weather is the same Open-Meteo reading the lock screen shows, and the
+   GitHub card is the account's actual most-recently-pushed repositories.
+   (The previous column showed a hardcoded "Sunny 26° H:29 L:19" — sunny at
+   night — and an "M3 Max" CPU meter driven by Math.sin.)
+
+   The column lives on the LEFT edge. It used to sit on the right, directly on
+   top of the desktop icons, and intercepted clicks on five of them.
    ========================================================================== */
 
 (function() {
+    function cityFromTimezone() {
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+            // IST is one zone for the whole country; naming a single city
+            // would be wrong for most visitors in it.
+            const known = { 'Asia/Calcutta': 'India', 'Asia/Kolkata': 'India' };
+            if (known[tz]) return known[tz];
+            const leaf = tz.split('/').pop();
+            return leaf ? leaf.replace(/_/g, ' ') : 'Local Time';
+        } catch (e) {
+            return 'Local Time';
+        }
+    }
+
     function initDesktopWidgets() {
         const desktop = document.getElementById('desktop');
         if (!desktop || document.getElementById('desktop-widgets-column')) return;
@@ -10,76 +33,52 @@
         const col = document.createElement('div');
         col.id = 'desktop-widgets-column';
         col.className = 'desktop-widgets-column';
+        col.setAttribute('aria-label', 'Desktop widgets');
 
         col.innerHTML = `
-            <!-- 1. Analog & Digital Clock Widget -->
-            <div class="mac-widget-card" onclick="toggleNotificationCenter()" style="cursor:pointer;" title="Click to view Notification Centre">
+            <button type="button" class="mac-widget-card widget-clock" onclick="toggleNotificationCenter()" title="Open Notification Centre">
                 <div class="widget-clock-wrap">
-                    <div class="analog-clock" id="widget-analog-clock">
+                    <div class="analog-clock" aria-hidden="true">
                         <div class="clock-hand hour" id="widget-hour-hand"></div>
                         <div class="clock-hand minute" id="widget-minute-hand"></div>
                         <div class="clock-hand second" id="widget-second-hand"></div>
                         <div class="clock-center-dot"></div>
                     </div>
                     <div class="clock-meta">
-                        <span class="clock-city">New Delhi</span>
+                        <span class="clock-city">${escapeHtml(cityFromTimezone())}</span>
                         <span class="clock-digital-time" id="widget-digital-time">--:--</span>
-                        <span class="clock-date-tag" id="widget-date-tag">Today</span>
+                        <span class="clock-date-tag" id="widget-date-tag"></span>
                     </div>
                 </div>
-            </div>
+            </button>
 
-            <!-- 2. Live Weather Widget -->
-            <div class="mac-widget-card">
+            <div class="mac-widget-card widget-weather" id="widget-weather" aria-live="polite">
                 <div class="widget-weather-header">
                     <div>
-                        <div class="weather-city-name">New Delhi</div>
-                        <div class="weather-temp-main" id="widget-weather-temp">26°</div>
+                        <div class="weather-city-name" id="widget-weather-place">Weather</div>
+                        <div class="weather-temp-main" id="widget-weather-temp">--°</div>
                     </div>
-                    <i class="fas fa-sun weather-icon-sun" id="widget-weather-icon"></i>
+                    <i class="fas fa-cloud weather-icon" id="widget-weather-icon" aria-hidden="true"></i>
                 </div>
-                <div class="weather-sub">
-                    <span>Sunny</span>
-                    <span>•</span>
-                    <span>H: 29° L: 19°</span>
+                <div class="weather-sub" id="widget-weather-sub">Loading forecast…</div>
+            </div>
+
+            <div class="mac-widget-card widget-github" id="widget-github">
+                <div class="widget-github-header">
+                    <img src="assets/icons/social-github.svg" alt="" width="16" height="16">
+                    <span>Latest on GitHub</span>
+                </div>
+                <div class="widget-github-list" id="widget-github-list">
+                    <div class="widget-github-skel"></div>
+                    <div class="widget-github-skel"></div>
+                    <div class="widget-github-skel short"></div>
                 </div>
             </div>
 
-            <!-- 3. Apple M3 Max System Activity Widget -->
-            <div class="mac-widget-card" onclick="openWindow('terminal-window')" style="cursor:pointer;" title="Click to open Terminal">
-                <div class="widget-system-header">
-                    <div class="system-chip-badge">
-                        <i class="fab fa-apple"></i> M3 Max
-                    </div>
-                    <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);">Activity Monitor</span>
-                </div>
-                <div class="widget-bar-row">
-                    <div class="widget-bar-label">
-                        <span>CPU Usage</span>
-                        <span id="widget-cpu-val">28%</span>
-                    </div>
-                    <div class="widget-meter-track">
-                        <div class="widget-meter-fill" id="widget-cpu-fill" style="width: 28%; background: #007aff;"></div>
-                    </div>
-                </div>
-                <div class="widget-bar-row">
-                    <div class="widget-bar-label">
-                        <span>Unified Memory</span>
-                        <span>14.8 / 36 GB</span>
-                    </div>
-                    <div class="widget-meter-track">
-                        <div class="widget-meter-fill" style="width: 41%; background: #34c759;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Mudit's Welcome Sticky Note -->
             <div class="mac-widget-card mac-sticky-note">
-                <div class="sticky-header">
-                    <i class="fas fa-thumbtack"></i> Quick Note
-                </div>
+                <div class="sticky-header"><i class="fas fa-thumbtack"></i> Start here</div>
                 <div class="sticky-text">
-                    Welcome to my macOS portfolio! Open <strong>Finder</strong> for projects, launch <strong>Apple Music</strong> for live radio, or ask <strong>Iris</strong> with voice.
+                    Double-click <strong>Resume.pdf</strong>, press <kbd>⌘K</kbd> to search everything, or ask <strong>Iris</strong> about my work.
                 </div>
             </div>
         `;
@@ -87,59 +86,74 @@
         desktop.appendChild(col);
 
         startClockTicks();
-        startSystemSimulation();
+        loadWeather();
+        loadGitHub();
     }
 
     function startClockTicks() {
+        const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+        const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+
         function updateClock() {
             const now = new Date();
             const sec = now.getSeconds();
             const min = now.getMinutes();
             const hr = now.getHours();
 
-            const secDeg = (sec / 60) * 360;
-            const minDeg = ((min + sec / 60) / 60) * 360;
-            const hrDeg = ((hr % 12 + min / 60) / 12) * 360;
+            const set = (id, deg) => { const el = document.getElementById(id); if (el) el.style.transform = `rotate(${deg}deg)`; };
+            set('widget-second-hand', sec * 6);
+            set('widget-minute-hand', (min + sec / 60) * 6);
+            set('widget-hour-hand', ((hr % 12) + min / 60) * 30);
 
-            const secHand = document.getElementById('widget-second-hand');
-            const minHand = document.getElementById('widget-minute-hand');
-            const hrHand = document.getElementById('widget-hour-hand');
             const digitalEl = document.getElementById('widget-digital-time');
+            if (digitalEl) digitalEl.textContent = timeFmt.format(now);
             const dateEl = document.getElementById('widget-date-tag');
-
-            if (secHand) secHand.style.transform = `rotate(${secDeg}deg)`;
-            if (minHand) minHand.style.transform = `rotate(${minDeg}deg)`;
-            if (hrHand) hrHand.style.transform = `rotate(${hrDeg}deg)`;
-
-            if (digitalEl) {
-                const formattedHr = (hr % 12 || 12).toString();
-                const formattedMin = min < 10 ? '0' + min : min;
-                const ampm = hr >= 12 ? 'PM' : 'AM';
-                digitalEl.textContent = `${formattedHr}:${formattedMin} ${ampm}`;
-            }
-
-            if (dateEl) {
-                dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            }
+            if (dateEl) dateEl.textContent = dateFmt.format(now);
         }
 
         setInterval(updateClock, 1000);
         updateClock();
     }
 
-    function startSystemSimulation() {
-        let step = 0;
-        setInterval(() => {
-            step += 0.25;
-            const simulatedCpu = Math.round(24 + Math.sin(step) * 14 + Math.cos(step * 0.7) * 8);
-            const clamped = Math.max(12, Math.min(88, simulatedCpu));
+    async function loadWeather() {
+        const place = document.getElementById('widget-weather-place');
+        const temp = document.getElementById('widget-weather-temp');
+        const icon = document.getElementById('widget-weather-icon');
+        const sub = document.getElementById('widget-weather-sub');
+        if (typeof window.fetchLiveWeather !== 'function') return;
 
-            const cpuVal = document.getElementById('widget-cpu-val');
-            const cpuFill = document.getElementById('widget-cpu-fill');
+        try {
+            const w = await window.fetchLiveWeather();
+            if (place) place.textContent = w.place;
+            if (temp) temp.textContent = `${w.temp}°`;
+            if (icon) icon.className = `fas ${w.icon} weather-icon${w.isDay && /sun/.test(w.icon) ? ' is-sun' : ''}`;
+            if (sub) {
+                const range = (w.high !== null && w.low !== null) ? ` · H:${w.high}° L:${w.low}°` : '';
+                sub.textContent = `${w.label}${range}`;
+            }
+        } catch (e) {
+            if (sub) sub.textContent = 'Weather unavailable right now';
+            if (icon) icon.className = 'fas fa-cloud-slash weather-icon';
+        }
+    }
 
-            if (cpuVal) cpuVal.textContent = clamped + '%';
-            if (cpuFill) cpuFill.style.width = clamped + '%';
-        }, 2000);
+    async function loadGitHub() {
+        const list = document.getElementById('widget-github-list');
+        if (!list || typeof fetchGitHubActivity !== 'function') return;
+
+        try {
+            const repos = (await fetchGitHubActivity()).slice(0, 3);
+            if (!repos.length) throw new Error('empty');
+            list.innerHTML = repos.map(r => `
+                <a class="widget-github-row" href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noopener noreferrer">
+                    <span class="widget-github-name">${escapeHtml(r.title)}</span>
+                    <span class="widget-github-meta">${escapeHtml([r.language, relativeTime(r.time)].filter(Boolean).join(' · '))}</span>
+                </a>`).join('');
+        } catch (e) {
+            list.innerHTML = `<a class="widget-github-row" href="https://github.com/muditagrawal-alt" target="_blank" rel="noopener noreferrer">
+                <span class="widget-github-name">@muditagrawal-alt</span>
+                <span class="widget-github-meta">Open profile ↗</span></a>`;
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
