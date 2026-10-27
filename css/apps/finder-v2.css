@@ -147,7 +147,7 @@
 
 .finder-search-box:focus-within {
     width: 190px;
-    border-color: #007aff;
+    border-color: var(--accent);
     background: rgba(0, 0, 0, 0.4);
 }
 
@@ -224,10 +224,10 @@
 }
 
 .sidebar-v2-item.active {
-    background: #007aff !important;
+    background: var(--accent) !important;
     color: #fff !important;
     font-weight: 500;
-    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.4);
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .sidebar-v2-item.active i,
@@ -300,8 +300,8 @@
 }
 
 .finder-grid-item.selected {
-    background: rgba(0, 122, 255, 0.28);
-    outline: 1px solid rgba(0, 122, 255, 0.55);
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .finder-grid-icon {
@@ -335,7 +335,7 @@
 }
 
 .finder-grid-item.selected .finder-grid-name {
-    background: #007aff;
+    background: var(--accent);
     border-radius: 4px;
     padding: 1px 5px;
     color: #fff;
@@ -391,7 +391,7 @@
 }
 
 .finder-list-item-row.selected {
-    background: #007aff !important;
+    background: var(--accent) !important;
     color: #fff !important;
 }
 
@@ -443,7 +443,7 @@
 }
 
 .finder-column-row.active {
-    background: #007aff;
+    background: var(--accent);
     color: #fff;
 }
 
@@ -547,7 +547,7 @@
 .inspector-action-btn {
     margin-top: 14px;
     padding: 6px 16px;
-    background: #007aff;
+    background: var(--accent);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -662,4 +662,81 @@
     outline: 2px solid var(--accent);
     outline-offset: -2px;
     border-radius: 6px;
+}
+
+/* ── AirDrop ─────────────────────────────────────────────────────────────── */
+.airdrop-view {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.airdrop-radar {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 10px;
+}
+
+.airdrop-radar span {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
+    animation: airdrop-pulse 3s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+    opacity: 0;
+}
+.airdrop-radar span:nth-child(2) { animation-delay: 1s; }
+.airdrop-radar span:nth-child(3) { animation-delay: 2s; }
+
+@keyframes airdrop-pulse {
+    from { transform: scale(0.42); opacity: 0.9; }
+    to   { transform: scale(1);    opacity: 0; }
+}
+
+.airdrop-radar img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.airdrop-view h3 { font-size: 15px; font-weight: 600; color: #fff; }
+.airdrop-view > p { font-size: 12px; color: rgba(255, 255, 255, 0.55); margin-bottom: 14px; }
+
+.airdrop-targets { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+.airdrop-target {
+    width: 116px;
+    padding: 14px 8px 12px;
+    border-radius: 14px;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s var(--ease-macos);
+}
+.airdrop-target:hover { background: rgba(255, 255, 255, 0.11); transform: translateY(-2px); }
+.airdrop-target img { width: 44px; height: 44px; object-fit: contain; margin-bottom: 4px; }
+.airdrop-target span { font-size: 12.5px; font-weight: 600; }
+.airdrop-target small { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+.airdrop-share { margin-top: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .airdrop-radar span { animation: none; opacity: 0.35; }
 }

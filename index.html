@@ -253,6 +253,9 @@ C 890,381 908,392 928,394"/>
                             <div class="sidebar-v2-item active" data-target="home" onclick="finderSidebarNav('home')">
                                 <i class="fas fa-home sb-icon-blue"></i> <span>Mudit</span>
                             </div>
+                            <div class="sidebar-v2-item" data-target="applications" onclick="finderSidebarNav('applications')">
+                                <i class="fas fa-rocket sb-icon-blue"></i> <span>Applications</span>
+                            </div>
                             <div class="sidebar-v2-item" data-target="desktop" onclick="finderSidebarNav('desktop')">
                                 <i class="fas fa-desktop sb-icon-blue"></i> <span>Desktop</span>
                             </div>
@@ -980,39 +983,20 @@ C 890,381 908,392 928,394"/>
         </div>
 
         <!-- Trash.app Window -->
-        <div class="window hidden" id="trash-window" style="top: 25%; left: 30%; width: 620px; height: 380px;">
+        <div class="window hidden" id="trash-window" style="top: 18%; left: 28%; width: 680px; height: 430px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'trash-window')">
                 <div class="window-controls">
                     <button type="button" class="control close" aria-label="Close Trash" title="Close" onclick="closeWindow('trash-window')"></button>
                     <button type="button" class="control minimize" aria-label="Minimize Trash" title="Minimize" onclick="minimizeWindow('trash-window')"></button>
                     <button type="button" class="control maximize" aria-label="Zoom Trash" title="Zoom" onclick="maximizeWindow('trash-window')"></button>
                 </div>
-                <div class="window-title" id="trash-title">Trash — 4 Discarded Items</div>
+                <div class="window-title" id="trash-title">Trash</div>
                 <div class="trash-actions" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
                     <button type="button" class="app-pill-btn" onclick="emptyTrash()"><i class="fas fa-trash-alt"></i> Empty</button>
                 </div>
             </div>
-            <div class="window-content trash-layout content-padding" id="trash-content-area">
-                <div class="trash-grid">
-                    <div class="trash-item" title="Double click for details" onclick="showTrashItemInfo('overfitted_model_v1.h5', '99.9% Train Accuracy / 12% Test Accuracy. RIP.')">
-                        <i class="fas fa-file-code icon-color-purple fa-3x"></i>
-                        <span>overfitted_v1.h5</span>
-                    </div>
-                    <div class="trash-item" title="Double click for details" onclick="showTrashItemInfo('sleep_schedule_8hrs.txt', '0 bytes. File is completely empty during hackathon season.')">
-                        <i class="fas fa-file-alt icon-color-yellow fa-3x"></i>
-                        <span>sleep_8hrs.txt</span>
-                    </div>
-                    <div class="trash-item" title="Double click for details" onclick="showTrashItemInfo('hackathon_script_FINAL_v2.py', 'Full of print(HERE!) statements and spaghetti code.')">
-                        <i class="fas fa-file-code icon-color-blue fa-3x"></i>
-                        <span>hackathon_final.py</span>
-                    </div>
-                    <div class="trash-item" title="Double click for details" onclick="showTrashItemInfo('node_modules_backup', '14.2 Gigabytes of unused dependencies.')">
-                        <i class="fas fa-folder icon-color-folder fa-3x"></i>
-                        <span>node_modules (14GB)</span>
-                    </div>
-                </div>
-                <div id="trash-item-toast" class="trash-toast hidden"></div>
-            </div>
+            <!-- Rendered from window.TRASH_ITEMS by js/apps/trash.js -->
+            <div class="window-content trash-layout" id="trash-content-area"></div>
         </div>
 
         <!-- TextEdit.app — README.txt -->
@@ -1545,6 +1529,7 @@ C 890,381 908,392 928,394"/>
     <script src="js/data/profile.js"></script>
     <script src="js/data/corpus.js"></script>
     <script src="js/data/desktop-files.js"></script>
+    <script src="js/data/filesystem.js"></script>
 
     <!-- Runtime config: endpoint for the serverless AI proxy. Contains no secrets. -->
     <script src="js/config/config.js"></script>
@@ -1552,6 +1537,7 @@ C 890,381 908,392 928,394"/>
     <!-- Core Modular System Scripts -->
     <script src="js/core/utils.js"></script>
     <script src="js/shared/live-data.js"></script>
+    <script src="js/shared/contact-form.js"></script>
     <script src="js/core/system-status.js"></script>
     <script src="js/core/window-manager.js"></script>
     <script src="js/core/keyboard.js"></script>

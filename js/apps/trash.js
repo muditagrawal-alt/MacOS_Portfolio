@@ -1,51 +1,72 @@
 /* ==========================================================================
-   Trash.app Controller: Discarded Items Toast & Memory Recycle
+   Trash.app — ideas that didn't make it
+   --------------------------------------------------------------------------
+   Renders window.TRASH_ITEMS (js/data/desktop-files.js), the same list the
+   Finder's Trash location shows. It used to be four hardcoded joke files in
+   index.html while Finder showed two different ones and the real dataset —
+   honest post-mortems of cut features — went unused.
    ========================================================================== */
 
-function showTrashItemInfo(name, desc) {
-    const toast = document.getElementById('trash-item-toast');
-    if (toast) {
-        toast.textContent = `${name}: ${desc}`;
-        toast.classList.remove('hidden');
-        setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+let trashEmptied = false;
+let selectedTrashIndex = -1;
+
+function renderTrash() {
+    const area = document.getElementById('trash-content-area');
+    const title = document.getElementById('trash-title');
+    const dockImg = document.getElementById('dock-trash-img');
+    const items = window.TRASH_ITEMS || [];
+    if (!area) return;
+
+    if (dockImg) dockImg.src = trashEmptied ? 'assets/icons/trash.png' : 'assets/icons/trash-full.png';
+
+    if (trashEmptied || items.length === 0) {
+        if (title) title.textContent = 'Trash';
+        area.innerHTML = `
+            <div class="trash-empty-state">
+                <i class="fas fa-trash-can"></i>
+                <div class="trash-empty-title">Trash is Empty</div>
+                <p>Every cut idea has been recycled into the things that shipped.</p>
+                <button type="button" class="app-pill-btn" onclick="restoreTrash()"><i class="fas fa-rotate-left"></i> Put Back</button>
+            </div>`;
+        return;
     }
+
+    if (title) title.textContent = `Trash — ${items.length} items`;
+    area.innerHTML = `
+        <div class="trash-grid">
+            ${items.map((t, i) => `
+                <button type="button" class="trash-item ${i === selectedTrashIndex ? 'selected' : ''}" onclick="selectTrashItem(${i})" ondblclick="selectTrashItem(${i})">
+                    <img src="${escapeHtml(typeof trashIconFor === 'function' ? trashIconFor(t.name) : 'assets/icons/filetype-txt.svg')}" alt="">
+                    <span class="trash-item-name">${escapeHtml(t.name)}</span>
+                </button>`).join('')}
+        </div>
+        <div class="trash-detail" id="trash-detail">
+            ${selectedTrashIndex >= 0 ? trashDetailHtml(items[selectedTrashIndex]) : `<div class="trash-detail-hint">Select an item to see why it was cut.</div>`}
+        </div>`;
 }
 
-let trashSnapshot = null;
+function trashDetailHtml(t) {
+    return `<div class="trash-detail-kind">${escapeHtml(t.kind)}</div>
+            <div class="trash-detail-name">${escapeHtml(t.name)}</div>
+            <p>${escapeHtml(t.reason)}</p>`;
+}
+
+function selectTrashItem(index) {
+    selectedTrashIndex = index;
+    renderTrash();
+}
 
 function emptyTrash() {
-    const container = document.getElementById('trash-content-area');
-    // Snapshot so Restore can put things back. It used to call
-    // location.reload(), which restarted the entire desktop (and replayed the
-    // boot animation) just to undo one action.
-    if (container && trashSnapshot === null) trashSnapshot = container.innerHTML;
-    const title = document.getElementById('trash-title');
-    const trashImg = document.getElementById('dock-trash-img');
-    if (trashImg) {
-        trashImg.src = 'assets/icons/trash.png';
-    }
-    if (container) {
-        container.innerHTML = `
-            <div style="text-align:center;color:#aaa;padding:40px;">
-                <i class="fas fa-check-circle fa-3x" style="color:#27c93f;margin-bottom:12px;"></i>
-                <div style="font-size:16px;color:#fff;font-weight:600;">Trash is Empty</div>
-                <p style="font-size:12px;margin-top:6px;">All discarded experiments have been recycled into clean memory.</p>
-                <button type="button" class="app-pill-btn" onclick="restoreTrash()" style="margin-top:10px;"><i class="fas fa-rotate-left"></i> Put Back</button>
-            </div>
-        `;
-    }
-    if (title) title.textContent = "Trash — 0 items";
+    if (trashEmptied) return;
+    trashEmptied = true;
+    selectedTrashIndex = -1;
+    if (typeof playSystemSound === 'function') playSystemSound('trashEmpty');
+    renderTrash();
 }
 
 function restoreTrash() {
-    const container = document.getElementById('trash-content-area');
-    const title = document.getElementById('trash-title');
-    const trashImg = document.getElementById('dock-trash-img');
-
-    if (container && trashSnapshot !== null) {
-        container.innerHTML = trashSnapshot;
-        trashSnapshot = null;
-    }
-    if (trashImg) trashImg.src = 'assets/icons/trash-full.png';
-    if (title) title.textContent = 'Trash — 2 items';
+    trashEmptied = false;
+    renderTrash();
 }
+
+document.addEventListener('DOMContentLoaded', renderTrash);
