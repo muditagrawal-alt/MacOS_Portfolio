@@ -32,10 +32,14 @@ const ASSET_DIR = 'assets/me';
 const ALLOWED_UPLOADS = /^assets\/me\/[a-z0-9][a-z0-9._-]{0,80}\.(jpe?g|png|webp|gif|pdf)$/;
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 
+// The sandbox's time limit only stops a runaway hand edit. It's generous because a
+// fresh context's first date formatting can take a second on a busy CI runner.
+const SANDBOX_TIMEOUT_MS = 10000;
+
 /** Runs profile.js in a sandbox (so hand edits in plain JS syntax still load). */
 function readProfile(root = ROOT) {
     const ctx = { window: {} };
-    vm.runInNewContext(fs.readFileSync(path.join(root, PROFILE_FILE), 'utf8'), ctx, { filename: PROFILE_FILE, timeout: 1000 });
+    vm.runInNewContext(fs.readFileSync(path.join(root, PROFILE_FILE), 'utf8'), ctx, { filename: PROFILE_FILE, timeout: SANDBOX_TIMEOUT_MS });
     if (!ctx.window.PROFILE_DATA || typeof ctx.window.PROFILE_DATA !== 'object') throw new Error(`${PROFILE_FILE} does not define window.PROFILE_DATA`);
     return JSON.parse(JSON.stringify(ctx.window.PROFILE_DATA));
 }
@@ -43,7 +47,7 @@ function readProfile(root = ROOT) {
 /** The same normalisation the site applies (js/data/profile-schema.js). */
 function normalize(raw, root = ROOT) {
     const ctx = { window: { PROFILE_DATA: JSON.parse(JSON.stringify(raw || {})) } };
-    vm.runInNewContext(fs.readFileSync(path.join(root, 'js/data/profile-schema.js'), 'utf8'), ctx, { timeout: 1000 });
+    vm.runInNewContext(fs.readFileSync(path.join(root, 'js/data/profile-schema.js'), 'utf8'), ctx, { timeout: SANDBOX_TIMEOUT_MS });
     return ctx.window.PROFILE_DATA;
 }
 
