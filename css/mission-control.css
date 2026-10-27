@@ -42,9 +42,9 @@
     width: 104px;
     height: 60px;
     border-radius: 8px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)), url('../assets/wallpapers/sonoma.jpg') center/cover;
-    border: 2px solid #007aff;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)), url('../assets/Wallpapers/thumbs/26-Tahoe-Beach-Day.jpg') center/cover;
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 35%, transparent);
     transition: transform 0.15s ease;
 }
 
@@ -87,7 +87,7 @@
 
 .window.in-mission-control:hover {
     transform: scale(var(--mc-scale, 0.55)) translateY(-8px) !important;
-    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 2px #007aff, 0 0 24px rgba(0, 122, 255, 0.45) !important;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 2px var(--accent), 0 0 24px color-mix(in srgb, var(--accent) 45%, transparent) !important;
 }
 
 /* Floating Window Title Pill in Mission Control */
@@ -124,4 +124,42 @@
     width: 18px;
     height: 18px;
     object-fit: contain;
+}
+
+.mission-control-empty {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    z-index: 9500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s var(--ease-macos);
+}
+.mission-control-empty.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.mission-control-empty i { font-size: 40px; opacity: 0.7; }
+.mission-control-empty span { font-size: 17px; font-weight: 600; }
+.mission-control-empty small { font-size: 12.5px; color: rgba(255, 255, 255, 0.65); }
+
+/* Windows live inside .desktop, which is its own stacking context (z-index 1),
+   so their z-index could never beat the body-level dimmer: every window sat
+   UNDER the blur, looked frosted, and a click on one just exited. Lift the
+   desktop above the dimmer, hide its icons/widgets (as macOS does), and let
+   clicks on empty space fall through to the dimmer to exit. */
+body.mission-control-active .desktop { z-index: 9991; pointer-events: none; }
+body.mission-control-active .desktop-files,
+body.mission-control-active .desktop-widgets-column { opacity: 0; transition: opacity 0.2s ease; }
+body.mission-control-active .window.in-mission-control { pointer-events: auto; overflow: visible; }
+
+/* The title pill sits outside the window, so it needs overflow:visible above,
+   and it counter-scales so it stays readable on a shrunken window. */
+.mc-window-badge {
+    transform: translateX(-50%) scale(calc(1 / var(--mc-scale, 0.5)));
+    transform-origin: bottom center;
 }

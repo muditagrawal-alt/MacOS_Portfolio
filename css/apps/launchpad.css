@@ -292,3 +292,5 @@
         transition: none !important;
     }
 }
+
+.launchpad-app-icon-wrapper.is-photo img { border-radius: 50%; object-fit: cover; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); }

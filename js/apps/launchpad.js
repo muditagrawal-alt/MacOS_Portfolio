@@ -6,6 +6,12 @@ let launchpadOpen = false;
 
 const LAUNCHPAD_APPS = [
     {
+        id: 'welcome',
+        name: 'About Mudit',
+        icon: 'assets/Professionalimage.jpeg',
+        action: () => openWelcome()
+    },
+    {
         id: 'finder',
         name: 'Finder',
         icon: 'assets/icons/finder.png',
@@ -110,14 +116,16 @@ const LAUNCHPAD_APPS = [
     {
         id: 'textedit',
         name: 'TextEdit',
-        icon: 'assets/icons/notes.png',
-        action: () => openWindow('textedit-window')
+        icon: 'assets/icons/filetype-txt.svg',
+        // Opened an empty window unless README had been opened first.
+        action: () => openTextFile('readme')
     },
     {
         id: 'disk-image',
-        name: 'Disk Utility',
-        icon: 'assets/icons/sf-icons/hard-drive.svg',
-        action: () => openWindow('dmg-window')
+        name: 'OmniDoc Installer',
+        icon: 'assets/icons/filetype-dmg.svg',
+        // "Disk Utility" opened an empty window with nothing mounted.
+        action: () => mountDiskImage('omnidoc')
     },
     {
         id: 'omnidoc',
@@ -196,7 +204,7 @@ const LAUNCHPAD_APPS = [
         name: 'Monocular SLAM',
         icon: 'assets/icons/app-slam.svg',
         action: () => {
-            if (typeof openProjectDetails === 'function') openProjectDetails('Monocular SLAM');
+            if (typeof openProjectDetails === 'function') openProjectDetails('Monocular RGB SLAM');
             else openWindow('appstore-window');
         }
     },
@@ -210,6 +218,12 @@ const LAUNCHPAD_APPS = [
         }
     },
     {
+        id: 'missioncontrol',
+        name: 'Mission Control',
+        icon: 'assets/icons/mission-control.svg',
+        action: () => toggleMissionControl()
+    },
+    {
         id: 'trash',
         name: 'Trash',
         icon: 'assets/icons/trash-full.png',
@@ -217,26 +231,7 @@ const LAUNCHPAD_APPS = [
     }
 ];
 
-window.openProjectDetails = function(name) {
-    if (typeof openWindow === 'function') openWindow('appstore-window');
-    setTimeout(() => {
-        const cards = document.querySelectorAll('.app-card');
-        const q = (name || '').toLowerCase();
-        for (const card of cards) {
-            if (card.textContent.toLowerCase().includes(q)) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                card.style.transition = 'box-shadow 0.35s ease, transform 0.35s ease';
-                card.style.boxShadow = '0 0 0 3px #007aff, 0 10px 25px rgba(0,122,255,0.4)';
-                card.style.transform = 'scale(1.03)';
-                setTimeout(() => {
-                    card.style.boxShadow = '';
-                    card.style.transform = '';
-                }, 2200);
-                break;
-            }
-        }
-    }, 250);
-};
+// openProjectDetails() lives in appstore.js — it opens the project's product page.
 
 function initLaunchpad() {
     const overlay = document.getElementById('launchpad-overlay');
@@ -297,8 +292,8 @@ function renderLaunchpadGrid(apps) {
 
     grid.innerHTML = apps.map(app => `
         <button class="launchpad-app-item" data-app-id="${app.id}" data-app-name="${escapeHtml(app.name)}" onclick="launchApp('${app.id}')" title="${escapeHtml(app.name)}">
-            <div class="launchpad-app-icon-wrapper">
-                <img src="${escapeHtml(app.icon)}" alt="${escapeHtml(app.name)}">
+            <div class="launchpad-app-icon-wrapper${/Professionalimage/.test(app.icon) ? ' is-photo' : ''}">
+                <img src="${escapeHtml(app.icon)}" alt="">
             </div>
             <div class="launchpad-app-name">${escapeHtml(app.name)}</div>
         </button>

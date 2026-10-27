@@ -149,3 +149,5 @@
 @media (prefers-reduced-motion: reduce) {
     .spotlight-overlay, .spotlight-panel { transition: none; }
 }
+
+.spotlight-row-art img.round { border-radius: 50%; object-fit: cover; }

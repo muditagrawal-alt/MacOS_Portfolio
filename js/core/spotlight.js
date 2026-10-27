@@ -11,22 +11,34 @@ let spotlightResults = [];
 let spotlightIndex = 0;
 
 const SPOTLIGHT_APPS = [
-    { name: 'Finder',          icon: 'assets/icons/finder.png',     action: () => openWindow('finder-window') },
-    { name: 'Safari',          icon: 'assets/icons/safari.png',     action: () => openWindow('safari-window') },
-    { name: 'Apple Music',     icon: 'assets/icons/app-store.png',  action: () => openWindow('music-window') },
-    { name: 'Photo Booth',     icon: 'assets/icons/photobooth.svg', action: () => openWindow('photobooth-window') },
-    { name: 'Breakout Arcade', icon: 'assets/icons/breakout.svg',   action: () => openWindow('breakout-window') },
-    { name: 'Snake Game',      icon: 'assets/icons/snake.svg',      action: () => openWindow('snake-window') },
-    { name: 'Mission Control', icon: 'assets/icons/finder.png',     action: () => toggleMissionControl() },
-    { name: 'Control Center',  icon: 'assets/icons/settings.png',   action: () => toggleControlCenter() },
-    { name: 'Mail',            icon: 'assets/icons/mail.png',       action: () => openWindow('mail-window') },
-    { name: 'Notes',           icon: 'assets/icons/notes.png',      action: () => openWindow('notes-window') },
-    { name: 'App Store',       icon: 'assets/icons/app-store.png',  action: () => openWindow('appstore-window') },
-    { name: 'Terminal',        icon: 'assets/icons/terminal.png',   action: () => openWindow('terminal-window') },
-    { name: 'System Settings', icon: 'assets/icons/settings.png',   action: () => openWindow('settings-window') },
-    { name: 'Trash',           icon: 'assets/icons/trash-full.png', action: () => openWindow('trash-window') },
-    { name: 'Iris',            icon: 'assets/icons/siri.png',       action: () => openIris() },
-    { name: 'Resume',          icon: 'assets/icons/codefile.png',   action: () => openResumeWindow() }
+    { name: 'About Mudit',     icon: 'assets/Professionalimage.jpeg', action: () => openWelcome() },
+    { name: 'Finder',          icon: 'assets/icons/finder.png',       action: () => openWindow('finder-window') },
+    { name: 'Safari',          icon: 'assets/icons/safari.png',       action: () => openWindow('safari-window') },
+    { name: 'Mail',            icon: 'assets/icons/mail.png',         action: () => openWindow('mail-window') },
+    { name: 'Notes',           icon: 'assets/icons/notes.png',        action: () => openWindow('notes-window') },
+    { name: 'Photos',          icon: 'assets/icons/photos.png',       action: () => openWindow('photos-window') },
+    { name: 'Music',           icon: 'assets/icons/music.png',        action: () => openMusic() },
+    { name: 'Photo Booth',     icon: 'assets/icons/photobooth.svg',   action: () => openPhotoBooth() },
+    { name: 'Breakout',        icon: 'assets/icons/breakout.svg',     action: () => openBreakout() },
+    { name: 'Snake',           icon: 'assets/icons/snake.svg',        action: () => openSnake() },
+    { name: 'App Store',       icon: 'assets/icons/app-store.png',    action: () => openWindow('appstore-window') },
+    { name: 'Terminal',        icon: 'assets/icons/terminal.png',     action: () => openWindow('terminal-window') },
+    { name: 'System Settings', icon: 'assets/icons/settings.png',     action: () => openWindow('settings-window') },
+    { name: 'Iris',            icon: 'assets/icons/siri.png',         action: () => openIris() },
+    { name: 'Mission Control', icon: 'assets/icons/mission-control.svg', action: () => toggleMissionControl() },
+    { name: 'Launchpad',       icon: 'assets/icons/launchpad.svg',    action: () => openLaunchpad() },
+    { name: 'Control Centre',  icon: 'assets/icons/settings.png',     action: () => openControlCenter() },
+    { name: 'Trash',           icon: 'assets/icons/trash-full.png',   action: () => openWindow('trash-window') }
+];
+
+// Things a visitor most often wants to *do*, matched on keywords.
+const SPOTLIGHT_ACTIONS = [
+    { title: 'Download Résumé (PDF)', keys: 'resume résumé cv download pdf', glyph: 'fas fa-file-arrow-down', run: () => downloadResume() },
+    { title: 'Email Mudit', keys: 'email mail contact message hire reach write', glyph: 'fas fa-paper-plane', run: () => { openWindow('mail-window'); openMailCompose(); } },
+    { title: 'Save Contact Card', keys: 'contact vcard vcf card phone save', glyph: 'fas fa-address-card', run: () => downloadContactCard() },
+    { title: 'Copy Email Address', keys: 'copy email address', glyph: 'fas fa-copy', run: () => copyTextToClipboard('muditagrawal03@gmail.com', 'Email address copied') },
+    { title: 'Ask Iris a Question', keys: 'ask iris siri question ai assistant chat', glyph: 'fas fa-wand-magic-sparkles', run: () => openIris() },
+    { title: 'Keyboard Shortcuts', keys: 'keyboard shortcuts keys help hotkeys', glyph: 'fas fa-keyboard', run: () => showKeyboardShortcuts() }
 ];
 
 function ensureSpotlightDom() {
@@ -41,7 +53,7 @@ function ensureSpotlightDom() {
                 <input type="text" id="spotlight-input" placeholder="Spotlight Search"
                        autocomplete="off" spellcheck="false" aria-label="Spotlight Search">
             </div>
-            <div class="spotlight-results" id="spotlight-results"></div>
+            <div class="spotlight-results" id="spotlight-results" role="listbox" aria-label="Results"></div>
         </div>`;
     document.body.appendChild(el);
 
@@ -84,13 +96,17 @@ function runSpotlightSearch(query) {
     spotlightResults = [];
 
     if (!q) {
-        spotlightResults = SPOTLIGHT_APPS.slice(0, 6).map(a => ({
-            group: 'Applications', title: a.name, subtitle: 'Application',
-            icon: a.icon, run: a.action
-        }));
+        spotlightResults = [
+            ...SPOTLIGHT_ACTIONS.slice(0, 3).map(a => ({ group: 'Suggestions', title: a.title, subtitle: 'Action', glyph: a.glyph, run: a.run })),
+            ...SPOTLIGHT_APPS.slice(0, 5).map(a => ({ group: 'Applications', title: a.name, subtitle: 'Application', icon: a.icon, run: a.action }))
+        ];
         renderSpotlightResults();
         return;
     }
+
+    SPOTLIGHT_ACTIONS
+        .filter(a => a.title.toLowerCase().includes(q) || q.split(/\s+/).every(w => a.keys.includes(w)))
+        .forEach(a => spotlightResults.push({ group: 'Actions', title: a.title, subtitle: 'Action', glyph: a.glyph, run: a.run }));
 
     SPOTLIGHT_APPS
         .filter(a => a.name.toLowerCase().includes(q))
@@ -102,7 +118,7 @@ function runSpotlightSearch(query) {
     searchPortfolioCorpus(query, { minScore: 2, limit: 5 }).forEach(entry => {
         spotlightResults.push({
             group: 'Portfolio', title: entry.title, subtitle: entry.type,
-            glyph: 'fas fa-sparkles',
+            glyph: entry.type === 'Experience' ? 'fas fa-briefcase' : entry.type === 'Project' ? 'fas fa-cube' : 'fas fa-circle-info',
             run: () => runCorpusAction(entry.action, entry.url)
         });
     });
@@ -153,10 +169,10 @@ function renderSpotlightResults() {
             lastGroup = r.group;
         }
         const art = r.icon
-            ? `<img src="${escapeHtml(r.icon)}" alt="">`
+            ? `<img src="${escapeHtml(r.icon)}" alt=""${/Professionalimage/.test(r.icon) ? ' class="round"' : ''}>`
             : `<i class="${escapeHtml(r.glyph || 'fas fa-file')}"></i>`;
         html += `
-            <div class="spotlight-row ${i === spotlightIndex ? 'selected' : ''}" data-index="${i}">
+            <div class="spotlight-row ${i === spotlightIndex ? 'selected' : ''}" data-index="${i}" role="option" aria-selected="${i === spotlightIndex}">
                 <div class="spotlight-row-art">${art}</div>
                 <div class="spotlight-row-text">
                     <div class="spotlight-row-title">${escapeHtml(r.title)}</div>
