@@ -287,6 +287,36 @@ function finishAfter(ms) {
     assert(notFound.length === 0, 'Terminal understands its documented commands', notFound.join(', '));
     window.closeWindow('terminal-window');
 
+    /* ── 7. Iris's model proxy (api/iris.js), with Groq stubbed ────────── */
+    console.log('\n--- 7. Iris model proxy ---');
+    {
+        const { OWNER } = await import(path.join(ROOT_DIR, 'api/_owner.js'));
+        const origin = OWNER.origins[0];
+        const realFetch = global.fetch;
+        let sent = null;
+        let upstream = { status: 200, body: { choices: [{ message: { content: `Here it is. [[open:maps:${(P.hackathons[0] || { name: 'campus' }).name}]]` } }] } };
+        global.fetch = async (url, init) => { sent = { url, body: JSON.parse(init.body) }; return { ok: upstream.status === 200, status: upstream.status, json: async () => upstream.body }; };
+        process.env.GROQ_API_KEY = 'test-key';
+        const handler = (await import(path.join(ROOT_DIR, 'api/iris.js'))).default;
+        const call = (body, headers = { origin }) => new Promise((resolve) => {
+            const res = { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.code = c; return this; }, json(b) { resolve({ code: this.code, body: b }); }, end() { resolve({ code: this.code }); } };
+            handler({ method: 'POST', headers: { ...headers, 'x-forwarded-for': `10.0.0.${Math.floor(Math.random() * 250)}` }, body, socket: {} }, res);
+        });
+        const ok = await call({ messages: [{ role: 'user', content: 'show me where he competed' }], context: ['(passage)'], screen: 'Projects app, viewing Veritas Check' });
+        const system = sent ? sent.body.messages[0].content : '';
+        assert(ok.code === 200 && ok.body.reply === 'Here it is.' && ok.body.action && ok.body.action.app === 'maps' && ok.body.action.target,
+            'the proxy returns the reply and its [[open:…]] action separately', JSON.stringify(ok.body));
+        assert(system.includes(OWNER.digest.slice(0, 60)) && /Veritas Check/.test(system) && /Never invent/.test(system) && /advocate/.test(system),
+            'the model always gets the whole info bank, the screen, and the stay-positive-but-factual rules');
+        assert(sent.body.model === (process.env.GROQ_MODEL || 'openai/gpt-oss-120b'), 'a free-tier Groq model by default', sent.body.model);
+        upstream = { status: 429, body: {} };
+        const busy = await call({ messages: [{ role: 'user', content: 'hi' }] });
+        assert(busy.code === 429, 'out of free-tier tokens, the proxy says busy (the site then answers locally)', String(busy.code));
+        const foreign = await call({ messages: [{ role: 'user', content: 'hi' }] }, { origin: 'https://evil.example' });
+        assert(foreign.code === 403, 'other websites can’t use the proxy', String(foreign.code));
+        global.fetch = realFetch;
+    }
+
     console.log(`\n==================================================`);
     console.log(`Component Suite Summary: ${passCount} Passed, ${failCount} Failed out of ${testCount} tests`);
     console.log(`==================================================\n`);

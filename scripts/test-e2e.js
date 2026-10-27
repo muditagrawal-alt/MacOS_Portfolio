@@ -1288,8 +1288,9 @@ const section = (name) => !only || only.test(name);
       expect(/From this portfolio/.test(results) && (await page.evaluate(() => location.hash)) === '#/messages', results.slice(0, 120));
     });
     await test('Iris answers with sources, and a source opens the right page', async () => {
-      await page.click(`${topPage} .ios-nav-action`);   // New conversation: the suggestions return
-      await page.click('.msg-suggest button:has-text("Where has he worked?")');
+      await page.click(`${topPage} .ios-nav-action`);   // New conversation
+      await page.fill('.msg-bar input', `Where ${P.pron.have} ${P.pron.subject} worked?`);
+      await page.press('.msg-bar input', 'Enter');
       await page.waitForSelector('.msg-row.iris .msg-sources button:not([disabled])', { timeout: 4000 });
       await page.screenshot({ path: SHOTS + 'ios-iris.png' });
       await page.click('.msg-row.iris .msg-sources button:not([disabled]) >> nth=0');

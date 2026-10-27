@@ -175,7 +175,22 @@
         const c = P.contact;
         add('Contact', [c.email && `Email ${c.email}.`, c.phone && `Phone ${c.phone}.`, ...P.links.map(l => `${l.label} ${l.url}.`)].filter(Boolean).join(' '), { label: 'Contact', open: () => { openWindow('mail-window'); openMailCompose(); } }, { kind: 'contact' });
 
-        list.forEach(p => { p.tokens = tokenize(p.text); p.len = p.tokens.length; });
+        // A passage is found by its title and by what kind of fact it is, not only its words:
+        // "where did they study?" reaches Education although no passage says "study".
+        const KIND_WORDS = {
+            about: 'about who background introduce summary profile person',
+            education: 'education study studied studying school university college degree campus academic',
+            experience: 'experience work worked job internship career company role employer',
+            'experience-bullet': 'experience work achievement impact result',
+            project: 'project built build app product',
+            skills: 'skills stack technologies tools languages frameworks know proficient',
+            hackathon: 'hackathon competition compete competed finalist winner achievement award',
+            event: 'event attended attend summit expo conference',
+            cert: 'certificate certification course credential',
+            trash: 'idea cut abandoned lesson',
+            contact: 'contact email phone reach hire'
+        };
+        list.forEach(p => { p.tokens = tokenize(`${p.title} ${p.text} ${KIND_WORDS[p.kind] || ''}`); p.len = p.tokens.length; });
         const df = {};
         list.forEach(p => new Set(p.tokens).forEach(t => { df[t] = (df[t] || 0) + 1; }));
         const N = list.length;
@@ -355,12 +370,20 @@
         // General retrieval
         const hits = retrieve(q, { k: 4 });
         if (hits.length && hits[0].score >= 2.2) {
-            const top = hits.filter(h => h.score >= hits[0].score * 0.45).slice(0, 3);
-            return answer(`Here’s what the portfolio says:\n${top.map(h => `• ${trimSentence(h.p.text, 170)}`).join('\n')}`, top.map(h => h.p.source));
+            // Asking about hackathons, events or certificates means all of them, not the top three.
+            const kind = hits[0].p.kind;
+            const whole = ['hackathon', 'event', 'cert'].includes(kind) ? passages.filter(p => p.kind === kind) : null;
+            const top = whole && whole.length > 1 ? whole.slice(0, 8) : hits.filter(h => h.score >= hits[0].score * 0.45).slice(0, 3).map(h => h.p);
+            const lead = { hackathon: `${first} has made the finals at ${whole ? whole.length : 1} hackathon${whole && whole.length > 1 ? 's' : ''}:`, event: `Events ${first} has attended:`, cert: `${first}’s certifications:` }[kind] || 'Here’s what stands out:';
+            return answer(`${lead}\n${top.map(p => `• ${trimSentence(p.text, 170)}`).join('\n')}`, uniqSources(top.map(p => p.source)));
         }
 
-        // Out of scope — refuse rather than invent.
-        return answer(`I only know what’s in this portfolio, and I couldn’t find anything about that. Try asking about ${pr.possessive} **experience**, **projects**, **skills** or **education** — or say “open Terminal”.`, [], { outOfScope: true });
+        // Out of scope: never invent, but use the moment to say something true and good.
+        const now = exp[0];
+        const live = projects.filter(p => p.live).length;
+        const proof = [now && `${pr.subject} works as **${now.role}** at ${shortOrg(now.org)}`, live && `${pr.have} shipped **${live} live app${live === 1 ? '' : 's'}**`, P.hackathons.length && `${pr.have} reached the finals at **${P.hackathons.length} hackathon${P.hackathons.length === 1 ? '' : 's'}**`].filter(Boolean);
+        const said = proof.length > 1 ? `${proof.slice(0, -1).join(', ')} and ${proof[proof.length - 1]}` : proof[0];
+        return answer(`I only know about ${first}, so that one’s outside my world.${said ? ` What I can tell you: ${said}.` : ''} Ask me about ${pr.possessive} **experience**, **projects**, **skills** or **education**.`, [], { outOfScope: true });
     }
 
     function trimSentence(text, max) {

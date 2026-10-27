@@ -531,6 +531,51 @@ const IOS = (() => {
         $('ios-search').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
     }
 
+    /* ── Actions Iris asks for ("open Maps at HackRust") ──────────────── */
+    const ACTION_APPS = {
+        about: ['about', 'fas fa-user'], resume: ['resume', 'fas fa-file-lines'], projects: ['projects', 'fas fa-cube'],
+        maps: ['maps', 'fas fa-map-location-dot'], mail: ['mail', 'fas fa-envelope'], photos: ['photos', 'fas fa-images'],
+        notes: ['notes', 'fas fa-note-sticky'], music: ['music', 'fas fa-music'], camera: ['camera', 'fas fa-camera'],
+        games: ['game-2048', 'fas fa-gamepad'], weather: ['weather', 'fas fa-cloud-sun'], settings: ['settings', 'fas fa-gear']
+    };
+    const words = (s) => String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 1);
+    /** The item whose name shares the most words with what Iris said, if any. */
+    function bestMatch(items, name, label) {
+        const want = words(name);
+        let best = null;
+        let score = 0;
+        items.forEach(it => {
+            const have = new Set(words(label(it)));
+            const n = want.filter(w => have.has(w)).length;
+            if (n > score) { best = it; score = n; }
+        });
+        return best;
+    }
+    const findProject = (name) => bestMatch(typeof getPortfolioProjects === 'function' ? getPortfolioProjects() : [], name, p => `${p.name} ${p.title}`);
+    const findPlace = (name) => bestMatch(window.PROFILE_DATA.places || [], name, x => `${x.title} ${x.place.label}`);
+
+    /** A card for an action ({ app, target }), or null if this version can't do it. */
+    function describeAction(a) {
+        const entry = a && ACTION_APPS[a.app];
+        if (!entry || !apps[entry[0]]) return null;
+        const project = a.app === 'projects' && a.target ? findProject(a.target) : null;
+        const place = a.app === 'maps' && a.target ? findPlace(a.target) : null;
+        if (project) return { title: project.name, subtitle: 'Open its page in Projects', icon: entry[1], btnText: 'Open' };
+        if (place) return { title: place.title, subtitle: `Show it in Maps · ${place.place.city || place.place.name}`, icon: entry[1], btnText: 'Show' };
+        return { title: apps[entry[0]].name, subtitle: 'Open the app', icon: entry[1], btnText: 'Open' };
+    }
+
+    function runAction(a) {
+        const entry = a && ACTION_APPS[a.app];
+        if (!entry || !apps[entry[0]]) return false;
+        const project = a.app === 'projects' && a.target ? findProject(a.target) : null;
+        const place = a.app === 'maps' && a.target ? findPlace(a.target) : null;
+        if (project) go('projects', [project.id]);
+        else if (place) go('maps', [place.id]);
+        else go(entry[0]);
+        return true;
+    }
+
     /* ── Small helpers apps use ───────────────────────────────────────── */
     /** Opens Messages and puts a question to Iris (Messages defines iosAskIris). */
     function askIris(question) {
@@ -663,7 +708,7 @@ const IOS = (() => {
     }
 
     return {
-        register, go, back, home, start, unlock, lockNow, haptic, readPref, writePref, askIris,
+        register, go, back, home, start, unlock, lockNow, haptic, readPref, writePref, askIris, runAction, describeAction,
         group, row, bind, emptyState, shortOrg, setIslandActivity, syncStatusBar, isDarkAppearance,
         get apps() { return apps; },
         get currentApp() { return openAppId; },

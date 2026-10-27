@@ -480,23 +480,9 @@ function renderIrisSuggestions() {
         return;
     }
 
-    // Written from the info bank, so they always have an answer.
-    const P = window.PROFILE_DATA;
-    const pr = P.pron;
-    const firstSkill = (P.skills[0] || { items: [] }).items[0];
-    const suggestions = [
-        `What ${pr.have} ${P.first} built?`,
-        P.experience[0] && `Tell me about ${pr.possessive} work at ${P.experience[0].org.split(/[ (,]/)[0]}`,
-        firstSkill && `Does ${pr.subject} know ${firstSkill}?`,
-        `Why should I hire ${pr.object}?`,
-        P.projects[0] && `What is ${P.projects[0].name}?`,
-        P.resume.file && `Open ${pr.possessive} résumé`
-    ].filter(Boolean);
-
-    container.style.display = 'flex';
-    container.innerHTML = suggestions.map(s =>
-        `<button class="iris-suggestion" onclick="sendIrisMessage('${escapeAttr(s)}')">${escapeHtml(s)}</button>`
-    ).join('');
+    // No canned questions: Iris understands whatever the visitor types.
+    container.style.display = 'none';
+    container.innerHTML = '';
 }
 
 function addIrisMessage(role, content, actionCard, sources) {
@@ -907,14 +893,12 @@ async function sendIrisMessage(overrideMessage) {
         } else {
             // Grounded answer: retrieve passages from the portfolio, then
             // either let the hosted model phrase them or compose locally.
-            const local = window.IrisBrain ? window.IrisBrain.respond(message) : { text: '', sources: [] };
-            let text = null;
-            if (!local.outOfScope) text = await callIrisProxy(message);
+            const answer = await IrisClient.ask(message, { history: irisConversation.slice(-7, -1) });
             hideIrisTyping();
-            const reply = text || local.text;
-            addIrisMessage('iris', reply, local.card, local.sources);
-            irisConversation.push({ role: 'assistant', content: reply });
-            speakIris(reply);
+            const card = answer.action ? irisActionCard(answer.action) : answer.card;
+            addIrisMessage('iris', answer.text, card, answer.sources);
+            irisConversation.push({ role: 'assistant', content: answer.text });
+            speakIris(answer.text);
         }
     } catch (error) {
         console.error('Iris execution error:', error);
@@ -930,32 +914,43 @@ async function sendIrisMessage(overrideMessage) {
     if (sendBtn) sendBtn.disabled = false;
 }
 
-/* ── Model Transport (Hosted Serverless Proxy) ────────────────────────────
-   The server owns the system prompt (api/iris.js); the client sends only the
-   conversation and the passages it retrieved, as grounding context. */
-async function callIrisProxy(userMessage) {
-    const endpoint = window.APP_CONFIG && window.APP_CONFIG.IRIS_ENDPOINT;
-    if (!endpoint) return null;
+/* ── Actions the model asks for ([[open:maps:…]]) ──────────────────────────
+   Cards run a numbered entry from this list, never text from the model. */
+const irisActions = [];
+const IRIS_MAC_ACTIONS = {
+    about: ['fas fa-user', 'About', () => openWelcome()],
+    resume: ['fas fa-file-lines', 'Résumé', () => openResumeWindow()],
+    projects: ['fas fa-cube', 'Projects', (t) => (t && typeof openProjectDetails === 'function' ? openProjectDetails(t) : openWindow('appstore-window'))],
+    maps: ['fas fa-map-location-dot', 'Map', (t) => openIrisPlace(t)],
+    mail: ['fas fa-envelope', 'Mail', () => { openWindow('mail-window'); openMailCompose(); }],
+    photos: ['fas fa-images', 'Photos', () => openWindow('photos-window')],
+    notes: ['fas fa-note-sticky', 'Notes', () => openWindow('notes-window')],
+    music: ['fas fa-music', 'Music', () => openMusic()],
+    camera: ['fas fa-camera', 'Photo Booth', () => openPhotoBooth()],
+    games: ['fas fa-gamepad', 'Snake', () => openSnake()],
+    settings: ['fas fa-gear', 'System Settings', () => openWindow('settings-window')]
+};
 
-    const history = irisConversation.slice(-6);
-    const context = window.IrisBrain ? window.IrisBrain.contextFor(userMessage, 6) : [];
+/** The Mac has no Maps app: a place opens on OpenStreetMap. */
+function openIrisPlace(name) {
+    const want = String(name || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 1);
+    const places = window.PROFILE_DATA.places || [];
+    const score = (x) => want.filter(w => `${x.title} ${x.place.label}`.toLowerCase().includes(w)).length;
+    const best = places.slice().sort((a, b) => score(b) - score(a))[0];
+    if (best && score(best) > 0) openExternal(best.url);
+    else if (places[0]) openExternal(places[0].url);
+}
 
-    try {
-        const ctrl = new AbortController();
-        const to = setTimeout(() => ctrl.abort(), 12000);
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: history, context }),
-            signal: ctrl.signal
-        });
-        clearTimeout(to);
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.reply || null;
-    } catch (e) {
-        return null;
-    }
+function irisActionCard(action) {
+    const entry = IRIS_MAC_ACTIONS[action.app];
+    if (!entry) return null;
+    const index = irisActions.push(() => entry[2](action.target)) - 1;
+    return { icon: entry[0], title: action.target || entry[1], subtitle: `Open ${entry[1]}`, btnText: 'Open', action: `irisRunAction(${index})` };
+}
+
+function irisRunAction(index) {
+    const run = irisActions[Number(index)];
+    if (typeof run === 'function') { closeIris(); run(); }
 }
 
 function handleIrisInput(e) {
