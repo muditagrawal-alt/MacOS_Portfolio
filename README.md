@@ -8,6 +8,31 @@ A fully interactive, MacOS-themed portfolio website built with vanilla HTML, CSS
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 
+## 📱 One link, two experiences
+
+The same URL opens the right portfolio for the device:
+
+| Device | Opens | What it is |
+| --- | --- | --- |
+| Laptop / desktop | `index.html` | The macOS desktop: Finder, Terminal, Safari, Music, games, Iris |
+| iPhone / Android phone | `ios.html` | An iPhone: Lock Screen, Home Screen with live widgets, and 12 apps |
+| iPad / tablet | `ios.html` | The same apps in an iPad layout |
+
+`js/router.js` runs first in both pages, before anything paints, and decides by how the device is *used*: touch-first phones and tablets (including iPadOS, which reports itself as a Mac) get the iPhone version, while a narrow desktop window or a touchscreen laptop stays on the Mac. Visitors can switch either way, and the choice is remembered:
+
+- **Mac → iPhone:** Apple menu ▸ *View iPhone Version*. On a computer the phone is drawn as a framed device, with *Back to the Mac version* underneath.
+- **iPhone → Mac:** Settings ▸ *View Mac Version*.
+- **For a link:** `?view=ios` or `?view=mac` forces a version for that visit only, and is removed from the address bar.
+
+Both versions read the same data (`js/data/*`), use the same services (`js/shared/*`), and run the same Iris engine (`js/apps/iris-brain.js`), so a change to a project or the résumé shows up in both.
+
+### The iPhone version
+
+- **Navigation that feels native:** every page is a History API entry (`#/app/path`), so the phone's own back swipe and Android's Back button work, deep links open the right page, and Back walks up the app. Apps zoom out of their icons; the home bar (tap or drag up) goes home.
+- **Messages is Iris:** answers come from the portfolio, each with source chips that open the app the answer came from.
+- **Apps:** About (contact card, experience, education, skills), Projects (App Store product pages), Résumé, Photos (certificates), Notes (shared with the Mac's Notes in the same browser, plus *Recently Deleted* post-mortems), Mail (sends to Mudit), Safari (start page and portfolio search), Music (recordings, radio, and generative tracks synthesised in the browser), Weather, Calculator and Settings (light/dark, wallpaper, haptics).
+- **Installable:** Add to Home Screen gives a full-screen app with its own icon.
+
 ## 📸 Screenshot
 
 <div align="center">
@@ -183,7 +208,7 @@ Upload all files to any static hosting service (AWS S3, Firebase Hosting, etc.)
 
 ## 📱 Mobile Responsiveness
 
-At phone width (`css/responsive.css`):
+Phones and tablets get the iPhone version (above). If a visitor chooses the Mac version on a phone, or narrows a desktop window, `css/responsive.css` adapts it:
 - Windows become full-width sheets between the menu bar and the Dock
 - Finder, Settings, Music and App Store sidebars become swipeable pill strips
 - Mail and Notes push from the list to the detail, with a Back button
@@ -230,6 +255,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ```
 index.html              markup for the desktop, dock, menu bar and every app window
+ios.html                the iPhone / iPad version
+manifest.webmanifest    Add to Home Screen
 css/
   variables.css         design tokens
   base.css              reset, desktop canvas, wallpaper
@@ -244,6 +271,7 @@ css/
   responsive.css        must load LAST — its media queries override the rest
   apps/*.css            one file per application
 js/
+  router.js             device router — loaded first by both pages
   data/profile.js       single source of truth for name, education, contact
   data/corpus.js        ONE search index, shared by Safari, Spotlight and Iris
   data/filesystem.js    Finder's folders and files (projects, skills, education, socials)
@@ -252,6 +280,9 @@ js/
   data/music.js         music catalogue + radio fallbacks
   shared/live-data.js   live weather and GitHub activity, cached
   shared/contact-form.js  the one contact-form send path, vCard + share helpers
+  shared/generative-audio.js  Web Audio engine for Music's generative tracks
+  ios/system.js         iPhone shell: navigation, Lock & Home Screens, widgets, Search
+  ios/apps/*.js         one file per iPhone app (+ css/ios/apps/*.css)
   config/config.js      runtime config — contains no secrets
   core/utils.js         escapeHtml / safeUrl / openExternal, math parser
   core/window-manager.js  open, close, focus, drag, clamp, cascade, maximize
@@ -324,8 +355,8 @@ npm run test:all
 | Gate | Command | What it checks |
 | --- | --- | --- |
 | 1 | `npm run test:syntax` | Every JS file parses |
-| 2 | `npm run test:assets` | Every asset referenced from HTML **and** JS exists |
+| 2 | `npm run test:assets` | Every asset referenced from both pages, the manifest **and** JS exists |
 | 3 | `npm run test:components` | Behaviour in jsdom, plus wiring integrity: every inline handler and menu command calls a real function, every linked Settings pane / Finder location exists |
-| 4 | `npm run test:e2e` | Real Chromium: every Dock app, traffic lights, lock screen, Quick Look, Spotlight, Mail/Safari XSS, camera release, keyboard shortcuts, Iris grounding, phone layout (231 checks) |
+| 4 | `npm run test:e2e` | Real Chromium: every Dock app, traffic lights, lock screen, Quick Look, Spotlight, Mail/Safari XSS, camera release, keyboard shortcuts, Iris grounding; device routing (iPhone, iPadOS, overrides); every iPhone app's main flow, Back/deep links, and no sideways scrolling on iPhone and iPad (265 checks) |
 
 The E2E suite answers GitHub, weather, Wikipedia and radio requests from fixtures and intercepts the contact form, so it is deterministic and never sends real email. `npm run test:e2e -- safari` runs only matching sections.
