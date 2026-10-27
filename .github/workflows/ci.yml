@@ -37,6 +37,9 @@ jobs:
       - name: Gate 3 - Behavioural Component Suite (jsdom)
         run: npm run test:components
 
+      - name: Gate 5 - Template Integrity (nothing personal outside the info bank)
+        run: npm run test:template
+
       - name: Install Chromium for E2E
         run: npx playwright install --with-deps chromium
 

@@ -7,8 +7,9 @@
     "test:syntax": "node scripts/test-syntax.js",
     "test:assets": "node scripts/test-assets.js",
     "test:components": "node scripts/test-components.js",
+    "test:template": "node scripts/test-template.js",
     "test:e2e": "node scripts/test-e2e.js",
-    "test": "npm run test:syntax && npm run test:assets && npm run test:components",
+    "test": "npm run test:syntax && npm run test:assets && npm run test:components && npm run test:template",
     "test:all": "npm test && npm run test:e2e",
     "validate": "npm run test:all"
   },

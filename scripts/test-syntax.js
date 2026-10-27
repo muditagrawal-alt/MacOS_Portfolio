@@ -7,7 +7,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const SCAN_DIRS = ['js', 'api'];
+const SCAN_DIRS = ['js', 'api', 'setup', 'scripts'];
 
 function getJsFiles(dir) {
     let results = [];
