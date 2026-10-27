@@ -428,7 +428,8 @@ const section = (name) => !only || only.test(name);
     console.log('\nSpotlight / Launchpad / Context menus');
     const page = await freshPage(browser);
     await test('⌘K opens Spotlight', async () => {
-      await page.keyboard.press('Meta+k');
+      // ⌘ on a Mac, Ctrl on Windows and Linux (keyboard.js's isCmd), like a real visitor's keyboard.
+      await page.keyboard.press('ControlOrMeta+k');
       await page.waitForTimeout(200);
       expect(await page.isVisible('#spotlight-overlay.active'));
     });
@@ -1058,7 +1059,7 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => { openWindow('finder-window'); finderSidebarNav('home'); finderSidebarNav('projects'); });
       await page.mouse.click(600, 600);
       await page.evaluate(() => bringToFront('finder-window'));
-      await page.keyboard.press('Meta+BracketLeft');
+      await page.keyboard.press('ControlOrMeta+BracketLeft');
       const t = await page.textContent('#finder-title-text');
       await page.evaluate(() => closeWindow('finder-window'));
       expect(t !== 'Projects', 'still on ' + t);
