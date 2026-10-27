@@ -1,0 +1,104 @@
+/* Weather — full-bleed sky, frosted cards */
+
+.ios-page.wx-page { color: #fff; background: linear-gradient(180deg, #2f7fe0 0%, #64a8f0 55%, #9cc8f5 100%); transition: background 0.6s; }
+.ios-page.wx-page[data-scene="night"] { background: linear-gradient(180deg, #0b1630 0%, #1e2f5c 60%, #36477a 100%); }
+.ios-page.wx-page[data-scene="cloudy"] { background: linear-gradient(180deg, #59677a 0%, #8796aa 60%, #a9b5c4 100%); }
+.ios-page.wx-page[data-scene="rain"] { background: linear-gradient(180deg, #384656 0%, #56677a 60%, #75869a 100%); }
+.ios-page.wx-page .ios-page-body { padding-top: calc(var(--safe-top) + 18px); user-select: none; }
+
+.wx-close {
+    position: absolute;
+    top: calc(var(--safe-top) + 6px);
+    right: 14px;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wx-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0 24px;
+    text-align: center;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+}
+
+.wx-kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; opacity: 0.85; }
+.wx-kicker i { font-size: 11px; margin-right: 3px; }
+.wx-place { font-size: 32px; font-weight: 500; letter-spacing: -0.3px; }
+.wx-temp { font-size: min(26cqw, 104px); font-weight: 200; line-height: 1; margin-left: 0.18em; letter-spacing: -2px; }
+.wx-cond { margin-top: 2px; font-size: 20px; font-weight: 500; opacity: 0.9; }
+.wx-hl { margin-top: 2px; font-size: 20px; font-weight: 500; white-space: pre; }
+
+.wx-card {
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.16);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
+}
+
+.ios-page.wx-page[data-scene="night"] .wx-card { background: rgba(10, 20, 50, 0.35); }
+
+.wx-card h3 {
+    margin: 0 0 10px;
+    padding-bottom: 9px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.wx-card h3 i { margin-right: 5px; }
+
+.wx-hours {
+    display: flex;
+    gap: 20px;
+    margin: 0 -16px;
+    padding: 0 16px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.wx-hours::-webkit-scrollbar { display: none; }
+
+.wx-hour { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; min-width: 34px; font-size: 15px; font-weight: 500; }
+.wx-hour i { font-size: 20px; height: 22px; }
+.wx-hour strong { font-size: 18px; font-weight: 500; }
+
+.wx-day {
+    display: grid;
+    grid-template-columns: 52px 28px 38px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.wx-day + .wx-day { border-top: 0.5px solid rgba(255, 255, 255, 0.22); }
+.wx-day i { font-size: 19px; text-align: center; }
+.wx-day-lo { color: rgba(255, 255, 255, 0.6); text-align: right; }
+.wx-day-hi { text-align: right; }
+
+.wx-range { position: relative; height: 5px; border-radius: 3px; background: rgba(0, 0, 0, 0.18); }
+.wx-range span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #8be0d7, #f6d365, #fda085); }
+.wx-range i { position: absolute; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25); }
+
+.wx-credit { margin: 14px 0 0; text-align: center; color: rgba(255, 255, 255, 0.7); font-size: 12px; }
+.ios-page.wx-page .ios-empty, .ios-page.wx-page .ios-empty strong { color: #fff; }
