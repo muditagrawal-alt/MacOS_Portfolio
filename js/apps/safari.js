@@ -71,7 +71,7 @@ const safariShortcuts = {
     },
     'instagram': {
         title: 'Instagram — @muditagrawal_',
-        url: 'https://www.instagram.com',
+        url: 'https://www.instagram.com/muditagrawal_/',
         icon: 'fab fa-instagram',
         domain: 'instagram.com/muditagrawal_',
         category: 'Social & Behind the Scenes',
@@ -290,6 +290,24 @@ function loadSafariDestination(tab, dest) {
             tab.url = sc.url;
             tab.icon = sc.icon;
         }
+    } else if (dest.startsWith('web:')) {
+        const url = dest.slice(4);
+        const key = shortcutForUrl(url);
+        if (key) {
+            const sc = safariShortcuts[key];
+            tab.type = 'shortcut';
+            tab.shortcutKey = key;
+            tab.title = sc.title;
+            tab.url = sc.url;
+            tab.icon = sc.icon;
+        } else {
+            let host = url;
+            try { host = new URL(url).host.replace(/^www\./, ''); } catch (e) { /* keep raw */ }
+            tab.type = 'web';
+            tab.title = host;
+            tab.url = url;
+            tab.icon = 'fas fa-globe';
+        }
     } else if (dest.startsWith('ddg:')) {
         const q = dest.replace('ddg:', '');
         tab.type = 'ddg_search';
@@ -391,9 +409,37 @@ function navigateSafariTo(queryOrUrl) {
         return;
     }
 
+    // A typed address navigates; anything else searches. (Every input used
+    // to be treated as a search query, including "github.com".)
+    const url = normaliseTypedUrl(queryOrUrl);
+    if (url) {
+        loadSafariDestination(currentTab, `web:${url}`);
+        pushSafariHistory(currentTab, `web:${url}`);
+        switchSafariTab(currentTab.id);
+        return;
+    }
+
     loadSafariDestination(currentTab, `ddg:${queryOrUrl}`);
     pushSafariHistory(currentTab, `ddg:${queryOrUrl}`);
     switchSafariTab(currentTab.id);
+}
+
+/** "github.com/x" or "https://…" → absolute https URL; a search phrase → null. */
+function normaliseTypedUrl(input) {
+    const raw = String(input || '').trim();
+    if (!raw || /\s/.test(raw)) return null;
+    if (/^https?:\/\//i.test(raw)) return safeUrl(raw) === '#' ? null : raw;
+    if (/^(localhost|[a-z0-9-]+(\.[a-z0-9-]+)+)(:\d+)?(\/\S*)?$/i.test(raw) && /\.[a-z]{2,}(:\d+)?(\/|$)/i.test(raw)) {
+        return 'https://' + raw;
+    }
+    return null;
+}
+
+/** If a URL is one of the portfolio's own profiles, show its rich page. */
+function shortcutForUrl(url) {
+    const norm = u => u.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/+$/, '').toLowerCase();
+    const target = norm(url);
+    return Object.keys(safariShortcuts).find(k => norm(safariShortcuts[k].url) === target) || null;
 }
 
 // Portfolio corpus + search now live in js/data/corpus.js (shared with
@@ -412,164 +458,127 @@ function getCachedWikiResult(q) {
   return null;
 }
 
-function setCachedWikiResult(q, searchArticles, summaryData) {
+function setCachedWikiResult(q, searchArticles, summaryData, totalHits) {
   if (!q) return;
-  wikiSearchCache.set(q.toLowerCase().trim(), { searchArticles, summaryData, timestamp: Date.now() });
+  wikiSearchCache.set(q.toLowerCase().trim(), { searchArticles, summaryData, totalHits, timestamp: Date.now() });
 }
 
-function buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches) {
-    let organicHtml = '';
-
-    if (portfolioMatches && portfolioMatches.length > 0) {
-        organicHtml += `
-            <div class="safari-portfolio-match-section">
-                <div class="safari-portfolio-match-header">
-                    <i class="fas fa-sparkles"></i>
-                    <span>From this portfolio</span>
-                </div>
-                <div class="safari-portfolio-cards">
-                    ${portfolioMatches.map(item => `
-                        <div class="safari-portfolio-card" onclick="handlePortfolioMatchClick('${item.action || ''}', '${item.url || ''}')">
-                            <div class="safari-portfolio-card-top">
-                                <span class="safari-portfolio-badge">${item.type}</span>
-                                ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="safari-portfolio-link-icon" title="Open Link"><i class="fas fa-external-link-alt"></i></a>` : `<span class="safari-portfolio-link-icon" title="View in Finder"><i class="fas fa-folder-open"></i></span>`}
-                            </div>
-                            <div class="safari-portfolio-card-title">${item.title}</div>
-                            <p class="safari-portfolio-card-text">${item.text}</p>
+/** "From this portfolio" cards — shared by the cached and live render paths. */
+function buildPortfolioMatchesHtml(portfolioMatches) {
+    if (!portfolioMatches || portfolioMatches.length === 0) return '';
+    return `
+        <div class="safari-portfolio-match-section">
+            <div class="safari-portfolio-match-header">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>From this portfolio</span>
+            </div>
+            <div class="safari-portfolio-cards">
+                ${portfolioMatches.map(item => `
+                    <div class="safari-portfolio-card" role="button" tabindex="0" onclick="handlePortfolioMatchClick('${escapeAttr(item.action || '')}', '${escapeAttr(item.url || '')}')">
+                        <div class="safari-portfolio-card-top">
+                            <span class="safari-portfolio-badge">${escapeHtml(item.type)}</span>
+                            ${item.url ? `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="safari-portfolio-link-icon" title="Open Link"><i class="fas fa-external-link-alt"></i></a>` : `<span class="safari-portfolio-link-icon" title="View in Finder"><i class="fas fa-folder-open"></i></span>`}
                         </div>
-                    `).join('')}
+                        <div class="safari-portfolio-card-title">${escapeHtml(item.title)}</div>
+                        <p class="safari-portfolio-card-text">${escapeHtml(item.text)}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+}
+
+/** Wikipedia snippets arrive as HTML with <span class="searchmatch">; keep only that emphasis. */
+function cleanWikiSnippet(snippet) {
+    return escapeHtml(String(snippet || '').replace(/<span class="searchmatch">(.*?)<\/span>/g, '\u0001$1\u0002').replace(/<[^>]+>/g, ''))
+        .replace(/\u0001/g, '<strong>').replace(/\u0002/g, '</strong>');
+}
+
+function buildWikiResultHtml(art) {
+    const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
+    return `
+        <div class="safari-result-item">
+            <div class="safari-result-source-row">
+                <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="" loading="lazy">
+                <div class="safari-result-source-info">
+                    <span class="safari-result-site-name">Wikipedia</span>
+                    <span class="safari-result-url">${escapeHtml(artUrl)}</span>
                 </div>
             </div>
-        `;
+            <a href="${escapeHtml(artUrl)}" target="_blank" rel="noopener noreferrer" class="safari-result-title">${escapeHtml(art.title)}</a>
+            <p class="safari-result-snippet">${cleanWikiSnippet(art.snippet)}…</p>
+        </div>`;
+}
+
+/* Every value interpolated below is escaped. The query used to be written
+   raw into innerHTML (and into an onclick attribute), so typing
+   <img src=x onerror=…> into the address bar executed it. */
+function buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches) {
+    const qh = escapeHtml(q);
+    let organicHtml = buildPortfolioMatchesHtml(portfolioMatches);
+
+    searchArticles.slice(0, 2).forEach(art => { organicHtml += buildWikiResultHtml(art); });
+
+    organicHtml += `
+        <div class="safari-video-spotlight" role="button" tabindex="0" onclick="searchYouTube('${escapeAttr(q)}')" style="cursor:pointer;">
+            <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for “${qh}”</div>
+            <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Find talks, tutorials and demos about <strong>${qh}</strong> on YouTube.</div>
+            <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search YouTube</button>
+        </div>`;
+
+    if (summaryData && summaryData.extract) {
+        organicHtml += `
+            <div class="safari-faq-card">
+                <div class="safari-faq-header">Quick answer</div>
+                <div class="safari-faq-item open">
+                    <div class="safari-faq-question"><span>What is ${escapeHtml(summaryData.title || q)}?</span></div>
+                    <div class="safari-faq-answer">${escapeHtml(summaryData.extract)}</div>
+                </div>
+            </div>`;
     }
 
-    const firstBatch = searchArticles.slice(0, 2);
-    firstBatch.forEach(art => {
-        const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
-        const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
-        organicHtml += `
-            <div class="safari-result-item">
-                <div class="safari-result-source-row">
-                    <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
-                    <div class="safari-result-source-info">
-                        <span class="safari-result-site-name">Wikipedia</span>
-                        <span class="safari-result-url">${artUrl}</span>
-                    </div>
-                </div>
-                <a href="${artUrl}" target="_blank" rel="noopener noreferrer" class="safari-result-title">${art.title}</a>
-                <p class="safari-result-snippet">${cleanSnippet}...</p>
-            </div>
-        `;
-    });
-
-    organicHtml += `
-        <div class="safari-video-spotlight" onclick="searchYouTube('${q.replace(/'/g, "\\'")}')" style="cursor:pointer;">
-            <div class="safari-video-spotlight-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos for "${q}"</div>
-            <div style="font-size:12.5px;color:#d1d1d6;margin-bottom:10px;">Watch live demonstrations, tutorials, and community videos for <strong>${q}</strong> on YouTube.</div>
-            <button type="button" class="app-pill-btn" style="color:#fff;background:rgba(255,0,0,0.2);border:1px solid rgba(255,0,0,0.4);"><i class="fab fa-youtube" style="color:#ff4444;"></i> Search "${q}" on YouTube</button>
-        </div>
-    `;
-
-    organicHtml += `
-        <div class="safari-faq-card">
-            <div class="safari-faq-header">People also ask</div>
-            <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
-                <div class="safari-faq-question">
-                    <span>What is ${q}?</span>
-                    <i class="fas fa-chevron-down safari-faq-chevron"></i>
-                </div>
-                <div class="safari-faq-answer">
-                    ${summaryData ? summaryData.extract : `${q} is recognized across contemporary reference works, encyclopedias, and literature.`}
-                </div>
-            </div>
-            <div class="safari-faq-item" onclick="toggleSafariFaq(this)">
-                <div class="safari-faq-question">
-                    <span>What are the key facts and applications of ${q}?</span>
-                    <i class="fas fa-chevron-down safari-faq-chevron"></i>
-                </div>
-                <div class="safari-faq-answer">
-                    Information and practical applications for ${q} continue to develop across diverse international fields and disciplines.
-                </div>
-            </div>
-        </div>
-    `;
-
-    const remainingBatch = searchArticles.slice(2, 6);
-    remainingBatch.forEach(art => {
-        const cleanSnippet = (art.snippet || '').replace(/<span class="searchmatch">/g, '<strong>').replace(/<\/span>/g, '</strong>');
-        const artUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(art.title.replace(/\s+/g, '_'))}`;
-        organicHtml += `
-            <div class="safari-result-item">
-                <div class="safari-result-source-row">
-                    <img src="https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=32" class="safari-result-favicon" alt="Wikipedia">
-                    <div class="safari-result-source-info">
-                        <span class="safari-result-site-name">Wikipedia</span>
-                        <span class="safari-result-url">${artUrl}</span>
-                    </div>
-                </div>
-                <a href="${artUrl}" target="_blank" rel="noopener noreferrer" class="safari-result-title">${art.title}</a>
-                <p class="safari-result-snippet">${cleanSnippet}...</p>
-            </div>
-        `;
-    });
+    searchArticles.slice(2, 6).forEach(art => { organicHtml += buildWikiResultHtml(art); });
 
     if (searchArticles.length === 0 && (!portfolioMatches || portfolioMatches.length === 0)) {
         organicHtml += `
             <div class="safari-noresults-card">
                 <i class="fas fa-info-circle" style="color:#8e8e93;font-size:28px;margin-bottom:8px;"></i>
-                <div class="safari-noresults-title">No matches in this portfolio or Wikipedia for "${q}"</div>
-                <p class="safari-noresults-sub">This is a demo search layer scoped to Mudit's portfolio content and Wikipedia — not a full web index.</p>
-                <a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-top:4px;">
-                    <i class="fas fa-external-link-alt"></i> Search the live web instead ↗
+                <div class="safari-noresults-title">No matches in this portfolio or Wikipedia for “${qh}”</div>
+                <p class="safari-noresults-sub">This search covers Mudit’s portfolio and Wikipedia — not the whole web.</p>
+                <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-top:4px;">
+                    <i class="fas fa-external-link-alt"></i> Search the web ↗
                 </a>
-            </div>
-        `;
+            </div>`;
     }
 
-    const relatedSearches = [
-        `${q} overview`,
-        `${q} guide`,
-        `${q} tutorial`,
-        `${q} examples`,
-        `best ${q} tips`,
-        `${q} latest news`
-    ];
+    const relatedSearches = [`${q} overview`, `${q} tutorial`, `${q} examples`, `${q} research`];
     organicHtml += `
         <div class="safari-related-section">
             <div class="safari-related-title">Related searches</div>
             <div class="safari-related-chips">
                 ${relatedSearches.map(term => `
-                    <div class="safari-related-chip" onclick="navigateSafariTo('${term.replace(/'/g, "\\'")}')">
-                        <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${term}
-                    </div>
-                `).join('')}
+                    <div class="safari-related-chip" role="button" tabindex="0" onclick="navigateSafariTo('${escapeAttr(term)}')">
+                        <i class="fas fa-search" style="font-size:10px;color:#8e8e93;"></i> ${escapeHtml(term)}
+                    </div>`).join('')}
             </div>
-        </div>
-    `;
+        </div>`;
 
     return organicHtml;
 }
 
 function buildKnowledgeCardHtml(summaryData) {
     if (!summaryData) return '';
-    const thumbSrc = summaryData.thumbnail ? summaryData.thumbnail.source : '';
-    const pageUrl = summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`;
-    
+    const thumbSrc = summaryData.thumbnail ? safeUrl(summaryData.thumbnail.source) : '';
+    const pageUrl = safeUrl(summaryData.content_urls ? summaryData.content_urls.desktop.page : `https://en.wikipedia.org/wiki/${encodeURIComponent(summaryData.title)}`);
+
     return `
         <div class="safari-knowledge-card">
-            ${thumbSrc ? `<img src="${thumbSrc}" alt="${summaryData.title}" class="safari-kc-thumb">` : ''}
-            <div class="safari-kc-title">${summaryData.title}</div>
-            <div class="safari-kc-subtitle">${summaryData.description || 'Overview & Reference'}</div>
-            <div class="safari-kc-extract">${summaryData.extract}</div>
-            
-            <div class="safari-kc-attributes">
-                <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Source:</span> Wikipedia Encyclopedia</div>
-                <div class="safari-kc-attr-item"><span class="safari-kc-attr-label">Language:</span> English (en)</div>
-            </div>
-
+            ${thumbSrc && thumbSrc !== '#' ? `<img src="${escapeHtml(thumbSrc)}" alt="" class="safari-kc-thumb" loading="lazy">` : ''}
+            <div class="safari-kc-title">${escapeHtml(summaryData.title)}</div>
+            <div class="safari-kc-subtitle">${escapeHtml(summaryData.description || 'From Wikipedia')}</div>
+            <div class="safari-kc-extract">${escapeHtml(summaryData.extract)}</div>
             <div class="safari-kc-actions">
-                <a href="${pageUrl}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="justify-content:center;text-decoration:none;"><i class="fas fa-external-link-alt"></i> View on Wikipedia</a>
-                <button type="button" class="app-pill-btn" onclick="searchYouTube('${escapeAttr(summaryData.title)}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Watch on YouTube</button>
+                <a href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="justify-content:center;text-decoration:none;"><i class="fas fa-external-link-alt"></i> Read on Wikipedia</a>
+                <button type="button" class="app-pill-btn" onclick="searchYouTube('${escapeAttr(summaryData.title)}')"><i class="fab fa-youtube" style="color:#ff0000;"></i> Videos</button>
             </div>
         </div>
     `;
@@ -601,7 +610,7 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
                     <span class="safari-search-tab" onclick="window.open('https://news.google.com/search?q=${encodeURIComponent(q)}', '_blank', 'noopener,noreferrer')"><i class="far fa-newspaper"></i> News</span>
                     <span class="safari-search-tab" onclick="window.open('https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}', '_blank', 'noopener,noreferrer')"><i class="far fa-image"></i> Images</span>
                 </div>
-                <div class="safari-search-stats">About 1,840,000 results (0.24s)</div>
+                <div class="safari-search-stats" id="safari-search-stats">${cachedWiki ? searchStatsText(cachedWiki.totalHits, portfolioMatches.length) : 'Searching…'}</div>
             </div>
 
             ${mathResult !== null ? `
@@ -614,26 +623,7 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
             <div class="safari-search-layout" id="safari-search-layout-root">
                 <div class="safari-results-feed" id="safari-organic-slot">
                     ${cachedWiki ? buildSearchResultsHtml(q, cachedWiki.searchArticles, cachedWiki.summaryData, portfolioMatches) : `
-                        ${portfolioMatches.length > 0 ? `
-                            <div class="safari-portfolio-match-section">
-                                <div class="safari-portfolio-match-header">
-                                    <i class="fas fa-sparkles"></i>
-                                    <span>From this portfolio</span>
-                                </div>
-                                <div class="safari-portfolio-cards">
-                                    ${portfolioMatches.map(item => `
-                                        <div class="safari-portfolio-card" onclick="handlePortfolioMatchClick('${item.action || ''}', '${item.url || ''}')">
-                                            <div class="safari-portfolio-card-top">
-                                                <span class="safari-portfolio-badge">${item.type}</span>
-                                                ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="safari-portfolio-link-icon" title="Open Link"><i class="fas fa-external-link-alt"></i></a>` : `<span class="safari-portfolio-link-icon" title="View in Finder"><i class="fas fa-folder-open"></i></span>`}
-                                            </div>
-                                            <div class="safari-portfolio-card-title">${item.title}</div>
-                                            <p class="safari-portfolio-card-text">${item.text}</p>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                        ${buildPortfolioMatchesHtml(portfolioMatches)}
                         <div class="safari-skel-block">
                             <div class="safari-skel-line" style="width:35%;height:10px;margin-bottom:12px;"></div>
                             <div class="safari-skel-line" style="width:80%;height:18px;margin-bottom:10px;"></div>
@@ -667,6 +657,7 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
         const searchRes = await fetch(wikiSearchUrl);
         const searchData = await searchRes.json();
         const searchArticles = (searchData.query && searchData.query.search) ? searchData.query.search : [];
+        const totalHits = (searchData.query && searchData.query.searchinfo && searchData.query.searchinfo.totalhits) || searchArticles.length;
 
         let summaryData = null;
         if (searchArticles.length > 0) {
@@ -682,20 +673,32 @@ async function renderDuckDuckGoSearch(tab, renderArea) {
             } catch(err) {}
         }
 
-        setCachedWikiResult(q, searchArticles, summaryData);
+        setCachedWikiResult(q, searchArticles, summaryData, totalHits);
         if (!isStillCurrent()) return;
 
         const organicSlot = document.getElementById('safari-organic-slot');
         const knowledgeSlot = document.getElementById('safari-knowledge-slot');
+        const stats = document.getElementById('safari-search-stats');
         if (organicSlot) organicSlot.innerHTML = buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches);
         if (knowledgeSlot) knowledgeSlot.innerHTML = buildKnowledgeCardHtml(summaryData);
+        if (stats) stats.textContent = searchStatsText(totalHits, portfolioMatches.length);
     } catch (e) {
         if (!isStillCurrent()) return;
         const organicSlot = document.getElementById('safari-organic-slot');
         const knowledgeSlot = document.getElementById('safari-knowledge-slot');
         if (organicSlot) organicSlot.innerHTML = buildSearchResultsHtml(q, [], null, portfolioMatches);
         if (knowledgeSlot) knowledgeSlot.innerHTML = '';
+        const stats = document.getElementById('safari-search-stats');
+        if (stats) stats.textContent = portfolioMatches.length ? `${portfolioMatches.length} from this portfolio · Wikipedia unreachable` : 'Wikipedia unreachable';
     }
+}
+
+/** Real numbers only — the old header claimed "About 1,840,000 results (0.24s)". */
+function searchStatsText(totalHits, portfolioCount) {
+    const parts = [];
+    if (portfolioCount) parts.push(`${portfolioCount} from this portfolio`);
+    parts.push(`${Number(totalHits || 0).toLocaleString()} Wikipedia articles`);
+    return parts.join(' · ');
 }
 
 function renderYouTubeEngine(tab, renderArea) {
@@ -706,105 +709,95 @@ function renderYouTubeEngine(tab, renderArea) {
     }
 }
 
+/* YouTube removed search-based embeds (`embed?listType=search`) years ago,
+   so the old "feed" was a dead player. What does work without an API key:
+   embedding a specific video. So the feed is a curated grid of talks
+   (IDs verified via YouTube oEmbed), pasted links play inline, and searches
+   hand off to YouTube itself rather than pretending. */
+const FEATURED_VIDEOS = [
+    { id: 'zjkBMFhNj_g', title: 'Intro to Large Language Models', channel: 'Andrej Karpathy' },
+    { id: 'kCc8FmEb1nY', title: "Let's build GPT: from scratch, in code, spelled out", channel: 'Andrej Karpathy' },
+    { id: 'wjZofJX0v4M', title: 'Transformers, the tech behind LLMs', channel: '3Blue1Brown' },
+    { id: 'eMlx5fFNoYc', title: 'Attention in transformers, step-by-step', channel: '3Blue1Brown' },
+    { id: 'aircAruvnKk', title: 'But what is a neural network?', channel: '3Blue1Brown' }
+];
+
 function renderYouTubeFeedPage(tab, renderArea) {
     stopSafariMedia();
     const query = (tab.ytQuery || '').trim();
-    const categories = ['Trending', 'Music', 'Gaming', 'Podcasts', 'Technology', 'Science', 'News', 'Sports', 'Education'];
-
-    let catChipsHtml = categories.map(cat => `
-        <span class="yt-cat-chip ${cat === activeYouTubeCategory ? 'active' : ''}" onclick="selectYouTubeCategory('${cat}')">${cat}</span>
-    `).join('');
-
-    const targetQuery = query || activeYouTubeCategory;
-    const embedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(targetQuery)}&autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
-    const fullResultsUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(targetQuery)}`;
+    const resultsUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
     renderArea.innerHTML = `
         <div class="yt-engine-container">
             <div class="yt-top-bar">
-                <div class="yt-logo" onclick="returnToYouTubeFeed()" style="cursor:pointer;" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
+                <div class="yt-logo" role="button" tabindex="0" onclick="returnToYouTubeFeed()" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
                 <div class="yt-search-form">
                     <i class="fas fa-search" style="color:#888;margin-right:8px;font-size:12px;"></i>
-                    <input type="text" id="yt-search-input" placeholder="Search any video, creator, or topic..." value="${query}" onkeydown="handleYouTubeSearchKey(event)">
+                    <input type="text" id="yt-search-input" placeholder="Search YouTube, or paste a video link" value="${escapeHtml(query)}" onkeydown="handleYouTubeSearchKey(event)" aria-label="Search YouTube">
                 </div>
                 <div class="yt-nav-actions">
                     <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Favorites</button>
                 </div>
             </div>
 
-            <div class="yt-categories-bar">
-                ${catChipsHtml}
-            </div>
+            ${query ? `
+                <div class="yt-search-handoff">
+                    <div>
+                        <div class="yt-handoff-title">Results for “${escapeHtml(query)}”</div>
+                        <div class="yt-handoff-sub">YouTube search opens on youtube.com. Paste any video link above to watch it here.</div>
+                    </div>
+                    <a href="${escapeHtml(resultsUrl)}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary"><i class="fab fa-youtube"></i> Open on YouTube ↗</a>
+                </div>` : ''}
 
-            <div class="yt-main-player-box">
-                <div class="yt-iframe-responsive">
-                    <iframe 
-                        id="yt-active-iframe"
-                        src="${embedUrl}" 
-                        title="${targetQuery} - YouTube Player" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="yt-player-details">
-                    <div class="yt-active-title">${query ? `Search: "${query}"` : `YouTube ${activeYouTubeCategory} Stream`}</div>
-                    <div class="yt-active-meta">
-                        <div class="yt-channel-badge"><i class="fab fa-youtube" style="color:#ff0000;"></i> Live Search Playlist</div>
-                        <div>Playing top search results • Use player controls for next/previous</div>
-                    </div>
-                    <div class="yt-action-pills" style="margin-top:12px;">
-                        <a href="${fullResultsUrl}" target="_blank" rel="noopener noreferrer" class="yt-action-pill" style="background:rgba(255,0,0,0.15);color:#fff;border-color:rgba(255,0,0,0.3);">
-                            <i class="fab fa-youtube" style="color:#ff0000;"></i> Open full results on YouTube ↗
-                        </a>
-                        <span class="yt-action-pill" onclick="copyCurrentSafariUrl()"><i class="fas fa-share"></i> Share Search</span>
-                    </div>
-                </div>
+            <div class="yt-section-title">Featured · AI &amp; machine learning</div>
+            <div class="yt-video-grid">
+                ${FEATURED_VIDEOS.map(v => `
+                    <button type="button" class="yt-video-card" onclick="selectYouTubeVideo('${escapeAttr(v.id)}', '${escapeAttr(v.title)}', '${escapeAttr(v.channel)}')">
+                        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/${escapeHtml(v.id)}/hqdefault.jpg" alt="" loading="lazy"><span class="yt-play-badge"><i class="fas fa-play"></i></span></div>
+                        <div class="yt-video-title">${escapeHtml(v.title)}</div>
+                        <div class="yt-video-channel">${escapeHtml(v.channel)}</div>
+                    </button>`).join('')}
             </div>
         </div>
     `;
 }
 
 function renderYouTubeWatchPage(tab, renderArea) {
-    const videoId = tab.ytVideoId;
-    const title = tab.title.replace(' - YouTube', '') || 'YouTube Video';
-    const channel = tab.ytChannel || 'YouTube';
+    const videoId = String(tab.ytVideoId || '').replace(/[^0-9A-Za-z_-]/g, '');
+    const featured = FEATURED_VIDEOS.find(v => v.id === videoId);
+    const title = (featured && featured.title) || tab.title.replace(' - YouTube', '') || 'YouTube Video';
+    const channel = (featured && featured.channel) || tab.ytChannel || 'YouTube';
     const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+    // youtube-nocookie: the privacy-enhanced embed, no tracking cookies until play.
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
 
     renderArea.innerHTML = `
         <div class="yt-engine-container">
             <div class="yt-top-bar">
-                <div class="yt-logo" onclick="returnToYouTubeFeed()" style="cursor:pointer;" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
+                <div class="yt-logo" role="button" tabindex="0" onclick="returnToYouTubeFeed()" title="YouTube Home"><i class="fab fa-youtube"></i> YouTube</div>
                 <div class="yt-search-form">
                     <i class="fas fa-search" style="color:#888;margin-right:8px;font-size:12px;"></i>
-                    <input type="text" id="yt-search-input" placeholder="Search any YouTube video or paste URL..." onkeydown="handleYouTubeSearchKey(event)">
+                    <input type="text" id="yt-search-input" placeholder="Search YouTube, or paste a video link" onkeydown="handleYouTubeSearchKey(event)" aria-label="Search YouTube">
                 </div>
                 <div class="yt-nav-actions">
-                    <button type="button" class="app-pill-btn" onclick="returnToYouTubeFeed()"><i class="fas fa-arrow-left"></i> Feed</button>
-                    <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Favorites</button>
+                    <button type="button" class="app-pill-btn" onclick="returnToYouTubeFeed()"><i class="fas fa-arrow-left"></i> Back</button>
                 </div>
             </div>
 
             <div class="yt-main-player-box">
                 <div class="yt-iframe-responsive">
-                    <iframe 
-                        id="yt-active-iframe"
-                        src="${embedUrl}" 
-                        title="${title}" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
+                    <iframe id="yt-active-iframe" src="${escapeHtml(embedUrl)}" title="${escapeHtml(title)}"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
                 <div class="yt-player-details">
-                    <div class="yt-active-title" id="yt-watch-title-text">${title}</div>
+                    <div class="yt-active-title" id="yt-watch-title-text">${escapeHtml(title)}</div>
                     <div class="yt-active-meta">
-                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> <span id="yt-watch-channel-text">${channel}</span></div>
-                        <div>Interactive Video Playback</div>
+                        <div class="yt-channel-badge"><i class="fas fa-user-circle fa-lg" style="color:#ff0000;"></i> <span id="yt-watch-channel-text">${escapeHtml(channel)}</span></div>
                     </div>
                     <div class="yt-action-pills">
-                        <span class="yt-action-pill" onclick="copyCurrentSafariUrl()"><i class="fas fa-share"></i> Share / Copy Link</span>
-                        <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="yt-action-pill"><i class="fas fa-external-link-alt"></i> Open in YouTube ↗</a>
-                        <span class="yt-action-pill" onclick="returnToYouTubeFeed()" style="margin-left:auto;"><i class="fas fa-home"></i> Home Feed</span>
+                        <span class="yt-action-pill" role="button" tabindex="0" onclick="copyCurrentSafariUrl()"><i class="fas fa-link"></i> Copy Link</span>
+                        <a href="${escapeHtml(watchUrl)}" target="_blank" rel="noopener noreferrer" class="yt-action-pill"><i class="fas fa-external-link-alt"></i> Watch on YouTube ↗</a>
                     </div>
                 </div>
             </div>
@@ -930,13 +923,17 @@ function renderSafariWebPage(tab) {
             </div>
         `;
     } else {
+        // Most sites forbid being framed (X-Frame-Options / CSP), so rather
+        // than show a broken iframe, hand off to a real tab.
+        let host = tab.url;
+        try { host = new URL(tab.url).host.replace(/^www\./, ''); } catch (e) { /* keep raw */ }
         renderArea.innerHTML = `
-            <div style="text-align:center;padding:40px 20px;">
-                <i class="fas fa-globe fa-4x" style="color:#007aff;margin-bottom:16px;"></i>
-                <h2>${escapeHtml(tab.title)}</h2>
-                <p style="color:#aaa;font-size:13px;max-width:480px;margin:0 auto 20px auto;">You are visiting <strong>${escapeHtml(tab.url)}</strong> in Safari for macOS.</p>
-                <div style="display:flex;justify-content:center;gap:12px;">
-                    <a href="${tab.url}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="font-size:13px;padding:8px 18px;"><i class="fas fa-external-link-alt"></i> Open in Live Browser Tab</a>
+            <div class="safari-handoff">
+                <img class="safari-handoff-favicon" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64" alt="" onerror="this.style.display='none'">
+                <h2>${escapeHtml(host)}</h2>
+                <p>This site can’t be shown inside the portfolio — most sites don’t allow being embedded in another page.</p>
+                <div class="safari-handoff-actions">
+                    <a href="${escapeHtml(safeUrl(tab.url))}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary"><i class="fas fa-external-link-alt"></i> Open in a New Tab</a>
                     <button type="button" class="app-pill-btn" onclick="openSafariStartPage()"><i class="fas fa-th"></i> Start Page</button>
                 </div>
             </div>
