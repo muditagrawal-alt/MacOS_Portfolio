@@ -658,156 +658,34 @@ C 890,381 908,392 928,394"/>
                     <button type="button" class="control minimize" aria-label="Minimize Appstore" title="Minimize" onclick="minimizeWindow('appstore-window')"></button>
                     <button type="button" class="control maximize" aria-label="Zoom Appstore" title="Zoom" onclick="maximizeWindow('appstore-window')"></button>
                 </div>
-                <div class="window-title">App Store — Projects & Creations</div>
+                <div class="window-title">App Store</div>
                 <div class="appstore-search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search Projects" id="appstore-search-input" onkeyup="filterAppStoreProjects(this.value)">
+                    <input type="text" placeholder="Search" id="appstore-search-input" aria-label="Search projects" oninput="filterAppStoreProjects(this.value)">
                 </div>
             </div>
             <div class="window-content appstore-layout">
                 <!-- App Store Sidebar -->
                 <div class="appstore-sidebar">
-                    <div class="sidebar-item active" onclick="filterAppStoreCategory('all', this)"><i class="fas fa-compass"></i> Discover</div>
-                    <div class="sidebar-item" onclick="filterAppStoreCategory('ai', this)"><i class="fas fa-brain"></i> AI & ML</div>
-                    <div class="sidebar-item" onclick="filterAppStoreCategory('vision', this)"><i class="fas fa-eye"></i> Vision & Video</div>
-                    <div class="sidebar-item" onclick="filterAppStoreCategory('systems', this)"><i class="fas fa-microchip"></i> Systems</div>
+                    <div class="sidebar-item active" data-cat="all" onclick="filterAppStoreCategory('all', this)"><i class="fas fa-compass"></i> Discover</div>
+                    <div class="sidebar-item" data-cat="ai" onclick="filterAppStoreCategory('ai', this)"><i class="fas fa-brain"></i> AI &amp; Language</div>
+                    <div class="sidebar-item" data-cat="vision" onclick="filterAppStoreCategory('vision', this)"><i class="fas fa-eye"></i> Vision &amp; Video</div>
+                    <div class="sidebar-item" data-cat="systems" onclick="filterAppStoreCategory('systems', this)"><i class="fas fa-microchip"></i> Systems</div>
+                    <div class="sidebar-item" data-cat="defense" onclick="filterAppStoreCategory('defense', this)"><i class="fas fa-shield-halved"></i> Defense</div>
                 </div>
-                <!-- App Store Main Feed -->
+                <!-- App Store Main Feed — rendered by js/apps/appstore.js -->
                 <div class="appstore-feed">
-                    <!-- Featured Hero Banner -->
-                    <div class="appstore-hero-banner" onclick="window.open('https://github.com/muditagrawal-alt/OmniDoc', '_blank', 'noopener,noreferrer')">
-                        <div class="hero-tag">FEATURED APP OF THE DAY</div>
-                        <h2>OmniDoc Intelligence</h2>
-                        <p>Multimodal RAG Document Intelligence System with Mistral-7B & BLIP.</p>
-                        <div class="hero-action-row">
-                            <span class="appstore-get-btn hero-btn"><i class="fas fa-download"></i> GET / REPO</span>
-                            <span class="app-rating">★★★★★ 5.0 • Artificial Intelligence</span>
+                    <div id="appstore-feed-main">
+                        <div class="appstore-hero-banner" id="appstore-hero" role="button" tabindex="0"></div>
+                        <div id="appstore-empty-state" style="display:none;text-align:center;padding:48px 20px;color:#888;">
+                            <i class="fas fa-magnifying-glass fa-2x" style="color:#555;margin-bottom:10px;"></i>
+                            <div style="font-size:15px;color:#ddd;font-weight:600;">No Apps Found</div>
+                            <p style="font-size:12.5px;margin-top:6px;">Try a different search or category.</p>
                         </div>
+                        <div class="appstore-section-title" id="appstore-section-title">Everything Mudit has shipped</div>
+                        <div class="appstore-grid" id="appstore-grid-container"></div>
                     </div>
-
-                    <div id="appstore-empty-state" style="display:none;text-align:center;padding:48px 20px;color:#888;">
-                    <i class="fas fa-magnifying-glass fa-2x" style="color:#555;margin-bottom:10px;"></i>
-                    <div style="font-size:15px;color:#ddd;font-weight:600;">No Apps Found</div>
-                    <p style="font-size:12.5px;margin-top:6px;">Try a different search or category.</p>
-                </div>
-
-                <!-- Projects Grid -->
-                    <div class="appstore-section-title">Essential Creations by Mudit</div>
-                    <div class="appstore-grid" id="appstore-grid-container">
-                        <!-- App Card 1 -->
-                        <div class="app-card" data-cat="ai">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="fas fa-brain"></i></div>
-                            <div class="app-card-details">
-                                <h3>OmniDoc</h3>
-                                <div class="app-category">AI • Document Intelligence</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">5.0</span></div>
-                                <p class="app-desc">RAG based LLM system using Mistral 7B & BLIP.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/OmniDoc" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 2 -->
-                        <div class="app-card" data-cat="vision">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);"><i class="fas fa-video"></i></div>
-                            <div class="app-card-details">
-                                <h3>Sliver.Ai</h3>
-                                <div class="app-category">Video • Smart Clipping</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Automated video highlight pipeline with YOLOv8 & YOLO11.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 3 -->
-                        <div class="app-card" data-cat="vision">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="fas fa-crosshairs"></i></div>
-                            <div class="app-card-details">
-                                <h3>Project S.W.O.R.D</h3>
-                                <div class="app-category">Defense • Surveillance</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.8</span></div>
-                                <p class="app-desc">Weapon observation with real-time deep learning.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Project-S.W.O.R.D" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 4 -->
-                        <div class="app-card" data-cat="ai">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);"><i class="fas fa-shield-alt"></i></div>
-                            <div class="app-card-details">
-                                <h3>Deepfake Detector</h3>
-                                <div class="app-category">Security • Media Forensics</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Detecting deepfake signals and fake news patterns.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 5 -->
-                        <div class="app-card" data-cat="systems">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"><i class="fas fa-terminal"></i></div>
-                            <div class="app-card-details">
-                                <h3>Helix-Compiler</h3>
-                                <div class="app-category">Developer Tools • Compilers</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.7</span></div>
-                                <p class="app-desc">C-based parsing, translation & systems compiler.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Helix-Compiler" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 6 -->
-                        <div class="app-card" data-cat="ai">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);"><i class="fas fa-globe"></i></div>
-                            <div class="app-card-details">
-                                <h3>Multiva.Ai</h3>
-                                <div class="app-category">Audio • Speech Synthesis</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Voice cloning with Whisper, Coqui XTTS & FB-NLLB.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Multiva.Ai" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 7 (Live Web App) -->
-                        <div class="app-card" data-cat="ai">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #4f46e5, #06b6d4);"><i class="fas fa-id-card"></i></div>
-                            <div class="app-card-details">
-                                <div style="display:flex;align-items:center;gap:6px;">
-                                    <h3>VLM Lead Extraction</h3>
-                                    <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#10b981;color:#fff;font-weight:700;">LIVE</span>
-                                </div>
-                                <div class="app-category">AI • Vision-Language Model</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">5.0</span></div>
-                                <p class="app-desc">Bulk business card OCR & structured CRM extractor on Vercel.</p>
-                            </div>
-                            <a href="https://muditagrawal-lead-extraction.vercel.app" target="_blank" rel="noopener noreferrer" class="appstore-get-btn" style="background:#10b981;">OPEN</a>
-                        </div>
-                        <!-- App Card 8 -->
-                        <div class="app-card" data-cat="vision">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #0ea5e9, #6366f1);"><i class="fas fa-cube"></i></div>
-                            <div class="app-card-details">
-                                <h3>Monocular RGB SLAM</h3>
-                                <div class="app-category">Vision • 3D Point Cloud</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Sparse 3D point cloud reconstruction from monocular camera feed.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 9 -->
-                        <div class="app-card" data-cat="defense">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #059669, #10b981);"><i class="fas fa-shield-virus"></i></div>
-                            <div class="app-card-details">
-                                <h3>Skyguard AI</h3>
-                                <div class="app-category">Defense • Drone Surveillance</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Edge airspace drone detection & threat tracking for SIH 2026.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                        <!-- App Card 10 -->
-                        <div class="app-card" data-cat="ai">
-                            <div class="app-card-icon" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee);"><i class="fas fa-palette"></i></div>
-                            <div class="app-card-details">
-                                <h3>Artifex</h3>
-                                <div class="app-category">Graphics • Creative AI</div>
-                                <div class="app-stars">★★★★★ <span class="rating-num">4.9</span></div>
-                                <p class="app-desc">Interactive generative design and creative tech.</p>
-                            </div>
-                            <a href="https://github.com/muditagrawal-alt/Artifex.ai" target="_blank" rel="noopener noreferrer" class="appstore-get-btn">GET</a>
-                        </div>
-                    </div>
+                    <div class="appstore-product" id="appstore-product" style="display:none;"></div>
                 </div>
             </div>
         </div>
