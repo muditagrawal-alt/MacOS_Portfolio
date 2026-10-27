@@ -1577,6 +1577,19 @@ const section = (name) => !only || only.test(name);
         expect(Object.values(r).every(Boolean), JSON.stringify(r));
       });
 
+      await test('the previous owner’s files can be tidied away, and only those', async () => {
+        const listed = JSON.parse(fs.readFileSync(path.join(tmp, '.portfolio/setup.json'), 'utf8')).leftovers.map(l => l.path);
+        const photo = setup.readProfile(ROOT).photo || '';
+        const offered = await page.textContent('.tidy');
+        await page.click('[data-act="tidy"]');
+        await page.waitForSelector('.tidy-done', { timeout: 4000 });
+        const remaining = listed.filter(f => fs.existsSync(path.join(tmp, f)));
+        const kept = ['assets/Wallpapers/26-Tahoe-Beach-Day.jpg', 'assets/icons/finder.png'].every(f => fs.existsSync(path.join(tmp, f)));
+        const ownFiles = fs.readdirSync(path.join(tmp, 'assets/me')).length;
+        const photoGone = !/^assets\/(?!icons\/)/.test(photo) || listed.includes(photo);
+        expect(/Tidy up/.test(offered) && listed.length > 0 && remaining.length === 0 && photoGone && kept && ownFiles >= 4, JSON.stringify({ offered: offered.slice(0, 80), listed: listed.length, remaining, photoGone, kept, ownFiles }));
+      });
+
       await test('the Mac version is now about the new owner — no trace of the previous one', async () => {
         await page.goto(origin + '/');
         await page.waitForTimeout(1200);

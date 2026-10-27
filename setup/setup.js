@@ -31,6 +31,8 @@
     let step = 0;
     let server = false;        // is the local setup server answering?
     let built = false;
+    let leftovers = [];        // the previous info bank's files nothing uses now ({ path, kind })
+    let tidied = 0;
 
     function blank() {
         const t = clone(PROFILE_TEMPLATE);
@@ -501,6 +503,7 @@
                 <a class="btn primary" href="../?view=mac" target="_blank" rel="noopener"><i class="fas fa-laptop"></i> Open the Mac version</a>
                 <a class="btn" href="../ios.html?view=ios" target="_blank" rel="noopener"><i class="fas fa-mobile-screen"></i> Open the iPhone version</a>
             </div>` : ''}
+            ${renderTidy()}
             <ol class="publish">
                 ${server ? '' : `<li><strong>Replace the info bank</strong><span>Move the downloaded <code>profile.js</code> to <code>js/data/profile.js</code> — your photos are embedded in it.</span></li>
                 <li><strong>Update the page titles and link previews</strong><code>node setup/apply.js refresh</code></li>`}
@@ -510,6 +513,29 @@
             </ol>
             <button type="button" class="link-btn" data-act="goto" data-step="1">Keep editing</button>
         </div>`;
+    }
+
+    function renderTidy() {
+        if (tidied) return `<p class="tidy-done"><i class="fas fa-circle-check"></i> Removed ${tidied} unused ${plural(tidied, 'file')}.</p>`;
+        if (!leftovers.length) return '';
+        const kinds = [...new Set(leftovers.map(l => l.kind))].join(', ');
+        return `<div class="tidy">
+            <div><strong>Tidy up</strong><span>${leftovers.length} ${plural(leftovers.length, 'file')} from the previous info bank (${esc(kinds)}) ${plural(leftovers.length, 'isn’t', 'aren’t')} used any more — GitHub Pages would still publish ${plural(leftovers.length, 'it', 'them')}.</span></div>
+            <button type="button" class="btn" data-act="tidy"><i class="fas fa-broom"></i> Remove ${plural(leftovers.length, 'it', 'them')}</button>
+        </div>`;
+    }
+
+    async function tidy() {
+        const btn = document.querySelector('[data-act="tidy"]');
+        btn.disabled = true;
+        try {
+            const out = await (await fetch('/__setup/tidy', { method: 'POST' })).json();
+            tidied = (out.removed || []).length;
+            leftovers = [];
+            render();
+        } catch (e) {
+            btn.disabled = false;
+        }
     }
 
     /* ── Rendering ──────────────────────────────────────────────────────── */
@@ -638,6 +664,7 @@
         if (act === 'goto') { go(Number(btn.dataset.step)); return; }
         if (act === 'start-fresh') { draft = blank(); uploads = {}; config = { web3formsKey: '', irisEndpoint: '' }; built = false; go(1); updatePreview(); return; }
         if (act === 'start-current') { draft = ensureShape(clone(CURRENT)); uploads = {}; config = { ...config, web3formsKey: templateKey }; built = false; go(1); updatePreview(); return; }
+        if (act === 'tidy') { tidy(); return; }
         if (act === 'clear-upload') {
             const old = getPath(draft, btn.dataset.path);
             delete uploads[old];
@@ -1050,6 +1077,8 @@
             });
             const out = await res.json();
             if (!res.ok) throw new Error(out.error || 'The setup server refused the save.');
+            leftovers = out.leftovers || [];
+            tidied = 0;
             built = true;
             persist();
             render();

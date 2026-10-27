@@ -11,7 +11,8 @@
    Options: --port 8000  --no-open  --setup
 
    The questionnaire saves through POST /__setup/save, which writes the info
-   bank and uploaded files (setup/apply.js). Only this machine can reach it:
+   bank and uploaded files (setup/apply.js); POST /__setup/tidy removes the
+   files the previous info bank used. Only this machine can reach them:
    the server listens on 127.0.0.1 and refuses other Host headers (DNS
    rebinding) and cross-origin posts. No dependencies.
    ========================================================================== */
@@ -75,12 +76,17 @@ async function handleSetupApi(req, res, route) {
     if (route === 'save' && req.method === 'POST') {
         try {
             const body = JSON.parse(await readBody(req));
-            const { written } = setup.saveSubmission(body.profile, { files: body.files || [], config: body.config }, ROOT);
+            const { written, leftovers } = setup.saveSubmission(body.profile, { files: body.files || [], config: body.config }, ROOT);
             console.log(`  ✔ Saved your portfolio (${written.length} files): ${written.join(', ')}`);
-            return send(res, 200, { ok: true, written });
+            return send(res, 200, { ok: true, written, leftovers });
         } catch (e) {
             return send(res, 400, { error: e.message });
         }
+    }
+    if (route === 'tidy' && req.method === 'POST') {
+        const removed = setup.removeLeftovers(ROOT);
+        console.log(`  ✔ Removed ${removed.length} unused files`);
+        return send(res, 200, { ok: true, removed });
     }
     return send(res, 404, { error: 'Unknown setup endpoint' });
 }
