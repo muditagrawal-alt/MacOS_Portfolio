@@ -2,65 +2,85 @@
    Notes.app (iCloud Notes) Controller & Data Store
    ========================================================================== */
 
-const notesData = {
-    1: {
-        title: "Engineering Philosophy",
-        date: "August 16, 2026 at 2:15 PM",
-        body: `
-            <p>I value <strong>learning by building</strong> over purely memorizing theoretical concepts. The most instructive moments come when models break under edge cases, latencies spike on inference, or data pipelines hit unexpected bottlenecks.</p>
-            <div class="note-checklist">
-                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Context Awareness:</strong> Tech is only as good as the problem it solves.</span></div>
-                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Robustness:</strong> Build systems that hold up outside clean sandbox environments.</span></div>
-                <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Speed of Iteration:</strong> Prototype quickly, evaluate rigorously, refactor thoughtfully.</span></div>
-            </div>
-            <p style="margin-top: 15px; color:#c0bbb4;"><em>"Always stay curious, dig into the internals, and never treat AI models as black boxes."</em></p>
-        `
-    },
-    2: {
-        title: "What I'm Learning Currently",
-        date: "August 15, 2026 at 6:40 PM",
-        body: `
-            <p>Areas of deep technical dive right now:</p>
-            <div class="note-checklist">
-                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Multimodal Agent Architectures:</strong> Function calling, tool use, and structured outputs with open-weights LLMs.</span></div>
-                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Model Quantization & Inference:</strong> GGUF, AWQ, vLLM, and TensorRT optimizations for fast localized serving.</span></div>
-                <div class="checklist-item"><i class="fas fa-circle" style="font-size:8px;color:#f6d365;"></i> <span><strong>Advanced Vision Transformers:</strong> Video temporal processing and real-time zero-shot detection.</span></div>
-            </div>
-        `
-    },
-    3: {
-        title: "Core Tech Stack Cheat Sheet",
-        date: "August 10, 2026 at 1:10 PM",
-        body: `
-            <p><strong>Languages:</strong> Python, C, Java, HTML5, CSS3, JavaScript, SQL.</p>
-            <p><strong>AI/ML & Deep Learning:</strong> PyTorch, TensorFlow, Keras, OpenCV, Scikit-Learn, Torchvision, Torchaudio.</p>
-            <p><strong>Pretrained Models & Tools:</strong> Mistral-7B, YOLOv8/11, Whisper, Coqui XTTS, BLIP, Nomic, FFMPEG, Git, Hugging Face, Linux/Bash.</p>
-        `
-    },
-    4: {
-        title: "Quick Facts & Interests",
-        date: "August 2, 2026 at 9:30 AM",
-        get body() {
-            const p = window.PROFILE_DATA || {};
-            const edu = p.education || {};
-            return `
-                <p>• Navy background: Grew up moving across naval bases in Mumbai and New Delhi, developing high adaptability and respect for mission discipline.</p>
-                <p>• ${edu.degree || 'B.Tech Computer Science (AI/ML)'} with ${edu.cgpa || ''} CGPA at ${edu.university || 'IILM University'}.</p>
-                <p>• Passionate about robotics, applied computer vision, competitive hackathons, and systems-level programming.</p>
-            `;
-        }
-    }
-};
+// The curated notes (notesData) live in js/data/notes.js, shared with iPhone.
 
 let activeNoteId = 1;
+let activeNotesCategory = 'all';
+let notesQuery = '';
+const USER_NOTES_KEY = 'notes-user-v1';
+
+/* Notes you write are stored as plain text (never HTML) and re-rendered
+   escaped, so a note can't inject markup into the page on reload. */
+function noteTextToHtml(text) {
+    return String(text || '').split('\n').map(line => `<p>${escapeHtml(line) || '<br>'}</p>`).join('');
+}
+
+function loadUserNotes() {
+    try {
+        const list = JSON.parse(localStorage.getItem(USER_NOTES_KEY) || '[]');
+        list.forEach(n => {
+            notesData[n.id] = { title: n.title, date: n.date, listDate: n.listDate, category: n.category || 'notes', text: n.text || '', body: noteTextToHtml(n.text), isUserNote: true, updated: n.updated || 0 };
+        });
+    } catch (e) { /* corrupt or unavailable storage — start clean */ }
+}
+
+function persistUserNotes() {
+    const list = Object.entries(notesData)
+        .filter(([, n]) => n.isUserNote)
+        .map(([id, n]) => ({ id, title: n.title, date: n.date, listDate: n.listDate, category: n.category, text: n.text, updated: n.updated }));
+    try { localStorage.setItem(USER_NOTES_KEY, JSON.stringify(list)); } catch (e) { /* quota — keep in memory */ }
+}
+
+function notePreviewText(note) {
+    if (note.isUserNote) return (note.text || '').replace(/\s+/g, ' ').trim();
+    const tmp = document.createElement('div');
+    tmp.innerHTML = note.body;
+    return tmp.textContent.replace(/\s+/g, ' ').trim();
+}
+
+function visibleNoteIds() {
+    const q = notesQuery.toLowerCase();
+    return Object.keys(notesData)
+        .filter(id => {
+            const n = notesData[id];
+            if (activeNotesCategory !== 'all' && n.category !== activeNotesCategory) return false;
+            if (!q) return true;
+            return (n.title + ' ' + notePreviewText(n)).toLowerCase().includes(q);
+        })
+        // Your own notes first (newest first), then the curated ones in order.
+        .sort((a, b) => (notesData[b].updated || 0) - (notesData[a].updated || 0));
+}
+
+function renderNotesList() {
+    const list = document.getElementById('notes-list');
+    if (!list) return;
+    const ids = visibleNoteIds();
+    list.innerHTML = ids.length ? ids.map(id => {
+        const n = notesData[id];
+        const preview = notePreviewText(n).slice(0, 60) || 'No additional text';
+        return `<div class="note-item ${String(id) === String(activeNoteId) ? 'active' : ''}" data-note-id="${escapeHtml(id)}" data-category="${escapeHtml(n.category || 'notes')}" tabindex="0" role="button"
+                     onclick="selectNote('${escapeAttr(id)}', this)" onkeydown="if(event.key==='Enter'){selectNote('${escapeAttr(id)}', this)}">
+                    <div class="note-item-title">${escapeHtml(n.title || 'New Note')}</div>
+                    <div class="note-item-meta"><span class="note-time">${escapeHtml(n.listDate || '')}</span> ${escapeHtml(preview)}</div>
+                </div>`;
+    }).join('') : `<div class="notes-empty">${notesQuery ? 'No notes match your search.' : 'No notes in this folder.'}</div>`;
+
+    // Folder counts
+    document.querySelectorAll('.notes-count').forEach(el => {
+        const cat = el.dataset.count;
+        el.textContent = Object.values(notesData).filter(n => cat === 'all' || n.category === cat).length;
+    });
+}
 
 function selectNote(id, element) {
-    if (activeNoteId && activeNoteId !== id) commitNoteEdit(activeNoteId);
+    if (activeNoteId && String(activeNoteId) !== String(id)) commitNoteEdit(activeNoteId);
     activeNoteId = id;
+    if (element) {
+        const layout = document.querySelector('.notes-layout');
+        if (layout) layout.classList.add('show-detail');
+    }
 
-    document.querySelectorAll('.note-item').forEach(item => item.classList.remove('active'));
-    const row = element || document.querySelector(`.note-item[data-note-id="${id}"]`);
-    if (row) row.classList.add('active');
+    document.querySelectorAll('.note-item').forEach(item => item.classList.toggle('active', item.dataset.noteId === String(id)));
 
     const note = notesData[id];
     if (!note) return;
@@ -77,76 +97,107 @@ function selectNote(id, element) {
     const editable = Boolean(note.isUserNote);
     if (titleDisplay) titleDisplay.contentEditable = String(editable);
     if (bodyContent) bodyContent.contentEditable = String(editable);
+    if (bodyContent) bodyContent.dataset.placeholder = editable ? 'Start typing…' : '';
+    const del = document.getElementById('notes-delete-btn');
+    if (del) del.style.display = editable ? '' : 'none';
 }
 
 function switchNotesCategory(cat, element) {
-    document.querySelectorAll('.notes-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
-    if (element) element.classList.add('active');
-
-    // The folder rows used to move a highlight and nothing else.
-    document.querySelectorAll('.note-item').forEach(row => {
-        const rowCat = row.dataset.category || 'notes';
-        row.style.display = (cat === 'all' || rowCat === cat) ? '' : 'none';
-    });
+    activeNotesCategory = cat;
+    const row = element || document.querySelector(`.notes-sidebar .sidebar-item[data-category="${cat}"]`);
+    document.querySelectorAll('.notes-sidebar .sidebar-item').forEach(item => item.classList.toggle('active', item === row));
+    renderNotesList();
+    const first = visibleNoteIds()[0];
+    if (first !== undefined && !visibleNoteIds().includes(String(activeNoteId))) selectNote(first);
 }
 
-/**
- * Creates a note inline in the editor pane. The previous version fired two
- * blocking prompt() dialogs, which nothing on macOS does — and its \n → <br>
- * conversion was dead code, since prompt() can't return newlines.
- */
+function filterNotes(query) {
+    notesQuery = String(query || '').trim();
+    renderNotesList();
+}
+
+/** Creates a note inline in the editor pane — no blocking prompt() dialogs. */
 function addNewNotePrompt() {
+    if (activeNoteId) commitNoteEdit(activeNoteId);
     const newId = 'note-' + Date.now();
     const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                  + ' at ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+                  + ' at ' + now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 
-    notesData[newId] = { title: 'New Note', date: dateStr, body: '<p></p>', isUserNote: true };
-
-    const list = document.querySelector('.notes-list');
-    if (list) {
-        const item = document.createElement('div');
-        item.className = 'note-item';
-        item.dataset.noteId = newId;
-        item.onclick = function () { selectNote(newId, this); };
-        item.innerHTML = `<div class="note-item-title">New Note</div>
-            <div class="note-item-meta"><span class="note-time">Just now</span> No additional text</div>`;
-        list.insertBefore(item, list.firstChild);
-        selectNote(newId, item);
-    }
+    notesData[newId] = {
+        title: 'New Note', date: dateStr, listDate: now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+        category: activeNotesCategory === 'all' ? 'notes' : activeNotesCategory,
+        text: '', body: '', isUserNote: true, updated: Date.now()
+    };
+    notesQuery = '';
+    const search = document.getElementById('notes-search-input');
+    if (search) search.value = '';
+    persistUserNotes();
+    renderNotesList();
+    selectNote(newId, true);
 
     // Focus the title the way Notes.app does, ready to type over it.
     const titleEl = document.getElementById('note-title-display');
     if (titleEl) {
-        titleEl.contentEditable = 'true';
         titleEl.focus();
         document.getSelection().selectAllChildren(titleEl);
     }
-    const bodyEl = document.getElementById('note-body-content');
-    if (bodyEl) bodyEl.contentEditable = 'true';
 }
 
-/** Persists inline edits back into notesData and the sidebar row. */
+/** Persists inline edits back into notesData, the list, and localStorage. */
 function commitNoteEdit(noteId) {
     const note = notesData[noteId];
     if (!note || !note.isUserNote) return;
 
     const titleEl = document.getElementById('note-title-display');
     const bodyEl = document.getElementById('note-body-content');
-    if (titleEl) note.title = titleEl.textContent.trim() || 'New Note';
-    if (bodyEl) note.body = bodyEl.innerHTML;
+    const title = titleEl ? titleEl.textContent.trim() || 'New Note' : note.title;
+    const text = bodyEl ? String(bodyEl.innerText ?? bodyEl.textContent).replace(/\n{3,}/g, '\n\n').trim() : note.text;
+    if (title === note.title && text === note.text) return;
 
-    const row = document.querySelector(`.note-item[data-note-id="${noteId}"]`);
-    if (row) {
-        const preview = (bodyEl ? bodyEl.textContent : '').trim().slice(0, 34);
-        row.innerHTML = `<div class="note-item-title">${escapeHtml(note.title)}</div>
-            <div class="note-item-meta"><span class="note-time">Just now</span> ${escapeHtml(preview) || 'No additional text'}</div>`;
+    note.title = title;
+    note.text = text;
+    note.body = noteTextToHtml(text);
+    note.updated = Date.now();
+    persistUserNotes();
+    renderNotesList();
+}
+
+function deleteActiveNote() {
+    const note = notesData[activeNoteId];
+    if (!note || !note.isUserNote) {
+        if (typeof showToast === 'function') showToast('This note is read-only', { body: 'Only notes you create can be deleted.', icon: 'fas fa-lock' });
+        return;
+    }
+    const removed = { id: activeNoteId, note };
+    delete notesData[activeNoteId];
+    persistUserNotes();
+    renderNotesList();
+    const next = visibleNoteIds()[0] || Object.keys(notesData)[0];
+    if (next !== undefined) selectNote(next);
+    if (typeof showToast === 'function') {
+        showToast('Note deleted', {
+            body: removed.note.title, icon: 'fas fa-trash-can',
+            action: { label: 'Undo', run: () => { notesData[removed.id] = removed.note; persistUserNotes(); renderNotesList(); selectNote(removed.id); } }
+        });
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadUserNotes();
+    renderNotesList();
+    selectNote(activeNoteId);
     ['note-title-display', 'note-body-content'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('blur', () => commitNoteEdit(activeNoteId));
+        if (!el) return;
+        el.addEventListener('blur', () => commitNoteEdit(activeNoteId));
+        // Save as you type (debounced), like iCloud Notes.
+        let t = null;
+        el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => commitNoteEdit(activeNoteId), 400); });
+    });
+    // Return in the title moves to the body instead of inserting a line break.
+    const titleEl = document.getElementById('note-title-display');
+    if (titleEl) titleEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); const b = document.getElementById('note-body-content'); if (b) b.focus(); }
     });
 });

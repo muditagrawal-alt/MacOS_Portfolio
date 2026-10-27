@@ -463,7 +463,7 @@ C 890,381 908,392 928,394"/>
         </div>
 
         <!-- Notes.app Window -->
-        <div class="window hidden" id="notes-window" style="top: 14%; left: 18%; width: 740px; height: 460px;">
+        <div class="window hidden" id="notes-window" style="top: 14%; left: 18%; width: 820px; height: 480px;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'notes-window')">
                 <div class="window-controls">
                     <button type="button" class="control close" aria-label="Close Notes" title="Close" onclick="closeWindow('notes-window')"></button>
@@ -472,50 +472,29 @@ C 890,381 908,392 928,394"/>
                 </div>
                 <div class="window-title">Notes — iCloud</div>
                 <div class="notes-toolbar-actions" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
-                    <button type="button" class="app-pill-btn" onclick="addNewNotePrompt()"><i class="fas fa-plus"></i> New</button>
+                    <button type="button" class="app-pill-btn" id="notes-delete-btn" onclick="deleteActiveNote()" title="Delete note" aria-label="Delete note" style="display:none;"><i class="fas fa-trash-can"></i></button>
+                    <button type="button" class="app-pill-btn" onclick="addNewNotePrompt()"><i class="fas fa-pen-to-square"></i> New Note</button>
                 </div>
             </div>
             <div class="window-content notes-layout">
                 <!-- Notes Folders Sidebar -->
                 <div class="notes-sidebar">
-                    <div class="sidebar-title">iCloud Notes</div>
-                    <div class="sidebar-item active" onclick="switchNotesCategory('all', this)"><i class="fas fa-folder icon-color-yellow"></i> All iCloud (4)</div>
-                    <div class="sidebar-item" onclick="switchNotesCategory('philosophy', this)"><i class="fas fa-lightbulb icon-color-yellow"></i> Philosophy</div>
-                    <div class="sidebar-item" onclick="switchNotesCategory('learning', this)"><i class="fas fa-brain icon-color-yellow"></i> Current Learning</div>
-                    <div class="sidebar-item" onclick="switchNotesCategory('stack', this)"><i class="fas fa-layer-group icon-color-yellow"></i> Tech Notes</div>
+                    <div class="sidebar-title">iCloud</div>
+                    <div class="sidebar-item active" data-category="all" onclick="switchNotesCategory('all', this)"><i class="fas fa-folder icon-color-yellow"></i> All iCloud <span class="notes-count" data-count="all"></span></div>
+                    <div class="sidebar-item" data-category="philosophy" onclick="switchNotesCategory('philosophy', this)"><i class="fas fa-lightbulb icon-color-yellow"></i> Philosophy <span class="notes-count" data-count="philosophy"></span></div>
+                    <div class="sidebar-item" data-category="learning" onclick="switchNotesCategory('learning', this)"><i class="fas fa-brain icon-color-yellow"></i> Current Learning <span class="notes-count" data-count="learning"></span></div>
+                    <div class="sidebar-item" data-category="stack" onclick="switchNotesCategory('stack', this)"><i class="fas fa-layer-group icon-color-yellow"></i> Tech Notes <span class="notes-count" data-count="stack"></span></div>
                 </div>
-                <!-- Notes Snippet List -->
-                <div class="notes-list">
-                    <div class="note-item active" onclick="selectNote(1, this)">
-                        <div class="note-item-title">Engineering Philosophy</div>
-                        <div class="note-item-meta"><span class="note-time">2:15 PM</span> Practical engineering over raw hype...</div>
-                    </div>
-                    <div class="note-item" onclick="selectNote(2, this)">
-                        <div class="note-item-title">What I'm Learning Currently</div>
-                        <div class="note-item-meta"><span class="note-time">Aug 15</span> Multimodal agents, quantization, LoRA...</div>
-                    </div>
-                    <div class="note-item" onclick="selectNote(3, this)">
-                        <div class="note-item-title">Core Tech Stack Cheat Sheet</div>
-                        <div class="note-item-meta"><span class="note-time">Aug 10</span> Python, C, PyTorch, YOLOv8/11, Whisper...</div>
-                    </div>
-                    <div class="note-item" onclick="selectNote(4, this)">
-                        <div class="note-item-title">Quick Facts & Interests</div>
-                        <div class="note-item-meta"><span class="note-time">Aug 02</span> Navy background, problem solver, robotics...</div>
-                    </div>
+                <!-- Notes Snippet List — rendered from notesData by js/apps/notes.js -->
+                <div class="notes-list-column">
+                    <div class="notes-search"><i class="fas fa-magnifying-glass"></i><input type="text" id="notes-search-input" placeholder="Search" aria-label="Search notes" oninput="filterNotes(this.value)"></div>
+                    <div class="notes-list" id="notes-list"></div>
                 </div>
                 <!-- Note Canvas / Editor -->
                 <div class="notes-canvas" id="notes-canvas-pane">
-                    <div class="note-date-stamp" id="note-date-stamp">August 16, 2026 at 2:15 PM</div>
-                    <h1 class="note-title" id="note-title-display">Engineering Philosophy</h1>
-                    <div class="note-body-content" id="note-body-content">
-                        <p>I value <strong>learning by building</strong> over purely memorizing theoretical concepts. The most instructive moments come when models break under edge cases, latencies spike on inference, or data pipelines hit unexpected bottlenecks.</p>
-                        <div class="note-checklist">
-                            <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Context Awareness:</strong> Tech is only as good as the problem it solves.</span></div>
-                            <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Robustness:</strong> Build systems that hold up outside clean sandbox environments.</span></div>
-                            <div class="checklist-item"><i class="fas fa-check-circle" style="color:#f6d365;"></i> <span><strong>Speed of Iteration:</strong> Prototype quickly, evaluate rigorously, refactor thoughtfully.</span></div>
-                        </div>
-                        <p style="margin-top: 15px; color:#c0bbb4;"><em>"Always stay curious, dig into the internals, and never treat AI models as black boxes."</em></p>
-                    </div>
+                    <div class="note-date-stamp" id="note-date-stamp"></div>
+                    <h1 class="note-title" id="note-title-display"></h1>
+                    <div class="note-body-content" id="note-body-content"></div>
                 </div>
             </div>
         </div>
@@ -1530,6 +1509,7 @@ C 890,381 908,392 928,394"/>
     <script src="js/data/corpus.js"></script>
     <script src="js/data/desktop-files.js"></script>
     <script src="js/data/filesystem.js"></script>
+    <script src="js/data/notes.js"></script>
 
     <!-- Runtime config: endpoint for the serverless AI proxy. Contains no secrets. -->
     <script src="js/config/config.js"></script>
