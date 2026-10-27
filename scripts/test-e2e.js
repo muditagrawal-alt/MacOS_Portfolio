@@ -1371,6 +1371,50 @@ const section = (name) => !only || only.test(name);
       await page.waitForTimeout(300);
       expect(playing === 'playing' && paused === 'paused', JSON.stringify({ playing, paused }));
     });
+    await test('holding the home bar summons Iris over any app, and it knows what is on screen', async () => {
+      const project = P.projects[0];
+      if (!project) return;
+      await iosGo(page, 'projects', [project.fsId]);
+      await page.waitForTimeout(400);
+      const bar = await page.locator('#ios-home-bar').boundingBox();
+      await page.mouse.move(bar.x + bar.width / 2, bar.y + bar.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(650);
+      await page.mouse.up();
+      await page.waitForSelector('#siri.on', { timeout: 3000 });
+      const stillThere = await page.evaluate(() => IOS.currentApp);
+      await page.fill('#siri input', 'what does this do?');
+      await page.press('#siri input', 'Enter');
+      await page.waitForSelector('#siri .siri-text', { timeout: 4000 });
+      const r = await page.evaluate(() => ({ context: document.querySelector('.siri-context').textContent, answer: document.querySelector('.siri-text').textContent }));
+      await page.screenshot({ path: SHOTS + 'ios-iris-everywhere.png' });
+      await page.click('#siri .siri-scrim', { position: { x: 20, y: 120 } });
+      await page.waitForTimeout(400);
+      const closed = await page.evaluate(() => !IrisEverywhere.isOpen);
+      expect(stillThere === 'projects' && r.context.includes(project.name) && r.answer.includes(project.name) && closed, JSON.stringify({ stillThere, ...r, closed }));
+    });
+    await test('with a model, "show me where he competed" goes straight to Maps', async () => {
+      const pin = P.places.find(x => x.kind === 'hackathon') || P.places[0];
+      if (!pin) return;
+      await page.route('**/__iris-test', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reply: `Here you go — **${pin.title}**.`, action: { app: 'maps', target: pin.title } }) }));
+      // APP_CONFIG is frozen; the client reads window.APP_CONFIG on every call, so swap the whole object.
+      await page.evaluate(() => { window.__config = window.APP_CONFIG; window.APP_CONFIG = Object.freeze({ ...window.APP_CONFIG, IRIS_ENDPOINT: `${location.origin}/__iris-test` }); IOS.home(); });
+      let title = null;
+      try {
+        await page.waitForTimeout(400);
+        await page.evaluate(() => IrisEverywhere.open());
+        await page.fill('#siri input', 'show me where he competed');
+        await page.press('#siri input', 'Enter');
+        await page.waitForSelector('#siri .siri-run', { timeout: 4000 });
+        await page.waitForFunction((id) => location.hash === `#/maps/${id}`, pin.id, { timeout: 5000 });
+        title = await page.evaluate(() => (document.querySelector('.map-detail h3') || {}).textContent);
+      } finally {
+        await page.evaluate(() => { window.APP_CONFIG = window.__config; IrisEverywhere.close(); IOS.home(); });
+        await page.unroute('**/__iris-test');
+        await page.waitForTimeout(400);
+      }
+      expect(title === pin.title, title);
+    });
     await test('Search finds portfolio content and can hand the question to Iris', async () => {
       await page.click('#ios-search-pill');
       await page.fill('#ios-search-input', P.projects.length ? P.projects[0].name : P.first);

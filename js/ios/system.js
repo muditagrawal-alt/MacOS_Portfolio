@@ -323,7 +323,7 @@ const IOS = (() => {
             if (['Enter', ' ', 'ArrowUp'].includes(e.key)) { e.preventDefault(); unlock(); }
         });
         const P = window.PROFILE_DATA;
-        $('ios-ln-body').textContent = `Hi, I’m ${P.first}’s assistant. Ask me anything about ${P.pron.possessive} work — I’ll show you where each answer comes from.`;
+        $('ios-ln-body').textContent = `Hi, I’m ${P.first}’s assistant. Ask me anything about ${P.pron.possessive} work — hold the bar at the bottom of any screen to reach me.`;
         renderLockWidgets();
     }
 
@@ -337,8 +337,22 @@ const IOS = (() => {
         document.body.classList.add('ios-unlocked');
         haptic();
         setTimeout(() => { lock.classList.remove('visible', 'unlocking'); }, 420);
+        setTimeout(showIrisHint, 1400);
         if (then) then();
         else apply();
+    }
+
+    /** Once per browser: where Iris lives. */
+    function showIrisHint() {
+        if (window.PORTFOLIO_PREVIEW || readPref('irisHintSeen', false)) return;
+        writePref('irisHintSeen', true);
+        const tip = document.createElement('div');
+        tip.className = 'ios-iris-hint';
+        tip.setAttribute('role', 'status');
+        tip.innerHTML = '<img src="assets/icons/siri.png" alt=""> Hold the bar to ask Iris anything';
+        $('ios-device').appendChild(tip);
+        setTimeout(() => tip.classList.add('gone'), 4600);
+        setTimeout(() => tip.remove(), 5200);
     }
 
     function lockNow() {
@@ -484,8 +498,17 @@ const IOS = (() => {
     function wireHomeBar() {
         const bar = $('ios-home-bar');
         let s = null;
+        let hold = null;      // holding the bar summons Iris, like holding the side button for Siri
+        const cancelHold = () => { clearTimeout(hold); hold = null; };
         bar.addEventListener('pointerdown', (e) => {
             if (!unlocked) { unlock(); return; }
+            cancelHold();
+            hold = setTimeout(() => {
+                hold = null;
+                if (s) { const win = $('ios-app-window'); win.classList.remove('dragging'); win.style.transform = ''; win.style.borderRadius = ''; s = null; }
+                bar.dataset.held = '1';
+                if (window.IrisEverywhere) IrisEverywhere.open();
+            }, 450);
             if (!openAppId) return;
             s = { y: e.clientY, t: performance.now(), dy: 0 };
             bar.setPointerCapture && bar.setPointerCapture(e.pointerId);
@@ -493,6 +516,7 @@ const IOS = (() => {
         });
         bar.addEventListener('pointermove', (e) => {
             if (!s) return;
+            if (Math.abs(s.y - e.clientY) > 10) cancelHold();
             s.dy = Math.max(0, s.y - e.clientY);
             const p = Math.min(1, s.dy / 320);
             const win = $('ios-app-window');
@@ -500,6 +524,9 @@ const IOS = (() => {
             win.style.borderRadius = `${Math.round(12 + p * 30)}px`;
         });
         const end = (e) => {
+            cancelHold();
+            if (bar.dataset.held) { delete bar.dataset.held; return; }   // that was a hold, not a tap
+            if (window.IrisEverywhere && IrisEverywhere.isOpen) { IrisEverywhere.close(); s = null; return; }
             if (!s) { return; }
             const win = $('ios-app-window');
             win.classList.remove('dragging');
@@ -613,6 +640,15 @@ const IOS = (() => {
         else if (place) go('maps', [place.id]);
         else go(entry[0]);
         return true;
+    }
+
+    /** What the visitor is looking at, so "what's this?" means something: { app, subject, describe }. */
+    function describeScreen() {
+        if (!openAppId) return { app: 'home', subject: '', describe: 'the Home Screen' };
+        const app = apps[openAppId];
+        const top = stack[stack.length - 1];
+        const subject = (app.screenSubject && app.screenSubject()) || (stack.length > 1 && top ? top.desc.title : '') || (openAppId.startsWith('live-') ? app.name : '');
+        return { app: openAppId, subject, describe: `${app.name}${subject && subject !== app.name ? ` · ${subject}` : ''}` };
     }
 
     /* ── Small helpers apps use ───────────────────────────────────────── */
@@ -747,7 +783,7 @@ const IOS = (() => {
     }
 
     return {
-        register, go, back, home, start, unlock, lockNow, haptic, readPref, writePref, askIris, runAction, describeAction,
+        register, go, back, home, start, unlock, lockNow, haptic, readPref, writePref, askIris, runAction, describeAction, describeScreen,
         group, row, bind, emptyState, shortOrg, setIslandActivity, syncStatusBar, isDarkAppearance,
         get apps() { return apps; },
         get currentApp() { return openAppId; },

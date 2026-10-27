@@ -211,6 +211,7 @@
             icon: 'assets/icons/maps.png',
             keywords: 'maps places map location university school internship hackathon event where travel',
             onClose() { if (view && view.map) view.map.remove(); view = null; selected = null; filter = 'all'; },
+            screenSubject: () => { const x = selected && pins.find(p => p.id === selected); return x ? x.title : ''; },
             pages(path) {
                 wanted = path[0] || null;
                 // The map stays mounted; a new route only moves it.
