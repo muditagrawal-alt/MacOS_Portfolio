@@ -1257,7 +1257,7 @@ const section = (name) => !only || only.test(name);
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
       // Every live project is an app of its own.
       const live = P.projects.filter(x => x.live && x.link).map(x => `live-${x.id}`);
-      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', 'camera', ...(P.places.length ? ['maps'] : [])];
+      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', 'camera', 'game-2048', 'snake', ...(P.places.length ? ['maps'] : [])];
       const missing = [...core, ...live].filter(id => !r.icons.includes(id));
       expect(!missing.length && r.pages === 2 && (r.hackathons || !P.hackathons.length) && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify({ ...r, missing }));
     });
@@ -1332,6 +1332,44 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(400);
       expect(roll >= 1 && /^#\/photos\/cam-/.test(r.hash) && r.released, JSON.stringify({ roll, ...r }));
+    });
+    const swipe = async (selector, dx, dy) => {
+      const b = await page.locator(selector).boundingBox();
+      const x = b.x + b.width / 2;
+      const y = b.y + b.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + dx, y + dy, { steps: 4 });
+      await page.mouse.up();
+    };
+    await test('2048 slides and merges tiles on a swipe', async () => {
+      await iosGo(page, 'game-2048');
+      await page.waitForTimeout(300);
+      const before = await page.evaluate(() => JSON.stringify(ios2048.state.tiles));
+      // Swipe until something moves (a swipe toward a full edge changes nothing).
+      let changed = false;
+      for (const [dx, dy] of [[-120, 0], [0, -120], [120, 0], [0, 120]]) {
+        await swipe('.g2048-board', dx, dy);
+        await page.waitForTimeout(260);
+        if (await page.evaluate((b) => JSON.stringify(ios2048.state.tiles) !== b, before)) { changed = true; break; }
+      }
+      const tiles = await page.evaluate(() => document.querySelectorAll('.g2048-tile').length);
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(300);
+      expect(changed && tiles >= 3, JSON.stringify({ changed, tiles }));
+    });
+    await test('Snake starts on a swipe and pauses on a tap', async () => {
+      await iosGo(page, 'snake');
+      await page.waitForTimeout(300);
+      await swipe('.snake-board', 0, 120);
+      await page.waitForTimeout(400);
+      const playing = await page.evaluate(() => iosSnake.state.state);
+      await swipe('.snake-board', 0, 0);
+      await page.waitForTimeout(200);
+      const paused = await page.evaluate(() => iosSnake.state.state);
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(300);
+      expect(playing === 'playing' && paused === 'paused', JSON.stringify({ playing, paused }));
     });
     await test('Search finds portfolio content and can hand the question to Iris', async () => {
       await page.click('#ios-search-pill');
