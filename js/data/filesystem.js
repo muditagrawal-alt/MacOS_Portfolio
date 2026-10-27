@@ -465,6 +465,10 @@ const APPSTORE_CATEGORIES = {
 };
 
 /** Every project, shaped for display (App Store on Mac, Projects on iPhone). */
+// Display names for corpus tags ("fastapi" → "FastAPI"); anything else is title-cased.
+const TAG_LABELS = { rag: 'RAG', llm: 'LLM', vlm: 'VLM', blip: 'BLIP', slam: 'SLAM', yolo: 'YOLO', cpu: 'CPU', '3d': '3D', ffmpeg: 'FFmpeg', fastapi: 'FastAPI', sih: 'SIH', wav2lip: 'Wav2Lip', 'generative ai': 'Generative AI' };
+const prettyTag = t => TAG_LABELS[t] || t.replace(/\b[a-z]/g, c => c.toUpperCase());
+
 function getPortfolioProjects() {
     const ids = (typeof AAKASH_STYLE_FS === 'object' && AAKASH_STYLE_FS['projects-folder']) ? AAKASH_STYLE_FS['projects-folder'].items : [];
     const corpus = window.PORTFOLIO_CORPUS || [];
@@ -474,9 +478,13 @@ function getPortfolioProjects() {
         const c = corpus.find(x => x.type === 'Project' && (x.url === it.link || norm(x.title).includes(norm(it.name)) || norm(it.name).includes(norm(x.title))));
         const live = Boolean(it.link && !/github\.com/.test(it.link));
         const text = `${pv.title} ${pv.subtitle} ${pv.desc} ${c ? c.text + ' ' + (c.tags || []).join(' ') : ''}`;
+        // Tags that just repeat the project's own name ("omnidoc", "sliver.ai") aren't a stack.
+        const ownName = norm(`${it.name} ${pv.title}`);
         const stack = ((c && c.tags) || [])
             .filter(t => !/^(project|projects|repo|ai|ml|live app|deployed)$/i.test(t))
-            .slice(0, 8);
+            .filter(t => norm(t).length < 4 || !ownName.includes(norm(t)))
+            .slice(0, 8)
+            .map(prettyTag);
         return {
             id: it.id, name: it.name, icon: it.icon, link: it.link, live,
             subtitle: pv.subtitle || it.kind, title: pv.title || it.name,
