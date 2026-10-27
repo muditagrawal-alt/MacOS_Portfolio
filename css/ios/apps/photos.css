@@ -42,3 +42,8 @@
 .photos-viewer figcaption { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px 0; }
 .photos-viewer strong { font-size: 18px; }
 .photos-viewer span { color: rgba(255, 255, 255, 0.6); font-size: 14px; }
+
+/* Camera Roll photos: Share and Delete under the picture */
+.photos-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 16px 0; }
+.photos-actions .ios-btn { justify-content: center; }
+.photos-roll .photos-grid { margin-bottom: 8px; }

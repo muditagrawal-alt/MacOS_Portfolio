@@ -1257,7 +1257,7 @@ const section = (name) => !only || only.test(name);
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
       // Every live project is an app of its own.
       const live = P.projects.filter(x => x.live && x.link).map(x => `live-${x.id}`);
-      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', ...(P.places.length ? ['maps'] : [])];
+      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', 'camera', ...(P.places.length ? ['maps'] : [])];
       const missing = [...core, ...live].filter(id => !r.icons.includes(id));
       expect(!missing.length && r.pages === 2 && (r.hackathons || !P.hackathons.length) && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify({ ...r, missing }));
     });
@@ -1315,6 +1315,23 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(500);
       expect(r.hash === `#/maps/${pin.id}` && r.title === pin.title, JSON.stringify(r));
+    });
+    await test('Camera takes a photo into the Camera Roll, Photos shows it, and the camera is released', async () => {
+      await iosGo(page, 'camera');
+      await page.waitForTimeout(400);
+      if (await page.isVisible('.cam-gate [data-act="start"]')) await page.click('.cam-gate [data-act="start"]');
+      await page.waitForSelector('.cam.live', { timeout: 6000 });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => { window.__camTracks = document.querySelector('.cam-view').srcObject.getTracks(); });
+      await page.click('[data-act="shoot"]');
+      await page.waitForSelector('.cam-thumb img', { timeout: 4000 });
+      const roll = await page.evaluate(async () => (await CameraRoll.list()).length);
+      await page.click('[data-act="roll"]');
+      await page.waitForSelector('.photos-viewer img', { timeout: 4000 });
+      const r = await page.evaluate(() => ({ hash: location.hash, released: window.__camTracks.every(t => t.readyState === 'ended') }));
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      expect(roll >= 1 && /^#\/photos\/cam-/.test(r.hash) && r.released, JSON.stringify({ roll, ...r }));
     });
     await test('Search finds portfolio content and can hand the question to Iris', async () => {
       await page.click('#ios-search-pill');
@@ -1445,7 +1462,7 @@ const section = (name) => !only || only.test(name);
     });
     await test('Photos opens a certificate full screen', async () => {
       await iosGo(page, 'photos');
-      await page.click(`${topPage} .photos-tile >> nth=1`);
+      await page.click(`${topPage} .photos-tile[data-file="cert-1"]`);
       await page.waitForTimeout(400);
       const cap = await page.textContent(`${topPage} figcaption`);
       expect(new RegExp(await page.evaluate(() => PHOTO_LIBRARY.certificates.items[0].issuer)).test(cap), cap);
