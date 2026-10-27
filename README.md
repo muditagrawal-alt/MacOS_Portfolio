@@ -77,9 +77,11 @@ Both versions read the same data (`js/data/*`), use the same services (`js/share
 ### The iPhone version
 
 - **Navigation that feels native:** every page is a History API entry (`#/app/path`), so the phone's own back swipe and Android's Back button work, deep links open the right page, and Back walks up the app. Apps zoom out of their icons; the home bar (tap or drag up) goes home.
-- **Messages is Iris:** answers come from the portfolio, each with source chips that open the app the answer came from.
-- **Apps:** About (contact card, experience, education, skills), Projects (App Store product pages), Résumé, Photos (certificates), Notes (shared with the Mac's Notes in the same browser, plus *Recently Deleted* post-mortems), Mail (sends to the owner's inbox), Safari (start page and portfolio search), Music (recordings, radio, and generative tracks synthesised in the browser), Weather, Calculator and Settings (light/dark, wallpaper, haptics).
-- **Installable:** Add to Home Screen gives a full-screen app with its own icon.
+- **Two Home Screen pages:** who the owner is (profile, weather and GitHub widgets, core apps), then what they've shipped: a Hackathons widget and **every live project as an app** that opens the deployed site inside the phone.
+- **Iris everywhere:** hold the home bar in any app and Iris answers over it, like Siri. It knows what's on screen ("what does this do?" on a project page), and "show me where he competed" goes straight to Maps. Messages is the full conversation; every answer cites its sources.
+- **Apps:** About, Projects (App Store pages with GitHub links and demo videos), Maps (the university, schools, internships, hackathons and events, pinned), Camera (photos stay on the device, with an optional portfolio caption for sharing), Photos (Camera Roll and certificates), Résumé, Notes, Mail, Safari, Music, Weather, Calculator, Settings, and two games: 2048 and Snake.
+- **Full screen:** on Android (and iPad) the unlock swipe hides the browser's bars; tap the status bar to bring them back. Installed to the Home Screen it opens full screen on any phone.
+- **iOS-style wallpapers:** six originals (Aurora, Daybreak, Lagoon, Dusk, Graphite, Mist), plus photos, in Settings ▸ Wallpaper.
 
 ## 📸 Screenshot
 
@@ -276,10 +278,13 @@ js/
   data/notes.js         Notes content (from the info bank)
   data/music.js         music catalogue + radio fallbacks
   shared/live-data.js   live weather and GitHub activity, cached
+  shared/iris-client.js the one way to ask Iris: the hosted model, or the in-browser engine
   shared/contact-form.js  the one contact-form send path, vCard + share helpers
   shared/generative-audio.js  Web Audio engine for Music's generative tracks
   ios/system.js         iPhone shell: navigation, Lock & Home Screens, widgets, Search
-  ios/apps/*.js         one file per iPhone app (+ css/ios/apps/*.css)
+  ios/apps/*.js         one file per iPhone app (+ css/ios/apps/*.css), incl. live-apps.js (projects as apps)
+  ios/iris-everywhere.js  hold the home bar: Iris over any app, aware of the screen
+  ios/fullscreen.js     full screen on Android, the status bar brings the browser back
   config/config.js      runtime config — contains no secrets
   core/utils.js         escapeHtml / safeUrl / openExternal, math parser
   core/window-manager.js  open, close, focus, drag, clamp, cascade, maximize
@@ -300,13 +305,14 @@ js/
 setup/
   index.html, setup.js  the questionnaire: every field, live preview, build
   apply.js              writes an info bank into the repository (`npm run refresh`)
+  publish.js            the admin's Publish: commits and pushes the content only
   site-meta.js          the page titles and link-preview tags, generated from the info bank
   profile-format.js     reads and writes js/data/profile.js
   README.md             every field of the info bank
 scripts/
   dev-server.js         `npm start`: local server + the questionnaire's save endpoints (localhost only)
   test-*.js             CI gates 1–5 (see Testing)
-api/iris.js             serverless model proxy — keeps the API key server-side
+api/iris.js             serverless model proxy (Groq, free tier) — the key stays server-side; see api/README.md
 api/_owner.js           who the serverless functions speak for (generated)
 ```
 
