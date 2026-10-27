@@ -1,0 +1,152 @@
+/* Projects — App Store style */
+
+.proj-feature {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-height: 220px;
+    padding: 18px 18px 14px;
+    border: none;
+    border-radius: 18px;
+    background:
+        radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
+        linear-gradient(140deg, #0a84ff, #5e5ce6 55%, #bf5af2);
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 16px 34px -18px rgba(10, 132, 255, 0.8);
+}
+
+.proj-feature:active { transform: scale(0.98); }
+.proj-feature-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.8; }
+.proj-feature-title { font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -0.3px; }
+.proj-feature-sub { font-size: 14.5px; line-height: 1.35; opacity: 0.88; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+.proj-feature-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.proj-feature-row .ios-art { width: 40px; height: 40px; }
+.proj-feature-row > span:last-child { display: flex; flex-direction: column; }
+.proj-feature-row strong { font-size: 15px; }
+.proj-feature-row small { font-size: 12.5px; opacity: 0.8; }
+
+.proj-filter { margin: 18px 0 6px; }
+
+.proj-list { display: flex; flex-direction: column; }
+
+.proj-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 11px 0;
+    cursor: pointer;
+}
+
+.proj-item + .proj-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 77px;
+    right: 0;
+    height: 0.5px;
+    background: var(--ios-sep);
+}
+
+.proj-item .ios-art { width: 64px; height: 64px; box-shadow: 0 0 0 0.5px var(--ios-sep); }
+
+.proj-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.proj-item-text strong { font-size: 16.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-item-text small { color: var(--ios-label-2); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-item:active { opacity: 0.7; }
+
+.proj-get {
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    min-width: 72px;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--ios-fill-2);
+    color: var(--ios-tint);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.proj-get.live { background: var(--ios-tint); color: #fff; }
+.proj-get.big { min-width: 86px; }
+.proj-get:active { opacity: 0.6; }
+
+.proj-footnote { margin: 18px 0 0; text-align: center; color: var(--ios-label-2); font-size: 13px; }
+
+/* Product page */
+.proj-header { display: flex; gap: 16px; padding-top: 4px; }
+
+.proj-header .ios-art { width: 118px; height: 118px; box-shadow: 0 0 0 0.5px var(--ios-sep), 0 8px 20px -10px rgba(0, 0, 0, 0.35); }
+
+.proj-header > div { display: flex; flex-direction: column; min-width: 0; }
+.proj-header h2 { margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.3px; }
+.proj-header p { margin: 3px 0 0; color: var(--ios-label-2); font-size: 14.5px; }
+.proj-header-actions { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; }
+
+.proj-share {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: none;
+    color: var(--ios-tint);
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.proj-facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 20px 0 6px;
+    padding: 12px 0;
+    border-top: 0.5px solid var(--ios-sep);
+    border-bottom: 0.5px solid var(--ios-sep);
+}
+
+.proj-facts > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    text-align: center;
+}
+
+.proj-facts > div + div { box-shadow: inset 0.5px 0 0 var(--ios-sep); }
+.proj-facts span { color: var(--ios-label-2); font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px; }
+.proj-facts strong { font-size: 19px; color: var(--ios-label-2); }
+.proj-facts small { max-width: 100%; color: var(--ios-label-2); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; }
+
+.proj-section { margin-top: 18px; }
+.proj-section h3 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.3px; }
+.proj-section p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.5; }
+.proj-section ul { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.5; }
+.proj-section li { margin-bottom: 4px; }
+
+.proj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.proj-tags span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--ios-card);
+    font-size: 14px;
+}
+
+.ios-device[data-form="tablet"] .proj-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+.ios-device[data-form="tablet"] .proj-item + .proj-item::before { display: none; }
