@@ -1599,6 +1599,24 @@ const section = (name) => !only || only.test(name);
 
     console.log('\niPad (834×1194)');
     const pad = await iosPage(browser, { device: IPAD });
+    await test('on an Android phone, unlocking goes full screen; the status bar brings Chrome back', async () => {
+      const android = await browser.newContext({ ...devices['Pixel 7'], reducedMotion: 'reduce' });
+      await routeLiveApis(android, { __web3: 0 });
+      const p = await android.newPage();
+      await p.goto(BASE + 'ios.html');
+      await p.waitForTimeout(800);
+      await p.tap('#ios-lock-time');
+      await p.waitForTimeout(600);
+      const entered = await p.evaluate(() => document.fullscreenElement === document.documentElement);
+      await p.touchscreen.tap(200, 10);            // the status bar
+      await p.waitForTimeout(400);
+      const revealed = await p.evaluate(() => !document.fullscreenElement);
+      await p.touchscreen.tap(200, 700);           // anywhere else hides the bars again
+      await p.waitForTimeout(500);
+      const again = await p.evaluate(() => Boolean(document.fullscreenElement));
+      await android.close();
+      expect(entered && revealed && again, JSON.stringify({ entered, revealed, again }));
+    });
     await test('iPad uses the tablet layout with a six-column Home Screen', async () => {
       const r = await pad.evaluate(() => ({ form: document.getElementById('ios-device').dataset.form, cols: getComputedStyle(document.getElementById('ios-home-grid')).gridTemplateColumns.split(' ').length }));
       await pad.screenshot({ path: SHOTS + 'ios-ipad.png' });

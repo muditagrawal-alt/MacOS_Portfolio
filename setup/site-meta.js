@@ -99,6 +99,8 @@
             start_url: './',
             scope: './',
             display: 'standalone',
+            // Installed on Android, it opens without the system bars, like the iPhone it imitates.
+            display_override: ['fullscreen', 'standalone'],
             background_color: '#000000',
             theme_color: '#000000',
             icons: [

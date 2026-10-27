@@ -1298,3 +1298,7 @@ body:not(.ios-in-app) .ios-home-bar { opacity: 0.6; }
 
 /* `hidden` always hides, whatever display a component sets (this was patched element by element). */
 .ios-device [hidden] { display: none !important; }
+
+/* Full screen: tapping the status bar strip brings the browser's bars back (js/ios/fullscreen.js). */
+.ios-fs-reveal { display: none; position: absolute; top: 0; left: 0; right: 0; z-index: 96; height: 26px; padding: 0; border: none; background: transparent; }
+:fullscreen .ios-fs-reveal { display: block; }

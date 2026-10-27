@@ -40,8 +40,9 @@
             ${IOS.group([
                 { icon: 'fas fa-sun', color: '#007aff', title: 'Display & Brightness', detail: { light: 'Light', dark: 'Dark', auto: 'Automatic' }[mode], chevron: true, action: 'display' },
                 { icon: 'fas fa-image', color: '#30b0c7', title: 'Wallpaper', chevron: true, action: 'wallpaper' },
-                { icon: 'fas fa-mobile-screen-button', color: '#ff2d55', title: 'Haptics', toggle: 'haptics', checked: IOS.readPref('haptics', true) }
-            ])}
+                { icon: 'fas fa-mobile-screen-button', color: '#ff2d55', title: 'Haptics', toggle: 'haptics', checked: IOS.readPref('haptics', true) },
+                window.IOSFullscreen && IOSFullscreen.available && { icon: 'fas fa-expand', color: '#5856d6', title: 'Full Screen', toggle: 'fullscreen', checked: IOS.readPref('fullscreen', true) }
+            ].filter(Boolean), { footer: window.IOSFullscreen && IOSFullscreen.available ? 'Full Screen hides the browser’s bars. Tap the status bar to bring them back.' : '' })}
             ${IOS.group([
                 { icon: 'fas fa-laptop', color: '#8e8e93', title: 'View Mac Version', sub: 'The full desktop: Finder, Terminal, games and more', chevron: true, action: 'mac' }
             ])}
@@ -58,7 +59,8 @@
             general: () => IOS.go('settings', ['general']),
             mac: () => window.PORTFOLIO_SHELL && PORTFOLIO_SHELL.switchTo('mac'),
             lock: () => IOS.lockNow(),
-            'toggle:haptics': (on) => { IOS.writePref('haptics', on); if (on) IOS.haptic(); }
+            'toggle:haptics': (on) => { IOS.writePref('haptics', on); if (on) IOS.haptic(); },
+            'toggle:fullscreen': (on) => IOSFullscreen.setWanted(on)
         });
     }
 
