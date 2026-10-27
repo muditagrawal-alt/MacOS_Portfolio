@@ -849,9 +849,12 @@ C 890,381 908,392 928,394"/>
                             <span>Apple Account</span>
                         </div>
                     </div>
-                    <div class="sidebar-item active" onclick="switchSettingsTab('appearance', this)"><i class="fas fa-palette" style="color:#007aff;"></i> Appearance</div>
-                    <div class="sidebar-item" onclick="switchSettingsTab('wallpaper', this)"><i class="fas fa-image" style="color:#34c759;"></i> Wallpaper</div>
-                    <div class="sidebar-item" onclick="switchSettingsTab('about-mac', this)"><i class="fas fa-laptop" style="color:#8e8e93;"></i> About This Mac</div>
+                    <div class="sidebar-item active" data-pane="appearance" onclick="switchSettingsTab('appearance', this)"><i class="fas fa-palette settings-ico" style="--ico:#0a84ff;"></i> Appearance</div>
+                    <div class="sidebar-item" data-pane="wallpaper" onclick="switchSettingsTab('wallpaper', this)"><i class="fas fa-image settings-ico" style="--ico:#30d158;"></i> Wallpaper</div>
+                    <div class="sidebar-item" data-pane="desktop-dock" onclick="switchSettingsTab('desktop-dock', this)"><i class="fas fa-table-columns settings-ico" style="--ico:#1c1c1e;"></i> Desktop &amp; Dock</div>
+                    <div class="sidebar-item" data-pane="siri" onclick="switchSettingsTab('siri', this)"><i class="fas fa-wave-square settings-ico" style="--ico:#bf5af2;"></i> Siri &amp; Iris</div>
+                    <div class="sidebar-item" data-pane="privacy" onclick="switchSettingsTab('privacy', this)"><i class="fas fa-hand settings-ico" style="--ico:#0a84ff;"></i> Privacy &amp; Security</div>
+                    <div class="sidebar-item" data-pane="about-mac" onclick="switchSettingsTab('about-mac', this)"><i class="fas fa-laptop settings-ico" style="--ico:#8e8e93;"></i> About This Mac</div>
                 </div>
                 <!-- Settings Content Panes -->
                 <div class="settings-pane-container">
@@ -859,11 +862,11 @@ C 890,381 908,392 928,394"/>
                     <div class="settings-pane" id="settings-pane-appearance">
                         <h3>Appearance Mode</h3>
                         <div class="theme-options-grid">
-                            <div class="theme-option active" onclick="setThemeMode('dark', this)">
+                            <div class="theme-option active" data-theme="dark" onclick="setThemeMode('dark', this)">
                                 <div class="theme-preview dark-preview"></div>
                                 <span>Dark (Default)</span>
                             </div>
-                            <div class="theme-option" onclick="setThemeMode('glass', this)">
+                            <div class="theme-option" data-theme="glass" onclick="setThemeMode('glass', this)">
                                 <div class="theme-preview glass-preview"></div>
                                 <span>Frosted Glass</span>
                             </div>
@@ -916,18 +919,59 @@ C 890,381 908,392 928,394"/>
                         </div>
                     </div>
 
+                    <!-- Desktop & Dock Pane -->
+                    <div class="settings-pane hidden" id="settings-pane-desktop-dock">
+                        <h3>Desktop &amp; Dock</h3>
+                        <div class="settings-group">
+                            <label class="settings-row"><span><strong>Show widgets on the desktop</strong><small>Clock, live weather and GitHub activity.</small></span>
+                                <input type="checkbox" class="mac-switch" id="pref-widgets" onchange="setPreference('widgets', this.checked)"></label>
+                            <label class="settings-row"><span><strong>Magnification</strong><small>Enlarge Dock icons under the pointer.</small></span>
+                                <input type="checkbox" class="mac-switch" id="pref-magnify" onchange="setPreference('magnify', this.checked)"></label>
+                            <label class="settings-row"><span><strong>Play user interface sound effects</strong><small>Window, click and Trash sounds.</small></span>
+                                <input type="checkbox" class="mac-switch" id="pref-sounds" onchange="setPreference('sounds', this.checked)"></label>
+                        </div>
+                    </div>
+
+                    <!-- Siri & Iris Pane -->
+                    <div class="settings-pane hidden" id="settings-pane-siri">
+                        <h3>Siri &amp; Iris</h3>
+                        <div class="settings-group">
+                            <label class="settings-row"><span><strong>Listen for “Hey Iris”</strong><small>Off by default. Uses your browser’s speech recognition, which may send audio to its vendor’s servers.</small></span>
+                                <input type="checkbox" class="mac-switch" id="pref-heyiris" onchange="setPreference('heyIris', this.checked)"></label>
+                            <label class="settings-row"><span><strong>Speak responses</strong><small>Iris always replies aloud when you speak to it. Turn this on to hear typed answers too.</small></span>
+                                <input type="checkbox" class="mac-switch" id="pref-speak" onchange="setPreference('speakTyped', this.checked)"></label>
+                        </div>
+                        <p class="settings-footnote">Iris answers from this portfolio’s own content and cites where each answer came from.</p>
+                    </div>
+
+                    <!-- Privacy Pane -->
+                    <div class="settings-pane hidden" id="settings-pane-privacy">
+                        <h3>Privacy &amp; Security</h3>
+                        <div class="settings-group settings-prose">
+                            <p><strong>No analytics, no ads, no cookies.</strong> Nothing you do here is tracked.</p>
+                            <p><strong>Stays in this browser:</strong> your settings, notes you write, Photo Booth thumbnails and game high scores.</p>
+                            <p><strong>Leaves this browser only when you ask:</strong> the Mail contact form (sent via Web3Forms), and live lookups — GitHub activity, weather (Open-Meteo, approximate location via ipwho.is), Safari search (Wikipedia) and radio streams.</p>
+                            <p><strong>Camera &amp; microphone</strong> are used only while Photo Booth is open or Iris is listening, and are released the moment you close or minimise them.</p>
+                        </div>
+                        <button type="button" class="app-pill-btn danger" onclick="eraseThisMac()"><i class="fas fa-eraser"></i> Erase This Mac…</button>
+                    </div>
+
                     <!-- About This Mac Pane -->
                     <div class="settings-pane hidden" id="settings-pane-about-mac">
                         <div class="about-mac-dialog">
-                            <i class="fab fa-apple fa-4x" style="color:#fff;margin-bottom:12px;"></i>
-                            <h2>Mudit's MacBook Pro (Portfolio Edition)</h2>
-                            <p style="color:#888;font-size:12px;margin-bottom:15px;">16-inch, 2026</p>
+                            <img class="about-mac-portrait" src="assets/Professionalimage.jpeg" alt="Mudit Agrawal" loading="lazy">
+                            <h2>Mudit Agrawal</h2>
+                            <p class="about-mac-sub">AI/ML Engineer · B.Tech CSE (AI/ML), 2027</p>
                             <div class="spec-table">
-                                <div class="spec-row"><span class="spec-name">Chip</span><span class="spec-val">Apple M3 Max (AI/ML Neural Engine)</span></div>
-                                <div class="spec-row"><span class="spec-name">Memory</span><span class="spec-val">100% Passion & Curiosity</span></div>
+                                <div class="spec-row"><span class="spec-name">Focus</span><span class="spec-val">Agentic &amp; RAG systems, computer vision</span></div>
+                                <div class="spec-row"><span class="spec-name">Now</span><span class="spec-val">AI/ML Intern, Carnot Research (IIT Delhi-incubated)</span></div>
                                 <div class="spec-row"><span class="spec-name">Education</span><span class="spec-val" id="about-mac-education">B.Tech Computer Science (AI/ML) @ IILM University</span></div>
-                                <div class="spec-row"><span class="spec-name">System</span><span class="spec-val">macOS Mudit 1.0 (Finder Portfolio)</span></div>
-                                <div class="spec-row"><span class="spec-name">Startup Disk</span><span class="spec-val">Macintosh HD — ML Models & Code</span></div>
+                                <div class="spec-row"><span class="spec-name">Based in</span><span class="spec-val">India</span></div>
+                                <div class="spec-row"><span class="spec-name">This Mac</span><span class="spec-val">Vanilla HTML, CSS &amp; JavaScript — no frameworks</span></div>
+                            </div>
+                            <div class="about-mac-actions">
+                                <button type="button" class="app-pill-btn primary" onclick="openResumeWindow()"><i class="fas fa-file-pdf"></i> Résumé</button>
+                                <button type="button" class="app-pill-btn" onclick="openTextFile('readme')">More Info…</button>
                             </div>
                         </div>
                     </div>
