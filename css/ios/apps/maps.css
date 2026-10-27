@@ -1,0 +1,121 @@
+/* Maps: a full-screen map with a sheet of places, like Apple Maps. */
+.ios-page.map-page .ios-page-body { position: relative; overflow: hidden; padding: 0; }
+.ios-page.map-page .ios-page-content { position: absolute; inset: 0; padding: 0; max-width: none; }
+.map-wrap { position: absolute; inset: 0; overflow: hidden; background: var(--ios-bg); }
+.map-canvas { position: absolute; inset: 0; z-index: 0; background: var(--ios-fill-2); }
+.map-canvas.leaflet-container { font: inherit; background: var(--ios-fill-2); }
+.map-canvas .leaflet-top { top: calc(var(--safe-top) + 2px); }
+.map-canvas .leaflet-control-attribution { font-size: 9px; background: rgba(255, 255, 255, 0.7); border-radius: 6px 0 0 6px; }
+
+.map-fallback {
+    position: absolute;
+    top: calc(var(--safe-top) + 70px);
+    left: 16px;
+    right: 16px;
+    z-index: 3;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--ios-card);
+    color: var(--ios-label-2);
+    font-size: 14px;
+    box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.3);
+}
+.map-fallback i { margin-right: 6px; color: var(--ios-tint); }
+
+.map-fit {
+    position: absolute;
+    top: calc(var(--safe-top) + 14px);
+    right: 14px;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: var(--ios-glass-strong);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    color: var(--ios-tint);
+    font-size: 17px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+}
+
+.map-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    height: 44%;
+    padding: 0 16px calc(var(--safe-bottom) + 26px);
+    border-radius: 18px 18px 0 0;
+    background: var(--ios-sheet-bg);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 0 -8px 30px -12px rgba(0, 0, 0, 0.3);
+    transition: height 0.38s var(--ios-ease);
+}
+.map-sheet[data-state="full"] { height: 84%; }
+.map-grabber { align-self: center; flex-shrink: 0; padding: 8px 48px 6px; border: none; background: none; cursor: grab; touch-action: none; }
+.map-grabber span { display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--ios-label-3); }
+.map-head { display: flex; align-items: baseline; justify-content: space-between; flex-shrink: 0; }
+.map-head h2 { margin: 2px 0 10px; font-size: 22px; letter-spacing: -0.3px; color: var(--ios-label); }
+.map-head span { color: var(--ios-label-2); font-size: 13px; }
+
+.map-chips { display: flex; flex-shrink: 0; gap: 8px; padding-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+.map-chips::-webkit-scrollbar { display: none; }
+.map-chips button { flex-shrink: 0; padding: 6px 12px; border: none; border-radius: 999px; background: var(--ios-fill-2); color: var(--ios-label); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.map-chips button b { margin-left: 2px; font-weight: 600; opacity: 0.6; }
+.map-chips button.on { background: var(--ios-tint); color: #fff; }
+.map-chips button.on b { opacity: 0.85; }
+
+.map-list { flex: 1; min-height: 0; margin: 0; padding: 0; list-style: none; overflow-y: auto; overscroll-behavior: contain; }
+.map-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 0; border: none; border-bottom: 0.5px solid var(--ios-sep); background: none; color: var(--ios-label); font: inherit; text-align: left; cursor: pointer; }
+.map-glyph { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: #fff; font-size: 15px; }
+.map-row-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.map-row-text strong, .map-row-text small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.map-row-text strong { font-size: 15.5px; font-weight: 600; }
+.map-row-text small { color: var(--ios-label-2); font-size: 13px; }
+.map-row em { flex-shrink: 0; color: var(--ios-label-2); font-size: 12.5px; font-style: normal; }
+.map-empty { padding: 20px 0; color: var(--ios-label-2); text-align: center; }
+
+.map-detail { position: relative; flex: 1; min-height: 0; overflow-y: auto; color: var(--ios-label); }
+.map-detail h3 { margin: 8px 40px 4px 0; font-size: 22px; line-height: 1.2; letter-spacing: -0.3px; }
+.map-detail-close { position: absolute; top: 0; right: 0; display: grid; place-items: center; width: 30px; height: 30px; border: none; border-radius: 50%; background: var(--ios-fill); color: var(--ios-label-2); cursor: pointer; }
+.map-kind { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); font-size: 12.5px; font-weight: 700; }
+.map-sub { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+.map-where { margin: 0 0 16px; color: var(--ios-label-2); font-size: 14px; }
+.map-where i { margin-right: 4px; }
+.map-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.map-actions .ios-btn { justify-content: center; text-decoration: none; }
+
+/* Pins */
+.map-pin-wrap { background: none; border: none; }
+.map-pin {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 2.5px solid #fff;
+    border-radius: 50%;
+    background: var(--c);
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transform-origin: 50% 120%;
+    transition: transform 0.2s var(--ios-ease);
+}
+.map-pin::after { content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 6px solid transparent; border-top: 7px solid #fff; border-bottom: 0; }
+.map-pin-wrap.selected { z-index: 1000 !important; }
+.map-pin-wrap.selected .map-pin { transform: scale(1.32); }
+
+/* OpenStreetMap's tiles, toned down to sit like Apple Maps; inverted for dark mode. */
+.map-canvas .leaflet-tile-pane { filter: saturate(0.82) brightness(1.02); }
+.map-canvas.dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.7); }
+.map-canvas.dark .leaflet-control-attribution { background: rgba(0, 0, 0, 0.55); color: #ccc; }

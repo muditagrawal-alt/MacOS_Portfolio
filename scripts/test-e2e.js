@@ -73,6 +73,8 @@ async function routeLiveApis(ctx, page) {
     await ctx.route('https://api.open-meteo.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: WEATHER_FIXTURE() }));
     await ctx.route(/radio-browser\.info/, r => r.abort());
     await ctx.route(/i\.ytimg\.com|google\.com\/s2\/favicons/, r => r.fulfill({ status: 204 }));
+    // Map tiles: a blank tile, so Maps never loads OpenStreetMap's servers from a test.
+    await ctx.route(/tile\.openstreetmap\.org/, r => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64') }));
     // Never let a test send a real email.
     await ctx.route('https://api.web3forms.com/**', r => { page.__web3++; r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' }); });
 }
@@ -1255,7 +1257,7 @@ const section = (name) => !only || only.test(name);
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
       // Every live project is an app of its own.
       const live = P.projects.filter(x => x.live && x.link).map(x => `live-${x.id}`);
-      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music'];
+      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', ...(P.places.length ? ['maps'] : [])];
       const missing = [...core, ...live].filter(id => !r.icons.includes(id));
       expect(!missing.length && r.pages === 2 && (r.hackathons || !P.hackathons.length) && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify({ ...r, missing }));
     });
@@ -1282,6 +1284,37 @@ const section = (name) => !only || only.test(name);
       await page.click('#ios-home-bar');
       await page.waitForTimeout(500);
       expect(!(await page.evaluate(() => document.body.classList.contains('ios-in-app'))), 'still in the app');
+    });
+    await test('Maps pins every place, filters them, and shows one in detail', async () => {
+      if (!P.places.length) return;
+      await page.evaluate(() => { location.hash = ''; });
+      await page.waitForTimeout(300);
+      // The Hackathons widget (page 2) opens Maps filtered to hackathons.
+      if (P.hackathons.length) {
+        await page.evaluate(() => { const p = document.getElementById('ios-home-pages'); p.scrollLeft = p.clientWidth; });
+        await page.click('.ios-widget-hack');
+      } else {
+        await iosGo(page, 'maps');
+      }
+      await page.waitForSelector('.map-pin', { timeout: 8000 });
+      const filtered = await page.evaluate(() => ({ hash: location.hash, rows: document.querySelectorAll('.map-row').length, pins: document.querySelectorAll('.map-pin').length }));
+      await page.click('.map-row >> nth=0');
+      await page.waitForTimeout(500);
+      const detail = await page.evaluate(() => ({ title: (document.querySelector('.map-detail h3') || {}).textContent, directions: (document.querySelector('.map-actions a') || {}).href || '' }));
+      await page.screenshot({ path: SHOTS + 'ios-maps.png' });
+      const wantRows = P.hackathons.length ? P.places.filter(x => x.kind === 'hackathon').length : P.places.length;
+      expect(filtered.rows === wantRows && filtered.pins === P.places.length && detail.title && /google\.com\/maps/.test(detail.directions),
+        JSON.stringify({ filtered, detail, wantRows }));
+    });
+    await test('Iris can open a place on the map by name', async () => {
+      const pin = P.places[P.places.length - 1];
+      if (!pin) return;
+      await page.evaluate((title) => IOS.runAction({ app: 'maps', target: title }), pin.title);
+      await page.waitForTimeout(600);
+      const r = await page.evaluate(() => ({ hash: location.hash, title: (document.querySelector('.map-detail h3') || {}).textContent }));
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(500);
+      expect(r.hash === `#/maps/${pin.id}` && r.title === pin.title, JSON.stringify(r));
     });
     await test('Search finds portfolio content and can hand the question to Iris', async () => {
       await page.click('#ios-search-pill');
