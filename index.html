@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-shell="mac">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Device router: phones and tablets go to the iPhone/iPad version (ios.html)
+         before anything paints. Must stay first and synchronous. -->
+    <script src="js/router.js?v=2.5"></script>
     <title>Mudit Agrawal - macOS Portfolio</title>
     <meta name="description" content="Mudit Agrawal — AI/ML engineer (agentic and RAG systems, computer vision). An interactive macOS-style portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
     <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
@@ -176,6 +179,8 @@ C 890,381 908,392 928,394"/>
                     <div class="dropdown-item" onclick="shutDownMac()"><i class="fas fa-power-off" style="width:20px;"></i> Shut Down…</div>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-item" onclick="lockScreenNow()"><i class="fas fa-lock" style="width:20px;"></i> Lock Screen <span class="menu-shortcut">&#8963;&#8997;Q</span></div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="window.PORTFOLIO_SHELL &amp;&amp; PORTFOLIO_SHELL.switchTo('ios')"><i class="fas fa-mobile-screen" style="width:20px;"></i> View iPhone Version</div>
                 </div>
             </div>
 
