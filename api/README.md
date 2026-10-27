@@ -7,15 +7,17 @@ The API key stays **server-side**: the browser never sees it, other websites can
 ## Turn it on (about 5 minutes, no code)
 
 1. **Get a free Groq key.** Sign in at [console.groq.com](https://console.groq.com), open **API Keys**, and create one. Copy it; you'll paste it into Vercel in step 2, not anywhere in this repository.
-2. **Deploy to Vercel.** At [vercel.com](https://vercel.com), choose **Add New → Project** and import this GitHub repository. Leave the framework preset as **Other**. Under **Environment Variables**, add `GROQ_API_KEY` with your key, then **Deploy**.
+2. **Deploy to Vercel.** At [vercel.com](https://vercel.com), choose **Add New → Project** and import this GitHub repository. Leave the framework preset as **Other**. Under **Environment Variables**, add `GROQ_API_KEY` with your key, then **Deploy**. For a backup, also add `GEMINI_API_KEY` (a free key from [Google AI Studio](https://aistudio.google.com/apikey)).
 3. **Check it.** Open `https://<your-project>.vercel.app/api/iris` in a browser. "Method not allowed" means the function is live.
 4. **Point the site at it.** Run `npm run admin`, open **Site & services**, and put `https://<your-project>.vercel.app/api/iris` in **Iris's hosted model**. Save, then Publish.
 
 The full address matters: the site lives on GitHub Pages, so a relative `/api/iris` wouldn't reach Vercel.
 
-## Free tier
+## Free tier, and the backup
 
-The default model is `openai/gpt-oss-120b`, which a free Groq key can use: about 70 model answers a day with this prompt. Past that, or whenever Groq is busy, the proxy says so and Iris answers from the info bank in the browser, so visitors never see an error. To change models, add a `GROQ_MODEL` environment variable in Vercel (for example `openai/gpt-oss-20b`).
+Groq answers first, with `openai/gpt-oss-120b` (about 70 answers a day on a free key with this prompt). When Groq is busy, out of free-tier tokens or down, **Gemini takes over** (`gemini-3.5-flash-lite`, through Gemini's OpenAI-compatible endpoint) if `GEMINI_API_KEY` is set. Only when both are unavailable does Iris answer from the info bank in the browser, so visitors never see an error.
+
+Either key works on its own. To change models, set `GROQ_MODEL` or `GEMINI_MODEL` in Vercel (for example `openai/gpt-oss-20b` or `gemini-3.8-flash`).
 
 ## What Vercel serves
 

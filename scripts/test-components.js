@@ -287,31 +287,48 @@ function finishAfter(ms) {
     assert(notFound.length === 0, 'Terminal understands its documented commands', notFound.join(', '));
     window.closeWindow('terminal-window');
 
-    /* ── 7. Iris's model proxy (api/iris.js), with Groq stubbed ────────── */
-    console.log('\n--- 7. Iris model proxy ---');
+    /* ── 8. Iris's model proxy (api/iris.js), with Groq and Gemini stubbed ── */
+    console.log('\n--- 8. Iris model proxy ---');
     {
         const { OWNER } = await import(path.join(ROOT_DIR, 'api/_owner.js'));
         const origin = OWNER.origins[0];
         const realFetch = global.fetch;
-        let sent = null;
-        let upstream = { status: 200, body: { choices: [{ message: { content: `Here it is. [[open:maps:${(P.hackathons[0] || { name: 'campus' }).name}]]` } }] } };
-        global.fetch = async (url, init) => { sent = { url, body: JSON.parse(init.body) }; return { ok: upstream.status === 200, status: upstream.status, json: async () => upstream.body }; };
-        process.env.GROQ_API_KEY = 'test-key';
+        const calls = [];
+        let replies = {};   // provider host → { status, body }
+        global.fetch = async (url, init) => {
+            calls.push({ host: new URL(url).host, body: JSON.parse(init.body) });
+            const r = replies[new URL(url).host] || { status: 500, body: {} };
+            return { ok: r.status === 200, status: r.status, json: async () => r.body };
+        };
+        process.env.GROQ_API_KEY = 'test-groq';
+        process.env.GEMINI_API_KEY = 'test-gemini';
         const handler = (await import(path.join(ROOT_DIR, 'api/iris.js'))).default;
         const call = (body, headers = { origin }) => new Promise((resolve) => {
             const res = { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.code = c; return this; }, json(b) { resolve({ code: this.code, body: b }); }, end() { resolve({ code: this.code }); } };
             handler({ method: 'POST', headers: { ...headers, 'x-forwarded-for': `10.0.0.${Math.floor(Math.random() * 250)}` }, body, socket: {} }, res);
         });
+        const answer = { status: 200, body: { choices: [{ message: { content: `Here it is. [[open:maps:${(P.hackathons[0] || { name: 'campus' }).name}]]` } }] } };
+        const busyReply = { status: 429, body: {} };
+
+        replies = { 'api.groq.com': answer, 'generativelanguage.googleapis.com': answer };
         const ok = await call({ messages: [{ role: 'user', content: 'show me where he competed' }], context: ['(passage)'], screen: 'Projects app, viewing Veritas Check' });
-        const system = sent ? sent.body.messages[0].content : '';
-        assert(ok.code === 200 && ok.body.reply === 'Here it is.' && ok.body.action && ok.body.action.app === 'maps' && ok.body.action.target,
-            'the proxy returns the reply and its [[open:…]] action separately', JSON.stringify(ok.body));
+        const system = calls[0] ? calls[0].body.messages[0].content : '';
+        assert(ok.code === 200 && ok.body.via === 'groq' && ok.body.reply === 'Here it is.' && ok.body.action && ok.body.action.app === 'maps' && ok.body.action.target,
+            'Groq answers first; the reply and its [[open:…]] action come back separately', JSON.stringify(ok.body));
         assert(system.includes(OWNER.digest.slice(0, 60)) && /Veritas Check/.test(system) && /Never invent/.test(system) && /advocate/.test(system),
             'the model always gets the whole info bank, the screen, and the stay-positive-but-factual rules');
-        assert(sent.body.model === (process.env.GROQ_MODEL || 'openai/gpt-oss-120b'), 'a free-tier Groq model by default', sent.body.model);
-        upstream = { status: 429, body: {} };
+        assert(calls[0].body.model === (process.env.GROQ_MODEL || 'openai/gpt-oss-120b'), 'a free-tier Groq model by default', calls[0].body.model);
+
+        calls.length = 0;
+        replies = { 'api.groq.com': busyReply, 'generativelanguage.googleapis.com': answer };
+        const backup = await call({ messages: [{ role: 'user', content: 'hi' }] });
+        const gem = calls.find(c => c.host === 'generativelanguage.googleapis.com');
+        assert(backup.code === 200 && backup.body.via === 'gemini' && gem && gem.body.model === (process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite') && gem.body.messages[0].content === calls[0].body.messages[0].content,
+            'Groq out of free-tier tokens: Gemini answers instead, with the same instructions', JSON.stringify({ code: backup.code, via: backup.body.via }));
+
+        replies = { 'api.groq.com': busyReply, 'generativelanguage.googleapis.com': busyReply };
         const busy = await call({ messages: [{ role: 'user', content: 'hi' }] });
-        assert(busy.code === 429, 'out of free-tier tokens, the proxy says busy (the site then answers locally)', String(busy.code));
+        assert(busy.code === 429, 'both out of tokens: the proxy says busy (the site then answers locally)', String(busy.code));
         const foreign = await call({ messages: [{ role: 'user', content: 'hi' }] }, { origin: 'https://evil.example' });
         assert(foreign.code === 403, 'other websites can’t use the proxy', String(foreign.code));
         global.fetch = realFetch;

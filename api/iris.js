@@ -19,11 +19,38 @@
    from those facts. When the visitor asks to open something, the reply ends
    in a [[open:app]] tag, returned separately as `action` for the site to run.
 
-   Environment: GROQ_API_KEY (required); GROQ_MODEL (default openai/gpt-oss-120b,
-   which a free Groq key can use).
+   Providers, in order: Groq, then Gemini as the backup when Groq is busy,
+   out of free-tier tokens or down. If neither answers, the site falls back
+   to its in-browser engine.
+   Environment: GROQ_API_KEY and/or GEMINI_API_KEY (at least one);
+   GROQ_MODEL (default openai/gpt-oss-120b) and GEMINI_MODEL (default
+   gemini-3.5-flash-lite) — both work with free keys.
    ========================================================================== */
 
 import { OWNER } from './_owner.js';
+
+// Room for Groq to time out and Gemini to answer (Vercel's default is 10 s).
+export const config = { maxDuration: 20 };
+
+const PROVIDERS = [
+    {
+        name: 'groq',
+        key: () => process.env.GROQ_API_KEY,
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        timeoutMs: 8000,
+        body: (messages) => {
+            const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+            return { model, messages, max_completion_tokens: 700, temperature: 0.5, ...(/gpt-oss/.test(model) ? { reasoning_effort: 'low' } : {}) };
+        }
+    },
+    {
+        name: 'gemini',
+        key: () => process.env.GEMINI_API_KEY,
+        url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   // Gemini's OpenAI-compatible endpoint
+        timeoutMs: 9000,
+        body: (messages) => ({ model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite', messages, max_tokens: 700, temperature: 0.5, reasoning_effort: 'low' })
+    }
+];
 
 const ALLOWED_ORIGINS = [
     ...OWNER.origins,
@@ -92,9 +119,9 @@ export default async function handler(req, res) {
         return res.status(429).json({ error: 'Too many requests. Please wait a minute before asking Iris again.' });
     }
 
-    // Guardrail 3: Verify API Key is configured in environment
-    const key = process.env.GROQ_API_KEY;
-    if (!key) {
+    // Guardrail 3: at least one model key is configured
+    const available = PROVIDERS.filter(p => p.key());
+    if (!available.length) {
         return res.status(500).json({ error: 'AI Assistant model proxy is unconfigured' });
     }
 
@@ -139,37 +166,36 @@ export default async function handler(req, res) {
         ...(passages.length ? ['', 'CONTEXT:', ...passages.map((p, i) => `(${i + 1}) ${p}`)] : [])
     ].join('\n');
 
-    try {
-        const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${key}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
-                messages: [{ role: 'system', content: systemPrompt }, ...trimmed],
-                max_completion_tokens: 700,
-                temperature: 0.5,
-                ...(/gpt-oss/.test(process.env.GROQ_MODEL || 'openai/gpt-oss-120b') ? { reasoning_effort: 'low' } : {})
-            })
-        });
-        // Out of free-tier tokens for now: say so, and the site answers on its own.
-        if (upstream.status === 429) return res.status(429).json({ error: 'Iris is busy right now' });
-        if (!upstream.ok) {
-            return res.status(502).json({ error: 'Model service temporarily busy' });
-        }
-        const data = await upstream.json();
-        let reply = data.choices?.[0]?.message?.content || null;
-        // The action tag comes back separately, checked against the shape the prompt allows.
-        let action = null;
-        if (reply) {
+    // Groq first; Gemini takes over when Groq is busy, out of tokens, erroring or slow.
+    const messagesOut = [{ role: 'system', content: systemPrompt }, ...trimmed];
+    let busy = false;
+    for (const provider of available) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), provider.timeoutMs);
+        try {
+            const upstream = await fetch(provider.url, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${provider.key()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(provider.body(messagesOut)),
+                signal: ctrl.signal
+            });
+            if (upstream.status === 429) { busy = true; continue; }
+            if (!upstream.ok) continue;
+            const data = await upstream.json();
+            let reply = data.choices?.[0]?.message?.content || null;
+            if (!reply) continue;
+            // The action tag comes back separately, checked against the shape the prompt allows.
+            let action = null;
             const tag = reply.match(/\[\[open:([a-z]+)(?::([^\]\n]{1,80}))?\]\]/i);
             if (tag) action = { app: tag[1].toLowerCase(), target: tag[2] ? tag[2].trim() : null };
             reply = reply.replace(/\[\[[^\]\n]*\]\]/g, '').trim();
+            return res.status(200).json({ reply, action, via: provider.name });
+        } catch (e) {
+            // Unreachable or too slow: try the next provider.
+        } finally {
+            clearTimeout(timer);
         }
-        return res.status(200).json({ reply, action });
-    } catch (e) {
-        return res.status(502).json({ error: 'Upstream service unreachable' });
     }
+    // Every provider is out of free-tier tokens or down: the site answers on its own.
+    return res.status(busy ? 429 : 502).json({ error: busy ? 'Iris is busy right now' : 'Model service temporarily unavailable' });
 }

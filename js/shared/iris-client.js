@@ -31,7 +31,7 @@ window.IrisClient = (() => {
         if (!endpoint) return null;
         const context = window.IrisBrain ? IrisBrain.contextFor(withSubject(question, screen), 4) : [];
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 15000);
+        const timer = setTimeout(() => ctrl.abort(), 20000);   // room for the proxy to fall back to Gemini
         try {
             const res = await fetch(endpoint, {
                 method: 'POST',
