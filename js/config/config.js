@@ -8,7 +8,7 @@
 
 window.APP_CONFIG = Object.freeze({
     // e.g. '/api/iris' on Vercel/Netlify. null = offline knowledge-base mode.
-    IRIS_ENDPOINT: null,
+    IRIS_ENDPOINT: '/api/iris',
 
     // Serverless RSS aggregator for Medium/Substack (see api/feeds.js).
     FEEDS_ENDPOINT: null,
