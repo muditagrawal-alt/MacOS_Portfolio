@@ -46,6 +46,7 @@ const PROFILE_TEMPLATE = {
     experience: [],
     education: { degree: '', university: '', years: '', grade: '', gradeLabel: 'GPA', schooling: [] },
     courses: [], certificates: [], projects: [], skills: [], writing: [], notes: [], cutIdeas: [],
+    hackathons: [], events: [],
     resume: { file: '', preview: '', updated: '' },
     site: { title: '', description: '', url: '', image: '' }
 };
@@ -87,6 +88,18 @@ function escapeProfileHtml(value) {
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/** A place for the Maps app: { name, city, lat, lng }. Without coordinates it's still shown as text. */
+function normalizePlace(v) {
+    if (!v || typeof v !== 'object') return null;
+    const name = String(v.name || '').trim();
+    const city = String(v.city || '').trim();
+    const lat = Number(v.lat);
+    const lng = Number(v.lng);
+    const located = v.lat !== undefined && v.lat !== '' && isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+    if (!name && !city && !located) return null;
+    return { name, city, lat: located ? lat : null, lng: located ? lng : null, label: [name, city].filter(Boolean).join(', ') };
+}
+
 function normalizeProfile(raw) {
     const p = raw || {};
     const str = (v, d = '') => (typeof v === 'string' && v.trim() ? v.trim() : d);
@@ -123,13 +136,15 @@ function normalizeProfile(raw) {
     });
     p.link = (network) => p.links.find(l => l.network === network) || null;
 
-    p.experience = arr(p.experience).map(x => ({ role: str(x.role), org: str(x.org), dates: str(x.dates), bullets: arr(x.bullets).map(String) }));
+    p.experience = arr(p.experience).map(x => ({ role: str(x.role), org: str(x.org), dates: str(x.dates), bullets: arr(x.bullets).map(String), place: normalizePlace(x.place), remote: Boolean(x.remote) }));
     const e = p.education || {};
     p.education = {
         degree: str(e.degree), university: str(e.university), years: str(e.years),
-        grade: str(e.grade || e.cgpa), gradeLabel: str(e.gradeLabel, 'GPA'),
-        schooling: arr(e.schooling).map(s => ({ title: str(s.title), school: str(s.school), year: str(s.year), score: str(s.score), detail: str(s.detail) }))
+        grade: str(e.grade || e.cgpa), gradeLabel: str(e.gradeLabel, 'GPA'), place: normalizePlace(e.place),
+        schooling: arr(e.schooling).map(s => ({ title: str(s.title), school: str(s.school), year: str(s.year), score: str(s.score), detail: str(s.detail), place: normalizePlace(s.place) }))
     };
+    p.hackathons = arr(p.hackathons).filter(h => h.name).map(h => ({ name: str(h.name), date: str(h.date), result: str(h.result), project: str(h.project), detail: str(h.detail), place: normalizePlace(h.place) }));
+    p.events = arr(p.events).filter(v => v.name).map(v => ({ name: str(v.name), date: str(v.date), detail: str(v.detail), place: normalizePlace(v.place) }));
     p.courses = arr(p.courses).map(c => ({ title: str(c.title), issuer: str(c.issuer), year: str(c.year), detail: str(c.detail) }));
     p.certificates = arr(p.certificates).filter(c => c.title).map(c => ({ title: str(c.title), issuer: str(c.issuer), image: str(c.image, str(c.file)), file: str(c.file, str(c.image)) }));
 
@@ -139,13 +154,16 @@ function normalizeProfile(raw) {
         while (seen.has(id)) id += '-2';
         seen.add(id);
         const link = str(x.link, str(x.repo));
+        const live = x.live !== undefined ? Boolean(x.live) : Boolean(link && !isGitHubUrl(link));
         return {
             id, fsId: `proj-${id}`,
             name: str(x.name), title: str(x.title, str(x.name)), subtitle: str(x.subtitle, str(x.kind)), kind: str(x.kind, 'Project'),
             summary: str(x.summary, str(x.description)), description: str(x.description, str(x.summary)),
             highlights: arr(x.highlights).map(String), tags: arr(x.tags).map(t => String(t).toLowerCase()), aliases: arr(x.aliases).map(String),
-            link, repo: str(x.repo, isGitHubUrl(x.link) ? x.link : ''),
-            live: x.live !== undefined ? Boolean(x.live) : Boolean(link && !isGitHubUrl(link)),
+            link, repo: str(x.repo, isGitHubUrl(x.link) ? x.link : ''), live,
+            // What the iPhone version shows inside the phone: the live app, unless it refuses to be embedded (embed: false).
+            embed: x.embed === false || !live ? '' : str(x.embed, link),
+            video: str(x.video),
             date: str(x.date), icon: str(x.icon, 'assets/icons/filetype-project.svg'),
             featured: Boolean(x.featured), demo: x.demo || null, category: x.category || null
         };
@@ -174,6 +192,19 @@ function normalizeProfile(raw) {
     const r = p.resume || {};
     const file = str(r.file);
     p.resume = { file, preview: str(r.preview), updated: str(r.updated), downloadName: file ? file.split('/').pop() : '' };
+
+    // Every located moment, for Maps: where they studied, worked, competed and showed up.
+    const pin = (kind, title, subtitle, date, place) => (place && place.lat !== null ? {
+        id: `${kind}-${slugify(`${title}-${place.city || place.name}`)}`, kind, title, subtitle, date, place,
+        url: `https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lng}#map=16/${place.lat}/${place.lng}`
+    } : null);
+    p.places = [
+        pin('university', p.education.university, p.education.degree, p.education.years, p.education.place),
+        ...p.education.schooling.map(x => pin('school', x.school, x.title, x.year, x.place)),
+        ...p.experience.map(x => pin('work', x.org, x.role, x.dates, x.place)),
+        ...p.hackathons.map(x => pin('hackathon', x.name, x.result, x.date, x.place)),
+        ...p.events.map(x => pin('event', x.name, x.detail, x.date, x.place))
+    ].filter(Boolean);
 
     const s = p.site || {};
     p.siteDescription = str(s.description);   // only when the owner wrote one (setup/site-meta.js)

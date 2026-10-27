@@ -392,3 +392,8 @@ h2.sub small { color: var(--text-2); font-size: 13px; font-weight: 500; margin-l
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .step-intro h1, .welcome-hero h1 { font-size: 28px; }
 }
+
+/* ── Places ──────────────────────────────────────────────────────────── */
+.place-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 8px; }
+.place-status i { color: var(--tint); }
+@media (max-width: 760px) { .place-row { grid-template-columns: 1fr 1fr; } .place-row .btn { grid-column: 1 / -1; } }

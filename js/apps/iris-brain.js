@@ -152,6 +152,18 @@
             });
         }
 
+        // Hackathons and events, each opening its pin (Maps on iPhone, OpenStreetMap on the Mac).
+        const placeSource = (kind, title, label) => {
+            const pin = (P.places || []).find(x => x.kind === kind && x.title === title);
+            return { label, open: pin ? () => (typeof openMapPlace === 'function' ? openMapPlace(pin.id) : openExternal(pin.url)) : null };
+        };
+        P.hackathons.forEach(h => add(`Hackathon · ${h.name}`,
+            `${P.first} competed at ${h.name}${h.place ? ` at ${h.place.label}` : ''}${h.date ? ` (${h.date})` : ''}${h.result ? ` and finished ${h.result}` : ''}.${h.project ? ` Built: ${h.project}.` : ''}`,
+            placeSource('hackathon', h.name, `Maps · ${h.name}`), { kind: 'hackathon' }));
+        P.events.forEach(v => add(`Event · ${v.name}`,
+            `${P.first} attended ${v.name}${v.place ? ` at ${v.place.label}` : ''}${v.date ? ` (${v.date})` : ''}.${v.detail ? ` ${v.detail}.` : ''}`,
+            placeSource('event', v.name, `Maps · ${v.name}`), { kind: 'event' }));
+
         ((window.PHOTO_LIBRARY || {}).certificates || { items: [] }).items.forEach(c => {
             add('Certificates', `${c.title} certificate from ${c.issuer}.`, { label: 'Photos · Certificates', open: () => openWindow('photos-window') }, { kind: 'cert' });
         });

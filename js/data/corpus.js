@@ -48,6 +48,24 @@ window.PORTFOLIO_CORPUS = (() => {
             text: P.skills.map(g => `${g.label} (${g.items.join(', ')})`).join(', ') + '.',
             tags: ['skills', 'stack', ...P.skills.flatMap(g => g.items.map(i => i.toLowerCase()))]
         }] : []),
+        ...P.hackathons.map(h => {
+            const pin = P.places.find(x => x.kind === 'hackathon' && x.title === h.name);
+            return {
+                title: h.name, type: 'Hackathon', url: pin ? pin.url : null,
+                action: pin ? `open_place:${pin.id}` : null,
+                text: [h.result, h.place && h.place.label, h.date, h.project && `Built ${h.project}`].filter(Boolean).join(' · ') + '.',
+                tags: ['hackathon', 'hackathons', 'competition', 'finalist', ...words(h.name), ...words(h.place && h.place.label)]
+            };
+        }),
+        ...P.events.map(v => {
+            const pin = P.places.find(x => x.kind === 'event' && x.title === v.name);
+            return {
+                title: v.name, type: 'Event', url: pin ? pin.url : null,
+                action: pin ? `open_place:${pin.id}` : null,
+                text: [v.place && v.place.label, v.date, v.detail].filter(Boolean).join(' · ') + '.',
+                tags: ['event', 'events', 'summit', 'expo', 'conference', ...words(v.name), ...words(v.place && v.place.label)]
+            };
+        }),
         ...P.writing.map(w => ({
             title: w.title, type: 'Article', url: w.url || null,
             action: null,
@@ -127,6 +145,10 @@ function runCorpusAction(action, url) {
         case 'open_project':
             if (url) window.open(url, '_blank', 'noopener,noreferrer');
             else openWindow('appstore-window');
+            break;
+        case 'open_place':   // Maps on iPhone; an OpenStreetMap tab on the Mac
+            if (typeof openMapPlace === 'function') openMapPlace(arg);
+            else if (url) window.open(url, '_blank', 'noopener,noreferrer');
             break;
         default:
             if (url) window.open(url, '_blank', 'noopener,noreferrer');

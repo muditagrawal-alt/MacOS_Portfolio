@@ -48,7 +48,7 @@
         out.education.schooling = out.education.schooling || [];
         out.resume = { ...t.resume, ...(p.resume || {}) };
         out.site = { ...t.site, ...(p.site || {}) };
-        ['values', 'socials', 'experience', 'courses', 'certificates', 'projects', 'skills', 'writing', 'notes', 'cutIdeas'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
+        ['values', 'socials', 'experience', 'courses', 'certificates', 'projects', 'skills', 'writing', 'notes', 'cutIdeas', 'hackathons', 'events'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
         // Older info banks kept skills as { languages: [...] }.
         if (!Array.isArray(p.skills) && p.skills && typeof p.skills === 'object') out.skills = Object.entries(p.skills).map(([label, items]) => ({ label, items }));
         if (out.education.cgpa && !out.education.grade) out.education.grade = out.education.cgpa;
@@ -111,7 +111,25 @@
     }
 
     /* ── Field rendering ────────────────────────────────────────────────── */
+    /** Where something happened: venue and city, pinned on the map with OpenStreetMap's geocoder. */
+    function placeField(f) {
+        const pl = getPath(draft, f.path) || {};
+        const located = typeof pl.lat === 'number' && typeof pl.lng === 'number';
+        return `<div class="field wide place-field" data-place="${esc(f.path)}">
+            <label>${esc(f.label || 'Where')}</label>
+            <div class="place-row">
+                <input type="text" data-path="${esc(f.path)}.name" value="${esc(pl.name || '')}" placeholder="${esc(f.placeholder || 'Venue')}" aria-label="Venue">
+                <input type="text" data-path="${esc(f.path)}.city" value="${esc(pl.city || '')}" placeholder="City" aria-label="City">
+                <button type="button" class="btn small" data-act="locate" data-path="${esc(f.path)}"><i class="fas fa-location-crosshairs"></i> ${located ? 'Re-pin' : 'Pin it'}</button>
+            </div>
+            <small class="field-hint place-status">${located
+                ? `<i class="fas fa-location-dot"></i> On the map at ${pl.lat.toFixed(4)}, ${pl.lng.toFixed(4)} · <a href="https://www.openstreetmap.org/?mlat=${pl.lat}&amp;mlon=${pl.lng}#map=16/${pl.lat}/${pl.lng}" target="_blank" rel="noopener noreferrer">check it</a>`
+                : (f.hint || 'Optional. Pin it to put it on the Maps app.')}</small>
+        </div>`;
+    }
+
     function field(f) {
+        if (f.type === 'place') return placeField(f);
         const raw = getPath(draft, f.path);
         const id = `f-${f.path.replace(/\./g, '-')}`;
         let value = raw;
@@ -124,7 +142,8 @@
         } else if (f.type === 'select') {
             control = `<select ${common}>${f.options.map(([v, l]) => `<option value="${esc(v)}" ${String(value) === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
         } else if (f.type === 'toggle') {
-            control = `<label class="switch"><input type="checkbox" ${common} ${raw ? 'checked' : ''}><span></span></label>`;
+            const on = raw === undefined || raw === '' ? Boolean(f.default) : Boolean(raw);
+            control = `<label class="switch"><input type="checkbox" ${common} ${on ? 'checked' : ''}><span></span></label>`;
         } else {
             const inputType = { email: 'email', url: 'url', number: 'number' }[f.type] || 'text';
             control = `<input type="${inputType}" ${common} value="${esc(value)}" ${f.type === 'url' ? 'inputmode="url" autocapitalize="off"' : ''} ${f.type === 'email' ? 'autocomplete="email"' : ''}>`;
@@ -172,7 +191,9 @@
         certificates: () => ({ title: '', issuer: '' }),
         writing: () => ({ title: '', url: '', topic: '', summary: '' }),
         notes: () => ({ title: '', folder: 'Notes', date: new Date().toISOString().slice(0, 16), body: '' }),
-        cutIdeas: () => ({ name: '', kind: '', reason: '' })
+        cutIdeas: () => ({ name: '', kind: '', reason: '' }),
+        hackathons: () => ({ name: '', date: '', result: '', project: '' }),
+        events: () => ({ name: '', date: '', detail: '' })
     };
 
     function upload(cfg) {
@@ -280,7 +301,8 @@
                     { key: 'role', label: 'Role', placeholder: 'Software Engineer' },
                     { key: 'org', label: 'Organisation', placeholder: 'Analytical Engines Ltd.' },
                     { key: 'dates', label: 'Dates', placeholder: 'Jan 2024 – Present' },
-                    { key: 'bullets', label: 'Highlights', type: 'lines', wide: true, placeholder: 'One per line — what you did and what changed because of it' }
+                    { key: 'bullets', label: 'Highlights', type: 'lines', wide: true, placeholder: 'One per line — what you did and what changed because of it' },
+                    { key: 'place', label: 'Where', type: 'place', placeholder: 'Office or campus', hint: 'Optional. Leave it empty for remote work.' }
                 ]
             })
         },
@@ -292,7 +314,8 @@
                     { path: 'education.university', label: 'University', placeholder: 'University of London' },
                     { path: 'education.years', label: 'Years', placeholder: '2021 – 2025' },
                     { path: 'education.grade', label: 'Grade', placeholder: '3.8', hint: 'Optional.' },
-                    { path: 'education.gradeLabel', label: 'Grade label', placeholder: 'GPA', hint: 'GPA, CGPA, Grade, Class…' }
+                    { path: 'education.gradeLabel', label: 'Grade label', placeholder: 'GPA', hint: 'GPA, CGPA, Grade, Class…' },
+                    { path: 'education.place', label: 'Campus', type: 'place', placeholder: 'University campus' }
                 ])}
                 <h2 class="sub">Schooling</h2>
                 ${repeatable({
@@ -302,7 +325,8 @@
                         { key: 'title', label: 'Level', placeholder: 'High School Diploma' },
                         { key: 'school', label: 'School', placeholder: 'Central High School' },
                         { key: 'year', label: 'Year', placeholder: '2021' },
-                        { key: 'score', label: 'Result', placeholder: '92%' }
+                        { key: 'score', label: 'Result', placeholder: '92%' },
+                        { key: 'place', label: 'Where', type: 'place', placeholder: 'School' }
                     ]
                 })}
                 <h2 class="sub">Courses</h2>
@@ -332,13 +356,43 @@
                     { key: 'tags', label: 'Built with', type: 'tags', placeholder: 'Python, React, PostgreSQL' },
                     { key: 'date', label: 'When', placeholder: 'Mar 2025' },
                     { key: 'category', label: 'Category', placeholder: 'Web, AI, Design… (optional)' },
-                    { key: 'featured', label: 'Feature it first', type: 'toggle' }
+                    { key: 'video', label: 'Demo video', type: 'url', placeholder: 'https://youtu.be/… or a .mp4 link', hint: 'Optional. Plays on the project’s page.' },
+                    { key: 'featured', label: 'Feature it first', type: 'toggle' },
+                    { key: 'embed', label: 'Opens inside the iPhone version', type: 'toggle', default: true, hint: 'Turn off if the live site refuses to be embedded; it then opens in a browser tab.' }
                 ]
             }),
             validate: () => {
                 const bad = draft.projects.findIndex(x => !isUrl(x.link) || !isUrl(x.repo));
                 return bad >= 0 ? { path: `projects.${bad}.link`, message: 'Use full links starting with https://' } : null;
             }
+        },
+        {
+            id: 'hackathons', title: 'Hackathons & events', icon: 'fa-trophy',
+            render: () => intro('Hackathons & events', 'Where you competed and what you showed up for. Each one you pin appears on the iPhone version’s Maps app, and Iris can talk about all of them.') + `
+                ${repeatable({
+                    path: 'hackathons', addLabel: 'Add a hackathon',
+                    title: (h) => [h.name, h.result].filter(Boolean).join(' · ') || 'New hackathon',
+                    emptyHint: 'Finalist, winner or just there to build — they all count.',
+                    fields: [
+                        { key: 'name', label: 'Hackathon', placeholder: 'HackMIT 2025' },
+                        { key: 'result', label: 'Result', placeholder: 'Top 10 finalist' },
+                        { key: 'date', label: 'When', placeholder: 'Sep 2025' },
+                        { key: 'project', label: 'What you built', placeholder: 'Optional' },
+                        { key: 'place', label: 'Where', type: 'place', placeholder: 'Venue or campus' }
+                    ]
+                })}
+                <h2 class="sub">Events</h2>
+                ${repeatable({
+                    path: 'events', addLabel: 'Add an event',
+                    title: (v) => v.name || 'New event',
+                    emptyHint: 'Summits, expos and conferences you attended.',
+                    fields: [
+                        { key: 'name', label: 'Event', placeholder: 'PyCon 2025' },
+                        { key: 'date', label: 'When', placeholder: 'May 2025' },
+                        { key: 'detail', label: 'What you did there', wide: true, placeholder: 'Optional — spoke, volunteered, demoed…' },
+                        { key: 'place', label: 'Where', type: 'place', placeholder: 'Venue' }
+                    ]
+                })}`
         },
         {
             id: 'skills', title: 'Skills', icon: 'fa-wand-magic-sparkles',
@@ -538,6 +592,33 @@
         }
     }
 
+    /** Finds a venue with OpenStreetMap's geocoder (one request per click, as its usage policy asks). */
+    async function locate(btn) {
+        const path = btn.dataset.path;
+        const pl = getPath(draft, path) || {};
+        const status = btn.closest('[data-place]').querySelector('.place-status');
+        const q = [pl.name, pl.city].filter(Boolean).join(', ');
+        if (!q) { status.textContent = 'Type the venue and city first.'; return; }
+        btn.disabled = true;
+        status.textContent = 'Looking it up…';
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=en&q=${encodeURIComponent(q)}`);
+            const [hit] = await res.json();
+            if (!hit) {
+                // A shorter query often finds what a full address doesn't.
+                status.textContent = pl.city && pl.name ? `Couldn’t find “${q}”. Try a shorter venue name, or just the city.` : `Couldn’t find “${q}”.`;
+                return;
+            }
+            setPath(draft, path, { ...pl, lat: Number(Number(hit.lat).toFixed(5)), lng: Number(Number(hit.lon).toFixed(5)) });
+            changed();
+            render();
+        } catch (e) {
+            status.textContent = 'The map service didn’t answer. Check your connection and try again.';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
     /* ── Rendering ──────────────────────────────────────────────────────── */
     function render() {
         const s = STEPS[step];
@@ -572,7 +653,7 @@
         const p = draft;
         return ({
             you: Boolean(p.name), contact: Boolean(p.contact.email || p.contact.github || p.contact.linkedin), experience: p.experience.length > 0,
-            education: Boolean(p.education.degree), projects: p.projects.length > 0, skills: p.skills.length > 0,
+            education: Boolean(p.education.degree), projects: p.projects.length > 0, hackathons: p.hackathons.length + p.events.length > 0, skills: p.skills.length > 0,
             documents: Boolean(p.resume.file), extras: p.notes.length > 0 || p.values.length > 0, site: Boolean(p.site.url)
         })[id] || false;
     }
@@ -631,6 +712,15 @@
                 if (titleEl && cfgTitle) titleEl.textContent = cfgTitle(getPath(draft, `${m[1]}.${m[2]}`));
             }
             el.closest('.field') && el.closest('.field').classList.remove('invalid');
+            const placeBox = el.closest('[data-place]');
+            if (placeBox) {
+                const pl = getPath(draft, placeBox.dataset.place);
+                if (pl && pl.lat !== undefined) {
+                    delete pl.lat;
+                    delete pl.lng;
+                    placeBox.querySelector('.place-status').textContent = 'Changed — pin it again to update the map.';
+                }
+            }
             changed();
         } else if (el.dataset.config) {
             config[el.dataset.config] = el.value.trim();
@@ -654,7 +744,9 @@
         certificates: (c) => c.title || 'New certificate',
         notes: (n) => n.title || 'New note',
         writing: (w) => w.title || 'New article',
-        cutIdeas: (t) => t.name || 'New idea'
+        cutIdeas: (t) => t.name || 'New idea',
+        hackathons: (h) => [h.name, h.result].filter(Boolean).join(' · ') || 'New hackathon',
+        events: (v) => v.name || 'New event'
     };
 
     document.addEventListener('click', (e) => {
@@ -665,6 +757,7 @@
         if (act === 'start-fresh') { draft = blank(); uploads = {}; config = { web3formsKey: '', irisEndpoint: '' }; built = false; go(1); updatePreview(); return; }
         if (act === 'start-current') { draft = ensureShape(clone(CURRENT)); uploads = {}; config = { ...config, web3formsKey: templateKey }; built = false; go(1); updatePreview(); return; }
         if (act === 'tidy') { tidy(); return; }
+        if (act === 'locate') { locate(btn); return; }
         if (act === 'clear-upload') {
             const old = getPath(draft, btn.dataset.path);
             delete uploads[old];

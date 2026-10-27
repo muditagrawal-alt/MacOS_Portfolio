@@ -79,7 +79,13 @@ window.PROFILE_DATA = {
         "Built a dataset-agnostic ETL pipeline (Spark, Airflow) with a 3-tier OCR fallback chain across 6 languages",
         "Integrated a 9,000+ line email/scheduling agent into production, validated via CI/CD with RAGAS and TruLens",
         "Engineered 3 Intel-optimized RAG modes (INT8-quantized), cutting latency 2-3x while reaching 92% Recall@10"
-      ]
+      ],
+      "place": {
+        "name": "IIT Delhi",
+        "city": "New Delhi",
+        "lat": 28.545,
+        "lng": 77.18915
+      }
     },
     {
       "role": "Machine Learning Intern",
@@ -90,7 +96,13 @@ window.PROFILE_DATA = {
         "Architected a context-aware scene selector, replacing naive top-k selection with budget-optimized ranking",
         "Built a full-stack video prototype with user auth, async job processing, and live progress tracking",
         "Authored 2 security design specs proposing ML architectures for anomaly detection and content fingerprinting"
-      ]
+      ],
+      "place": {
+        "name": "Zee Tech and Innovation Centre",
+        "city": "Bengaluru",
+        "lat": 12.97679,
+        "lng": 77.59008
+      }
     },
     {
       "role": "Summer Intern",
@@ -101,7 +113,13 @@ window.PROFILE_DATA = {
         "Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability",
         "Validated Retrieval-Augmented Generation (RAG) pipelines and improved contextual retrieval accuracy",
         "Built Artifex.AI, a text-to-image tool integrating Stability AI’s SDXL 1.0 API with sub-5s latency"
-      ]
+      ],
+      "place": {
+        "name": "WESEE",
+        "city": "R. K. Puram, New Delhi",
+        "lat": 28.55796,
+        "lng": 77.18323
+      }
     }
   ],
   "education": {
@@ -116,16 +134,34 @@ window.PROFILE_DATA = {
         "school": "Navy Children School, New Delhi",
         "year": "2023",
         "score": "74%",
-        "detail": "CBSE Science Stream"
+        "detail": "CBSE Science Stream",
+        "place": {
+          "name": "Navy Children School",
+          "city": "Chanakyapuri, New Delhi",
+          "lat": 28.58249,
+          "lng": 77.19484
+        }
       },
       {
         "title": "Class 10 Secondary Examination",
         "school": "Navy Children School, Mumbai",
         "year": "2021",
         "score": "89%",
-        "detail": "CBSE Board Examination"
+        "detail": "CBSE Board Examination",
+        "place": {
+          "name": "Navy Children School",
+          "city": "Colaba, Mumbai",
+          "lat": 18.90975,
+          "lng": 72.80773
+        }
       }
-    ]
+    ],
+    "place": {
+      "name": "IILM University",
+      "city": "Greater Noida",
+      "lat": 28.46087,
+      "lng": 77.49059
+    }
   },
   "courses": [
     {
@@ -215,7 +251,9 @@ window.PROFILE_DATA = {
       ],
       "tags": ["vlm", "vision", "leads", "business card", "gemini", "fastapi", "react", "vercel"],
       "featured": true,
-      "aliases": ["business card", "lead extraction", "vlm"]
+      "aliases": ["business card", "lead extraction", "vlm"],
+      "repo": "https://github.com/muditagrawal-alt/VLM_Business_Card_Lead_Extraction",
+      "embed": false
     },
     {
       "id": "slam",
@@ -228,7 +266,8 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM",
       "summary": "Real-time camera trajectory & sparse 3D point cloud reconstruction from single-lens video without GPU or neural network. 10s clip reconstructs in <7s on CPU.",
       "description": "Camera trajectory and a sparse 3D point cloud from a single-lens RGB video. Classical multi-view geometry, no neural network, no GPU: a 10s clip reconstructs in under 7s on CPU.",
-      "tags": ["slam", "computer vision", "3d", "point cloud", "geometry", "cpu", "c++", "python"]
+      "tags": ["slam", "computer vision", "3d", "point cloud", "geometry", "cpu", "c++", "python"],
+      "link": "https://muditagrawal-alt--monocular-slam.modal.run"
     },
     {
       "id": "omnidoc",
@@ -302,7 +341,8 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Helix-Compiler",
       "summary": "C-based compiler implementation with lexical analysis, recursive descent AST parsing, three-address code generation, and DAG optimization.",
       "description": "Systems project implementing lexical analysis, AST parsing, symbol tables, intermediate representation, and machine translation with live web REPL.",
-      "tags": ["compiler", "systems", "c", "parsing"]
+      "tags": ["compiler", "systems", "c", "parsing"],
+      "embed": "https://muditagrawal03-helix-compiler.hf.space"
     },
     {
       "id": "multiva",
@@ -328,7 +368,8 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026",
       "summary": "Autonomous aerial surveillance & smart defense monitoring system built for Smart India Hackathon (SIH 2026).",
       "description": "Smart aerial monitoring and autonomous surveillance computer vision pipeline engineered for Smart India Hackathon.",
-      "tags": ["defense", "aerial", "surveillance", "sih", "computer vision"]
+      "tags": ["defense", "aerial", "surveillance", "sih", "computer vision"],
+      "link": "https://skyguard-ai-orcin.vercel.app"
     },
     {
       "id": "artifex",
@@ -504,5 +545,100 @@ window.PROFILE_DATA = {
   "site": {
     "url": "https://muditagrawal-alt.github.io/MacOS_Portfolio/",
     "image": "assets/og-image.jpg"
-  }
+  },
+  "hackathons": [
+    {
+      "name": "Watch the Code 2026",
+      "date": "2026",
+      "result": "Top 25 finalist",
+      "place": {
+        "name": "Graphic Era Hill University",
+        "city": "Haldwani",
+        "lat": 29.12428,
+        "lng": 79.51565
+      }
+    },
+    {
+      "name": "Hackverse 2.0",
+      "result": "Top 50",
+      "place": {
+        "name": "IILM University",
+        "city": "Gurugram",
+        "lat": 28.43365,
+        "lng": 77.10285
+      }
+    },
+    {
+      "name": "HackRust",
+      "result": "Top 25 finalist",
+      "place": {
+        "name": "Deenbandhu Chhotu Ram University of Science and Technology",
+        "city": "Murthal",
+        "lat": 29.02935,
+        "lng": 77.06032
+      }
+    },
+    {
+      "name": "Xen-a-Thon",
+      "result": "Top 50 finalist",
+      "place": {
+        "name": "Guru Tegh Bahadur Institute of Technology",
+        "city": "New Delhi",
+        "lat": 28.6317,
+        "lng": 77.11653
+      }
+    },
+    {
+      "name": "Hack O' Clock",
+      "result": "Top 50 finalist",
+      "place": {
+        "name": "IILM University",
+        "city": "Greater Noida",
+        "lat": 28.46087,
+        "lng": 77.49059
+      }
+    },
+    {
+      "name": "HackX 3.0",
+      "result": "Top 50 finalist",
+      "place": {
+        "name": "Manipal University Jaipur",
+        "city": "Jaipur",
+        "lat": 26.84291,
+        "lng": 75.56543
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "India AI Impact Summit 2026",
+      "date": "February 2026",
+      "place": {
+        "name": "Bharat Mandapam",
+        "city": "New Delhi",
+        "lat": 28.61724,
+        "lng": 77.24346
+      }
+    },
+    {
+      "name": "9th India International Water Week 2026",
+      "date": "September 2026",
+      "place": {
+        "name": "Bharat Mandapam",
+        "city": "New Delhi",
+        "lat": 28.61724,
+        "lng": 77.24346
+      }
+    },
+    {
+      "name": "The Battery Show India 2023",
+      "date": "October 2023",
+      "place": {
+        "name": "India Expo Centre & Mart",
+        "city": "Greater Noida",
+        "lat": 28.46149,
+        "lng": 77.49989
+      }
+    }
+  ]
 };

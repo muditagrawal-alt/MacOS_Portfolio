@@ -46,7 +46,7 @@ Any other profiles, as `[{ "network", "url", "handle", "blurb" }]`. `network` is
 
 ### `experience`
 
-Newest first, as `[{ "role", "org", "dates", "bullets": [] }]`. The first entry is what you're doing now: it's the green pill in the About window and Iris's "right now …". If every role contains "Intern", the About window counts internships instead of roles.
+Newest first, as `[{ "role", "org", "dates", "bullets": [], "place" }]`. The first entry is what you're doing now: it's the green pill in the About window and Iris's "right now …". If every role contains "Intern", the About window counts internships instead of roles.
 
 ### `education`
 
@@ -61,7 +61,7 @@ Newest first, as `[{ "role", "org", "dates", "bullets": [] }]`. The first entry 
 }
 ```
 
-`gradeLabel` is whatever your grade is called: GPA, CGPA, Class, Grade. Without a grade, the About window shows your skill count instead.
+Add `"place"` to the degree and to each school to pin them on the map (see [Places](#places)). `gradeLabel` is whatever your grade is called: GPA, CGPA, Class, Grade. Without a grade, the About window shows your skill count instead.
 
 ### `courses` and `certificates`
 
@@ -89,6 +89,8 @@ Newest first, as `[{ "role", "org", "dates", "bullets": [] }]`. The first entry 
 | `aliases` | Other names visitors might type, for Iris, Spotlight and Finder |
 | `demo` | `{ "description", "requirements", "download", "stack" }`: adds an installer disk image to the Mac |
 | `live` | Overrides whether the project counts as deployed |
+| `video` | A demo video (YouTube link or a video file), played on the project's page |
+| `embed` | Live apps open inside the iPhone version. Set `false` for a site that refuses to be embedded (it then opens in a browser tab), or give another address to embed, such as a Hugging Face Space's `https://<user>-<space>.hf.space` |
 
 ### `skills`
 
@@ -99,6 +101,23 @@ Groups, as `[{ "label": "Languages", "items": ["Python", "Go"] }]`.
 - `writing`: `[{ "title", "topic", "summary", "url", "minutes" }]`. Safari's reading list and Iris.
 - `notes`: `[{ "title", "folder", "body", "date" }]`. The Notes app on both versions. `body` understands `**bold**`, `*italic*`, `[links](https://…)`, `- ` lists, `> ` quotes and blank lines between paragraphs.
 - `cutIdeas`: `[{ "name", "kind", "reason" }]`. The Trash: ideas you dropped, and why.
+
+### `hackathons` and `events`
+
+- `hackathons`: `[{ "name", "result", "date", "project", "place" }]`, for example `"result": "Top 25 finalist"`.
+- `events`: `[{ "name", "date", "detail", "place" }]`: summits, expos and conferences you attended.
+
+Both are pinned on the Maps app, and Iris can talk about them.
+
+### Places
+
+Anything with a `"place"` (a role, the degree, a school, a hackathon, an event) gets a pin on the iPhone version's Maps app:
+
+```json
+"place": { "name": "Venue or campus", "city": "City", "lat": 51.5007, "lng": -0.1246 }
+```
+
+Without `lat` and `lng` it's shown as text only. The questionnaire's **Pin it** button looks the place up with OpenStreetMap and fills them in.
 
 ### `resume`
 

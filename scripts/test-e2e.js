@@ -1543,6 +1543,16 @@ const section = (name) => !only || only.test(name);
         await page.fill('[data-path="projects.0.link"]', 'https://bernoulli.example.com');
         await page.fill('[data-path="projects.0.tags"]', 'Algorithms, Mathematics');
         await page.click('#setup-next');
+        // Hackathons & events: pinning a venue (the geocoder answers from a fixture).
+        await ctx.route(/nominatim\.openstreetmap\.org/, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[{"lat":"51.50553","lon":"-0.13283"}]' }));
+        await page.click('[data-act="add"][data-list="hackathons"]');
+        await page.fill('[data-path="hackathons.0.name"]', 'Analytical Hack');
+        await page.fill('[data-path="hackathons.0.result"]', 'Winner');
+        await page.fill('[data-path="hackathons.0.place.name"]', 'Royal Society');
+        await page.fill('[data-path="hackathons.0.place.city"]', 'London');
+        await page.click('[data-act="locate"][data-path="hackathons.0.place"]');
+        await page.waitForSelector('[data-place="hackathons.0.place"] .fa-location-dot', { timeout: 4000 });
+        await page.click('#setup-next');
         await page.click('[data-act="add"][data-list="skills"]');
         await page.fill('[data-path="skills.0.label"]', 'Languages');
         await page.fill('[data-path="skills.0.items"]', 'Notation, French');
@@ -1566,6 +1576,7 @@ const section = (name) => !only || only.test(name);
         if (files.includes('link-preview.jpg')) fs.copyFileSync(path.join(tmp, 'assets/me/link-preview.jpg'), SHOTS + 'setup-link-preview.jpg');
         const r = {
           profile: /"name": "Ada Lovelace"/.test(profileSrc) && /"pronouns": "she"/.test(profileSrc),
+          hackathon: /"name": "Analytical Hack"/.test(profileSrc) && /"lat": 51\.50553/.test(profileSrc),
           photo: files.some(f => /^photo\.(png|jpg)$/.test(f)),
           resume: files.includes('ada-lovelace-resume.pdf'),
           icon: files.some(f => /^project-bernoulli-numbers\.png$/.test(f)),
