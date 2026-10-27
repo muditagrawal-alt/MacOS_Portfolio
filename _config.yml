@@ -1,0 +1,10 @@
+# GitHub Pages (Jekyll): what the public site serves. The setup questionnaire and
+# admin, the tooling and the serverless functions stay out of it.
+exclude:
+  - setup/
+  - scripts/
+  - api/
+  - package.json
+  - package-lock.json
+  - node_modules/
+  - test-results/

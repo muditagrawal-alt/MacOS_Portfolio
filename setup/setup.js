@@ -7,12 +7,19 @@
    uploaded files and service keys to the local setup server (`npm start` /
    `npm run setup`), which writes them into the repository. Without that
    server, Build downloads a profile.js to drop in by hand.
+
+   With ?admin=1 (`npm run admin`) it's the owner's admin: no "start fresh",
+   an admin home with every section and what's unpublished, edits that start
+   from the live info bank, and a Publish button (setup/publish.js).
    ========================================================================== */
 
 (function () {
-    const STATE_KEY = 'portfolio-setup-state';
+    const ADMIN = new URLSearchParams(location.search).has('admin');
+    const STATE_KEY = ADMIN ? 'portfolio-admin-state' : 'portfolio-setup-state';
     const PREVIEW_KEY = 'portfolio-setup-preview';
-    const CURRENT = JSON.parse(JSON.stringify(window.PROFILE_DATA || {}));
+    let CURRENT = JSON.parse(JSON.stringify(window.PROFILE_DATA || {}));
+    // An unsaved admin draft is only resumed if the info bank hasn't changed since.
+    const baseOf = (p) => { let h = 0; for (const ch of JSON.stringify(p)) h = (h * 31 + ch.charCodeAt(0)) | 0; return h; };
     const NETWORKS = SOCIAL_NETWORKS;   // from js/data/profile-schema.js
 
     const $ = (sel, root = document) => root.querySelector(sel);
@@ -58,11 +65,11 @@
 
     function persist() {
         try {
-            localStorage.setItem(STATE_KEY, JSON.stringify({ draft, uploads, config, step }));
+            localStorage.setItem(STATE_KEY, JSON.stringify({ draft, uploads, config, step, base: baseOf(CURRENT) }));
             flashSaved('Draft saved in this browser');
         } catch (e) {
             // Large uploads (a PDF) can exceed storage: keep the text, drop the files.
-            try { localStorage.setItem(STATE_KEY, JSON.stringify({ draft, uploads: {}, config, step })); } catch (e2) { /* storage unavailable */ }
+            try { localStorage.setItem(STATE_KEY, JSON.stringify({ draft, uploads: {}, config, step, base: baseOf(CURRENT) })); } catch (e2) { /* storage unavailable */ }
             flashSaved('Draft saved (files are kept until you close this tab)');
         }
     }
@@ -78,7 +85,7 @@
     function restore() {
         try {
             const s = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
-            if (s && s.draft) {
+            if (s && s.draft && (!ADMIN || s.base === baseOf(CURRENT))) {
                 draft = ensureShape(s.draft);
                 uploads = s.uploads || {};
                 config = { ...config, ...(s.config || {}) };
@@ -201,7 +208,7 @@
         const src = assetSrc(path);
         const isImage = cfg.accept.startsWith('image');
         return `<div class="upload ${cfg.round ? 'round' : ''}" data-upload="${esc(cfg.path)}" data-accept="${esc(cfg.accept)}" data-target="${esc(cfg.target)}" ${cfg.maxSide ? `data-max-side="${cfg.maxSide}"` : ''}>
-            <div class="upload-art">${path ? (isImage ? `<img src="${esc(src)}" alt="">` : '<i class="fas fa-file-pdf"></i>') : `<i class="${cfg.icon || 'fas fa-image'}"></i>`}</div>
+            <div class="upload-art">${path ? (isImage ? `<img src="${esc(src)}" alt="">` : `<i class="${cfg.icon || 'fas fa-file'}"></i>`) : `<i class="${cfg.icon || 'fas fa-image'}"></i>`}</div>
             <div class="upload-text">
                 <strong>${esc(cfg.label)}</strong>
                 <small>${path ? esc(path.split('/').pop()) : esc(cfg.hint || '')}</small>
@@ -220,8 +227,8 @@
     /* ── Steps ──────────────────────────────────────────────────────────── */
     const STEPS = [
         {
-            id: 'welcome', title: 'Welcome', icon: 'fa-hand-sparkles',
-            render: () => `
+            id: 'welcome', title: ADMIN ? 'Admin home' : 'Welcome', icon: ADMIN ? 'fa-house' : 'fa-hand-sparkles',
+            render: () => ADMIN ? renderAdminHome() : `
                 <div class="welcome">
                     <div class="welcome-hero">
                         <img src="../assets/icons/favicon.svg" alt="">
@@ -346,7 +353,7 @@
                 path: 'projects', addLabel: 'Add a project',
                 title: (x) => x.name || 'New project',
                 emptyHint: 'No projects yet — add the ones you’d most like people to try.',
-                extra: (x, i) => upload({ path: `projects.${i}.icon`, target: `assets/me/project-${slug(x.name || `project-${i + 1}`)}.png`, accept: 'image/*', label: 'Icon', hint: 'Optional — generated if left empty.', icon: 'fas fa-cube', maxSide: 512 }),
+                extra: (x, i) => `<div class="upload-row">${upload({ path: `projects.${i}.icon`, target: `assets/me/project-${slug(x.name || `project-${i + 1}`)}.png`, accept: 'image/*', label: 'Icon', hint: 'Optional — generated if left empty.', icon: 'fas fa-cube', maxSide: 512 })}${upload({ path: `projects.${i}.video`, target: `assets/me/project-${slug(x.name || `project-${i + 1}`)}-demo.mp4`, accept: 'video/*', label: 'Demo clip', hint: 'MP4 or WebM, up to 40 MB — or paste a YouTube link below.', icon: 'fas fa-film' })}</div>`,
                 fields: [
                     { key: 'name', label: 'Name', placeholder: 'Difference Engine' },
                     { key: 'subtitle', label: 'One-line description', placeholder: 'Mechanical calculator for polynomial tables' },
@@ -549,6 +556,20 @@
     }
 
     function renderDone() {
+        if (ADMIN) {
+            return `<div class="done-screen">
+                <div class="done-badge"><i class="fas fa-check"></i></div>
+                <h1>Saved</h1>
+                <p>Your changes are saved on this computer. Both the Mac and iPhone versions use them. Publish to put them live.</p>
+                <div class="admin-publish" id="admin-publish"></div>
+                ${renderTidy()}
+                <div class="done-actions">
+                    <a class="btn" href="../?view=mac" target="_blank" rel="noopener"><i class="fas fa-laptop"></i> Mac version</a>
+                    <a class="btn" href="../ios.html?view=ios" target="_blank" rel="noopener"><i class="fas fa-mobile-screen"></i> iPhone version</a>
+                </div>
+                <button type="button" class="link-btn" data-act="goto" data-step="0">Back to admin home</button>
+            </div>`;
+        }
         return `<div class="done-screen">
             <div class="done-badge"><i class="fas fa-check"></i></div>
             <h1>${server ? 'It’s yours' : 'Downloaded'}</h1>
@@ -567,6 +588,77 @@
             </ol>
             <button type="button" class="link-btn" data-act="goto" data-step="1">Keep editing</button>
         </div>`;
+    }
+
+    /** The owner's start page: every section, and what's waiting to be published. */
+    function renderAdminHome() {
+        const p = draft || CURRENT;
+        const sections = [
+            [1, 'fa-user', 'About you', p.tagline || 'Name, photo, bio'],
+            [2, 'fa-at', 'Contact & links', [p.contact.email, `${(p.socials || []).length} other profiles`].filter(Boolean).join(' · ')],
+            [3, 'fa-briefcase', 'Experience', `${p.experience.length} role${p.experience.length === 1 ? '' : 's'}`],
+            [4, 'fa-graduation-cap', 'Education', p.education.degree || 'Degree and schooling'],
+            [5, 'fa-cube', 'Projects', `${p.projects.length} projects · videos, links, icons`],
+            [6, 'fa-trophy', 'Hackathons & events', `${(p.hackathons || []).length} hackathons · ${(p.events || []).length} events`],
+            [7, 'fa-wand-magic-sparkles', 'Skills', `${p.skills.length} groups`],
+            [8, 'fa-file-pdf', 'Résumé & certificates', `${p.resume.file ? 'Résumé' : 'No résumé'} · ${p.certificates.length} certificates`],
+            [9, 'fa-note-sticky', 'Notes & extras', `${(p.notes || []).length} notes`],
+            [10, 'fa-globe', 'Site & services', p.site.url || 'Address, contact form, Iris']
+        ].filter(([i]) => STEPS[i]);
+        setTimeout(loadPublishing, 0);
+        return `
+            <div class="admin-home">
+                <header class="admin-hero">
+                    <img src="${esc(assetSrc(p.photo) || '../assets/icons/filetype-contact.svg')}" alt="">
+                    <div>
+                        <h1>Welcome back${p.name ? `, ${esc(String(p.name).split(/\s+/)[0])}` : ''}</h1>
+                        <p>Change anything here and both the Mac and iPhone versions follow. Nothing goes live until you publish. This page only exists on your computer.</p>
+                    </div>
+                </header>
+                <div class="admin-publish" id="admin-publish"></div>
+                <div class="admin-grid">${sections.map(([i, icon, title, sub]) => `
+                    <button type="button" class="admin-card" data-act="goto" data-step="${i}">
+                        <i class="fas ${icon}"></i><strong>${esc(title)}</strong><small>${esc(sub)}</small>
+                    </button>`).join('')}
+                </div>
+            </div>`;
+    }
+
+    async function loadPublishing() {
+        const box = $('#admin-publish');
+        if (!box || !server) return;
+        try {
+            const st = await (await fetch('/__setup/publishing', { cache: 'no-store' })).json();
+            if (!st.repo || !st.remote) { box.innerHTML = '<p class="admin-note"><i class="fas fa-circle-info"></i> This copy isn’t connected to GitHub, so Publish is off. Your saves still work.</p>'; return; }
+            const pending = st.changed.length + (st.ahead ? 1 : 0);
+            box.innerHTML = pending ? `
+                <div class="admin-pending">
+                    <div><strong>${st.changed.length ? `${st.changed.length} unpublished change${st.changed.length === 1 ? '' : 's'}` : 'Saved, not yet pushed'}</strong>
+                    <small>Publishes to <b>${esc(st.branch)}</b> on GitHub${st.branch !== 'main' ? ' — the live site deploys from main' : ' — live in about a minute'}.</small>
+                    ${st.changed.length ? `<details><summary>Files</summary><ul>${st.changed.slice(0, 40).map(f => `<li><code>${esc(f)}</code></li>`).join('')}</ul></details>` : ''}</div>
+                    <button type="button" class="btn primary" data-act="publish"><i class="fas fa-cloud-arrow-up"></i> Publish</button>
+                </div>` : `<p class="admin-note ok"><i class="fas fa-circle-check"></i> Everything is published to <b>${esc(st.branch)}</b>.</p>`;
+        } catch (e) {
+            box.innerHTML = '';
+        }
+    }
+
+    async function publishNow(btn) {
+        const box = $('#admin-publish');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing…';
+        try {
+            const res = await fetch('/__setup/publish', { method: 'POST' });
+            const out = await res.json();
+            if (!res.ok) throw new Error(out.error || 'Publishing failed.');
+            box.innerHTML = out.published
+                ? `<p class="admin-note ok"><i class="fas fa-circle-check"></i> Published to <b>${esc(out.branch)}</b> (${esc(out.commit)}). ${out.branch === 'main' ? 'The live site updates in about a minute.' : 'Merge it into main to put it live.'}</p>`
+                : `<p class="admin-note ok"><i class="fas fa-circle-check"></i> ${esc(out.message)}</p>`;
+        } catch (e) {
+            box.insertAdjacentHTML('beforeend', `<p class="build-error">${esc(e.message)}</p>`);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> Publish';
+        }
     }
 
     function renderTidy() {
@@ -625,6 +717,7 @@
         $('#setup-step').innerHTML = s.render();
         $('#setup-step').dataset.step = s.id;
         if (s.id === 'review' && !built) paintSharePreview();
+        if (s.id === 'review' && built && ADMIN) setTimeout(loadPublishing, 0);
         $('#setup-steps').innerHTML = STEPS.map((x, i) => `
             <li class="${i === step ? 'current' : ''} ${i < step || (draft && i > 0 && stepDone(i)) ? 'done' : ''}">
                 <button type="button" data-act="goto" data-step="${i}" ${!draft && i > 0 ? 'disabled' : ''} ${i === step ? 'aria-current="step"' : ''}>
@@ -639,7 +732,7 @@
         const last = step === STEPS.length - 1;
         next.hidden = step === 0 || (last && built);
         next.disabled = false;
-        next.innerHTML = last ? (server ? '<i class="fas fa-hammer"></i> Build my portfolio' : '<i class="fas fa-download"></i> Download profile.js')
+        next.innerHTML = last ? (server ? (ADMIN ? '<i class="fas fa-floppy-disk"></i> Save changes' : '<i class="fas fa-hammer"></i> Build my portfolio') : '<i class="fas fa-download"></i> Download profile.js')
             : step === STEPS.length - 2 ? 'Review <i class="fas fa-arrow-right"></i>' : 'Continue <i class="fas fa-arrow-right"></i>';
         $('#setup-hint-text').textContent = '';
         $('.setup-main').scrollTop = 0;
@@ -757,6 +850,7 @@
         if (act === 'start-fresh') { draft = blank(); uploads = {}; config = { web3formsKey: '', irisEndpoint: '' }; built = false; go(1); updatePreview(); return; }
         if (act === 'start-current') { draft = ensureShape(clone(CURRENT)); uploads = {}; config = { ...config, web3formsKey: templateKey }; built = false; go(1); updatePreview(); return; }
         if (act === 'tidy') { tidy(); return; }
+        if (act === 'publish') { publishNow(btn); return; }
         if (act === 'locate') { locate(btn); return; }
         if (act === 'clear-upload') {
             const old = getPath(draft, btn.dataset.path);
@@ -824,13 +918,16 @@
         const accept = box.dataset.accept;
         if (accept === 'application/pdf' && file.type !== 'application/pdf') { alertBox(box, 'That isn’t a PDF.'); return; }
         if (accept.startsWith('image') && !file.type.startsWith('image/')) { alertBox(box, 'That isn’t an image.'); return; }
-        if (file.size > 15 * 1024 * 1024) { alertBox(box, 'Files must be under 15 MB.'); return; }
+        if (accept.startsWith('video') && !file.type.startsWith('video/')) { alertBox(box, 'That isn’t a video.'); return; }
+        const limit = accept.startsWith('video') ? 40 : 15;
+        if (file.size > limit * 1024 * 1024) { alertBox(box, `Files must be under ${limit} MB.`); return; }
         let target = box.dataset.target;
         let data = accept.startsWith('image') ? await resizeImage(file, Number(box.dataset.maxSide) || 0) : await readAsDataUrl(file);
         if (accept.startsWith('image')) {
             const ext = data.startsWith('data:image/png') ? 'png' : data.startsWith('data:image/gif') ? 'gif' : 'jpg';
             target = target.replace(/\.[a-z]+$/, `.${ext}`);
         }
+        if (accept.startsWith('video')) target = target.replace(/\.[a-z0-9]+$/, `.${{ 'video/webm': 'webm', 'video/quicktime': 'mov' }[file.type] || 'mp4'}`);
         const old = getPath(draft, box.dataset.upload);
         if (old && old !== target) delete uploads[old];
         uploads[target] = data;
@@ -1158,7 +1255,7 @@
         const btn = $('#setup-next');
         if (!String(draft.name || '').trim()) { go(1); return; }
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Building…';
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${ADMIN ? 'Saving…' : 'Building…'}`;
         ensureProjectIcons();
         await ensureLinkPreview();
         const files = Object.entries(referencedUploads()).map(([path, data]) => ({ path, data }));
@@ -1173,12 +1270,13 @@
             leftovers = out.leftovers || [];
             tidied = 0;
             built = true;
+            CURRENT = clone(draft);   // what's on disk now
             persist();
             render();
         } catch (e) {
             err.textContent = e.message;
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-hammer"></i> Build my portfolio';
+            btn.innerHTML = ADMIN ? '<i class="fas fa-floppy-disk"></i> Save changes' : '<i class="fas fa-hammer"></i> Build my portfolio';
         }
     }
 
@@ -1205,6 +1303,19 @@
                 config = { web3formsKey: c.web3formsKey || '', irisEndpoint: c.irisEndpoint || '' };
             }
         } catch (e) { server = false; }
+        if (ADMIN) {
+            document.title = 'Admin — Portfolio';
+            $('.setup-brand strong').textContent = 'Portfolio Admin';
+            $('.setup-brand small').textContent = 'Only on this computer';
+            if (!server) {
+                $('#setup-step').innerHTML = intro('Admin needs your computer', 'Open it with <code>npm run admin</code> in the portfolio’s folder. It never runs on the public site.');
+                return;
+            }
+            if (!restore()) { draft = ensureShape(clone(CURRENT)); step = 0; }
+            render();
+            updatePreview();
+            return;
+        }
         const had = restore();
         if (!had) step = 0;
         render();

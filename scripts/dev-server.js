@@ -7,8 +7,14 @@
                         instead, so the site can be made yours before anything
                         else (skip it and it won't ask again).
      npm run setup      opens the questionnaire any time.
+     npm run admin      the owner's admin: the same questionnaire, starting from
+                        the current info bank, with a Publish button that
+                        commits and pushes the content (setup/publish.js).
 
-   Options: --port 8000  --no-open  --setup
+   Options: --port 8000  --no-open  --setup  --admin
+
+   None of this is ever public: it runs on this machine only, and setup/ is
+   excluded from the deployed site (_config.yml, .vercelignore).
 
    The questionnaire saves through POST /__setup/save, which writes the info
    bank and uploaded files (setup/apply.js); POST /__setup/tidy removes the
@@ -22,12 +28,13 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const setup = require('../setup/apply.js');
+const publisher = require('../setup/publish.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(`--${name}`);
 const PORT = Number((args[args.indexOf('--port') + 1] || '').match(/^\d+$/) ? args[args.indexOf('--port') + 1] : process.env.PORT || 8000);
-const MAX_BODY = 60 * 1024 * 1024;
+const MAX_BODY = 120 * 1024 * 1024;   // a demo video, base64-encoded
 
 const TYPES = {
     '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -79,6 +86,18 @@ async function handleSetupApi(req, res, route) {
             const { written, leftovers } = setup.saveSubmission(body.profile, { files: body.files || [], config: body.config }, ROOT);
             console.log(`  ✔ Saved your portfolio (${written.length} files): ${written.join(', ')}`);
             return send(res, 200, { ok: true, written, leftovers });
+        } catch (e) {
+            return send(res, 400, { error: e.message });
+        }
+    }
+    if (route === 'publishing' && req.method === 'GET') {
+        return send(res, 200, publisher.status(ROOT));
+    }
+    if (route === 'publish' && req.method === 'POST') {
+        try {
+            const result = publisher.publish(ROOT);
+            console.log(result.published ? `  ✔ Published ${result.files.length} files to ${result.branch} (${result.commit})` : `  ${result.message}`);
+            return send(res, 200, { ok: true, ...result });
         } catch (e) {
             return send(res, 400, { error: e.message });
         }
@@ -136,9 +155,10 @@ server.listen(PORT, '127.0.0.1', () => {
     const openSetup = flag('setup') || firstRun;
     console.log(`\n  Portfolio running at ${base}`);
     console.log(`  iPhone version:     ${base}ios.html?view=ios`);
-    console.log(`  Setup questionnaire: ${base}setup/\n`);
-    if (firstRun && !flag('setup')) console.log('  First run here — opening the questionnaire so you can make it yours.\n');
-    openBrowser(openSetup ? `${base}setup/` : base);
+    console.log(`  Setup questionnaire: ${base}setup/`);
+    console.log(`  Admin:              ${base}setup/?admin=1  (this machine only)\n`);
+    if (firstRun && !flag('setup') && !flag('admin')) console.log('  First run here — opening the questionnaire so you can make it yours.\n');
+    openBrowser(flag('admin') ? `${base}setup/?admin=1` : openSetup ? `${base}setup/` : base);
 });
 
 server.on('error', (e) => {

@@ -1,0 +1,5 @@
+# Vercel serves the site too (it hosts api/iris.js). Keep the questionnaire,
+# admin and tooling off it.
+setup/
+scripts/
+test-results/

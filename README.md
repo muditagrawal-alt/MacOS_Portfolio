@@ -46,9 +46,15 @@ git push
 
 On GitHub, go to **Settings → Pages → Deploy from a branch → `main` / (root)**. Your portfolio is at `https://<you>.github.io/<repository>/`, and phones get the iPhone version.
 
-**Changing it later:** run `npm run setup` to reopen the questionnaire with your answers. Or edit `js/data/profile.js` by hand and run `npm run refresh`. [setup/README.md](setup/README.md) describes every field, and the questionnaire can import and export the info bank as JSON.
+### Your admin
 
-**No Node?** The questionnaire also works from any static server, including the deployed site's `/setup/`. Its **Download profile.js** button gives you the file to put in `js/data/profile.js`.
+Once it's yours, `npm run admin` opens your admin: the same questionnaire, starting from what's live. Change a photo, the résumé, a project's demo video or links, certificates, hackathons; both the Mac and iPhone versions follow. **Save** keeps the changes on your computer, and **Publish** commits and pushes just those files, so the live site updates in about a minute with no git commands. It shows the branch and the files before anything goes out.
+
+The admin is never public. It runs on your computer only (`127.0.0.1`; other machines and other websites are refused), and `setup/` is excluded from the deployed site (`_config.yml` for GitHub Pages, `.vercelignore` for Vercel).
+
+You can also edit `js/data/profile.js` by hand and run `npm run refresh`. [setup/README.md](setup/README.md) describes every field, and the questionnaire can import and export the info bank as JSON.
+
+**No Node?** Serve the folder with any static server on your computer (`python3 -m http.server`) and open `/setup/`: its **Download profile.js** button gives you the file to put in `js/data/profile.js`.
 
 ## 📱 One link, two experiences
 
@@ -131,6 +137,7 @@ Interactive terminal with custom commands:
 ```bash
 npm start            # http://localhost:8000 (the questionnaire opens on the first run)
 npm run setup        # reopen the questionnaire
+npm run admin        # your admin: edit what's live, then Publish
 npm run refresh      # after editing js/data/profile.js by hand
 ```
 

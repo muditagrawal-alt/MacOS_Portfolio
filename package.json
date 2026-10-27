@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/dev-server.js",
     "setup": "node scripts/dev-server.js --setup",
+    "admin": "node scripts/dev-server.js --admin",
     "refresh": "node setup/apply.js refresh",
     "test:syntax": "node scripts/test-syntax.js",
     "test:assets": "node scripts/test-assets.js",

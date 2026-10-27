@@ -2,8 +2,9 @@
 
 Everything about the portfolio's owner lives in one file, `js/data/profile.js`: name, photo, experience, projects, résumé, links. Both versions of the site, the Mac and the iPhone, read it, along with Finder, Spotlight, Terminal, Iris and every other app. Nothing personal is written anywhere else.
 
-There are two ways to fill it in:
+There are three ways to change it:
 
+- **The admin.** Run `npm run admin` once the portfolio is yours. It's the questionnaire starting from what's live, with **Publish** to commit and push the changes. It only ever runs on your computer.
 - **The questionnaire.** Run `npm run setup` (or `npm start` the first time). It edits a draft with a live preview, then writes the info bank, your files and everything generated from them.
 - **By hand.** Edit `js/data/profile.js`, then run `npm run refresh` to regenerate the page titles, link previews and Home Screen name. Run `npm test` to check the result.
 

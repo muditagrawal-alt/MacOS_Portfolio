@@ -1856,6 +1856,53 @@ const section = (name) => !only || only.test(name);
         expect(errors.length === 0, errors.slice(0, 4).join(' | '));
       });
 
+      await test('the owner’s admin edits the live info bank and publishes only the content', async () => {
+        const { spawnSync } = require('child_process');
+        const work = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-admin-'));
+        const repo = path.join(work, 'site');
+        const remote = path.join(work, 'github.git');
+        fs.cpSync(ROOT, repo, { recursive: true, filter: (src) => !/[\\/](node_modules|\.git|test-results|scratch|\.portfolio)([\\/]|$)/.test(path.relative(ROOT, src) ? `/${path.relative(ROOT, src)}` : '') });
+        const git = (cwd, ...args) => spawnSync('git', args, { cwd, encoding: 'utf8' });
+        git(work, 'init', '-q', '--bare', remote);
+        git(repo, 'init', '-q', '-b', 'main');
+        git(repo, 'config', 'user.email', 'admin@example.com');
+        git(repo, 'config', 'user.name', 'Admin Test');
+        git(repo, 'add', '-A');
+        git(repo, 'commit', '-q', '-m', 'initial');
+        git(repo, 'remote', 'add', 'origin', remote);
+        git(repo, 'push', '-q', '-u', 'origin', 'main');
+        // A code edit lying around must not ride along with a content publish.
+        fs.appendFileSync(path.join(repo, 'js/main.js'), '\n// work in progress\n');
+        const aport = port + 2;
+        const aserver = spawn(process.execPath, ['scripts/dev-server.js', '--port', String(aport), '--no-open'], { cwd: repo, stdio: ['ignore', 'pipe', 'pipe'] });
+        let r = {};
+        try {
+          await new Promise((resolve) => aserver.stdout.on('data', d => /Portfolio running/.test(d) && resolve()));
+          const admin = await ctx.newPage();
+          await admin.goto(`http://localhost:${aport}/setup/?admin=1`);
+          await admin.waitForSelector('.admin-home', { timeout: 6000 });
+          await admin.waitForSelector('#admin-publish .admin-note', { timeout: 6000 });
+          r.home = await admin.evaluate(() => ({ title: document.querySelector('.admin-hero h1').textContent, clean: document.querySelector('#admin-publish').textContent }));
+          await admin.click('.admin-card[data-step="1"]');
+          await admin.fill('[data-path="tagline"]', 'Builds things people use');
+          await admin.click(`[data-act="goto"][data-step="${await admin.evaluate(() => document.querySelectorAll('#setup-steps li').length - 1)}"]`);
+          await admin.click('#setup-next');                       // Save changes
+          await admin.waitForSelector('[data-act="publish"]', { timeout: 6000 });
+          await admin.screenshot({ path: SHOTS + 'admin-saved.png' });
+          await admin.click('[data-act="publish"]');
+          await admin.waitForSelector('#admin-publish .admin-note.ok', { timeout: 15000 });
+          r.result = await admin.textContent('#admin-publish');
+          await admin.close();
+          r.pushed = git(work, '--git-dir', remote, 'show', 'main:js/data/profile.js').stdout.includes('Builds things people use');
+          r.codeLeft = git(repo, 'status', '--porcelain').stdout.includes('js/main.js');
+          r.codePushed = git(work, '--git-dir', remote, 'show', '--stat', '--format=', 'main').stdout.includes('main.js');
+        } finally {
+          aserver.kill();
+          fs.rmSync(work, { recursive: true, force: true });
+        }
+        expect(new RegExp(`Welcome back, ${escapeRe(P.first)}`).test(r.home.title) && /Everything is published/.test(r.home.clean) && /Published to main/.test(r.result) && r.pushed && r.codeLeft && !r.codePushed, JSON.stringify(r));
+      });
+
       await test('setup had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
       await ctx.close();
     } finally {

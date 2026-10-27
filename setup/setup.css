@@ -397,3 +397,26 @@ h2.sub small { color: var(--text-2); font-size: 13px; font-weight: 500; margin-l
 .place-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 8px; }
 .place-status i { color: var(--tint); }
 @media (max-width: 760px) { .place-row { grid-template-columns: 1fr 1fr; } .place-row .btn { grid-column: 1 / -1; } }
+
+/* ── Admin (npm run admin) ───────────────────────────────────────────── */
+.admin-home { display: flex; flex-direction: column; gap: 18px; }
+.admin-hero { display: flex; align-items: center; gap: 18px; }
+.admin-hero img { width: 76px; height: 76px; flex-shrink: 0; border-radius: 50%; object-fit: cover; box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.4); }
+.admin-hero h1 { margin: 0 0 4px; font-size: 30px; letter-spacing: -0.5px; }
+.admin-hero p { margin: 0; color: var(--text-2); font-size: 15px; }
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.admin-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.admin-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.4); }
+.admin-card i { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 6px; border-radius: 10px; background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); }
+.admin-card strong { font-size: 15.5px; }
+.admin-card small { color: var(--text-2); font-size: 13px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.admin-publish:empty { display: none; }
+.admin-pending { display: flex; align-items: center; gap: 16px; padding: 14px 16px 14px 18px; border-radius: var(--radius); background: color-mix(in srgb, var(--tint) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--tint) 30%, var(--line)); text-align: left; }
+.admin-pending > div { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+.admin-pending small { color: var(--text-2); font-size: 13.5px; }
+.admin-pending details { font-size: 13px; color: var(--text-2); }
+.admin-pending ul { margin: 6px 0 0; padding-left: 18px; }
+.admin-pending .btn { flex-shrink: 0; }
+.admin-note { margin: 0; padding: 12px 14px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); color: var(--text-2); font-size: 14px; text-align: left; }
+.admin-note.ok i { color: var(--ok); }
+.done-screen .admin-publish { max-width: 560px; margin: 0 auto 18px; }

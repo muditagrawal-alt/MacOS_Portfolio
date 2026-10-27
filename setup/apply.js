@@ -29,8 +29,9 @@ const ROOT = path.resolve(__dirname, '..');
 const PROFILE_FILE = 'js/data/profile.js';
 const MARKER_FILE = '.portfolio/setup.json';
 const ASSET_DIR = 'assets/me';
-const ALLOWED_UPLOADS = /^assets\/me\/[a-z0-9][a-z0-9._-]{0,80}\.(jpe?g|png|webp|gif|pdf)$/;
+const ALLOWED_UPLOADS = /^assets\/me\/[a-z0-9][a-z0-9._-]{0,80}\.(jpe?g|png|webp|gif|pdf|mp4|webm|mov)$/;
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 40 * 1024 * 1024;   // a short demo clip
 
 // The sandbox's time limit only stops a runaway hand edit. It's generous because a
 // fresh context's first date formatting can take a second on a busy CI runner.
@@ -214,7 +215,8 @@ function saveSubmission(profile, { files = [], config } = {}, root = ROOT) {
         const m = String(f.data).match(/^data:[\w/+.-]+;base64,([A-Za-z0-9+/=]+)$/);
         if (!m) throw new Error(`${f.path}: not a base64 data URL`);
         const buf = Buffer.from(m[1], 'base64');
-        if (buf.length > MAX_UPLOAD_BYTES) throw new Error(`${f.path} is larger than 15 MB`);
+        const video = /\.(mp4|webm|mov)$/.test(f.path);
+        if (buf.length > (video ? MAX_VIDEO_BYTES : MAX_UPLOAD_BYTES)) throw new Error(`${f.path} is larger than ${video ? 40 : 15} MB`);
         fs.mkdirSync(path.join(root, ASSET_DIR), { recursive: true });
         fs.writeFileSync(path.join(root, f.path), buf);
         written.push(f.path);
