@@ -171,23 +171,31 @@
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* A frosted pill rather than bare light text: over a bright wallpaper (Tahoe's
+   turquoise water) the old 60%-white, weight-300 label all but disappeared. */
 .lock-swipe-hint {
-    margin-top: 6px;
+    margin-top: 10px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    background: none;
-    border: none;
+    gap: 7px;
+    background: rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
     font-family: 'SF Pro Text', -apple-system, system-ui, 'Inter', sans-serif;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 13px;
-    font-weight: 300;
-    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     cursor: pointer;
-    padding: 6px 16px 2px;
+    padding: 7px 14px;
     opacity: calc(1 - var(--lock-progress, 0) * 1.4);
+    transition: background 0.2s ease;
 }
+
+.lock-swipe-hint:hover { background: rgba(0, 0, 0, 0.32); }
 
 .lock-swipe-hint i {
     font-size: 12px;

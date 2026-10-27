@@ -28,8 +28,6 @@
 const NOTIF_CACHE_KEY = 'mac-notif-cache';
 const NOTIF_CACHE_TTL_MS = 15 * 60 * 1000;   // 15 min — well inside GitHub's budget
 
-const GITHUB_USER = 'muditagrawal-alt';
-
 let notifOpen = false;
 let notifLoaded = false;
 
@@ -58,7 +56,10 @@ function ensureNotificationCenter() {
     document.body.appendChild(el);
 
     document.getElementById('notif-refresh').addEventListener('click', () => {
-        try { sessionStorage.removeItem(NOTIF_CACHE_KEY); } catch (e) {}
+        try {
+            sessionStorage.removeItem(NOTIF_CACHE_KEY);
+            sessionStorage.removeItem(GITHUB_CACHE_KEY);
+        } catch (e) {}
         notifLoaded = false;
         loadNotifications(true);
     });
@@ -128,31 +129,6 @@ async function loadNotifications(force) {
  * Newest public repos, most-recently-pushed first.
  * Forks and archived repos are filtered out — they're noise, not activity.
  */
-async function fetchGitHubActivity() {
-    const res = await fetch(
-        `https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&per_page=12`,
-        { headers: { 'Accept': 'application/vnd.github+json' } }
-    );
-    if (!res.ok) throw new Error('github ' + res.status);
-
-    const repos = await res.json();
-    if (!Array.isArray(repos)) throw new Error('unexpected github payload');
-
-    return repos
-        .filter(r => !r.fork && !r.archived)
-        .slice(0, 5)
-        .map(r => ({
-            icon: 'assets/icons/social-github.svg',
-            app: 'GitHub',
-            title: r.name,
-            body: r.description || 'No description provided.',
-            meta: [r.language, r.stargazers_count ? `★ ${r.stargazers_count}` : null]
-                    .filter(Boolean).join(' · '),
-            time: r.pushed_at,
-            url: r.html_url
-        }));
-}
-
 /**
  * Medium + Substack via the serverless RSS proxy. Silently yields nothing
  * when no endpoint is configured, so the panel still works pre-deploy.
@@ -179,22 +155,6 @@ async function fetchArticleFeeds() {
 }
 
 /* ── Render ────────────────────────────────────────────────────────────── */
-
-function relativeTime(iso) {
-    if (!iso) return '';
-    const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return '';
-    const mins = Math.floor((Date.now() - then) / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    const days = Math.floor(hrs / 24);
-    if (days < 30) return `${days}d ago`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months}mo ago`;
-    return `${Math.floor(months / 12)}y ago`;
-}
 
 function renderNotifications(sections) {
     const scroll = document.getElementById('notif-scroll');

@@ -14,35 +14,6 @@
    ========================================================================== */
 
 const LOCK_UNLOCK_SESSION_KEY = 'mac-unlocked';
-const LOCK_WEATHER_CACHE_KEY = 'mac-lock-weather-cache';
-const LOCK_WEATHER_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-// WMO weather codes (Open-Meteo) → icon + short label.
-// https://open-meteo.com/en/docs — "WMO Weather interpretation codes"
-const WMO_WEATHER = {
-    0:  ['fa-sun', 'fa-moon', 'Clear'],
-    1:  ['fa-cloud-sun', 'fa-cloud-moon', 'Mostly Clear'],
-    2:  ['fa-cloud-sun', 'fa-cloud-moon', 'Partly Cloudy'],
-    3:  ['fa-cloud', 'fa-cloud', 'Cloudy'],
-    45: ['fa-smog', 'fa-smog', 'Fog'],
-    48: ['fa-smog', 'fa-smog', 'Fog'],
-    51: ['fa-cloud-rain', 'fa-cloud-rain', 'Light Drizzle'],
-    53: ['fa-cloud-rain', 'fa-cloud-rain', 'Drizzle'],
-    55: ['fa-cloud-rain', 'fa-cloud-rain', 'Heavy Drizzle'],
-    61: ['fa-cloud-rain', 'fa-cloud-rain', 'Light Rain'],
-    63: ['fa-cloud-showers-heavy', 'fa-cloud-showers-heavy', 'Rain'],
-    65: ['fa-cloud-showers-heavy', 'fa-cloud-showers-heavy', 'Heavy Rain'],
-    71: ['fa-snowflake', 'fa-snowflake', 'Light Snow'],
-    73: ['fa-snowflake', 'fa-snowflake', 'Snow'],
-    75: ['fa-snowflake', 'fa-snowflake', 'Heavy Snow'],
-    80: ['fa-cloud-rain', 'fa-cloud-rain', 'Rain Showers'],
-    81: ['fa-cloud-showers-heavy', 'fa-cloud-showers-heavy', 'Rain Showers'],
-    82: ['fa-cloud-showers-heavy', 'fa-cloud-showers-heavy', 'Violent Showers'],
-    95: ['fa-cloud-bolt', 'fa-cloud-bolt', 'Thunderstorm'],
-    96: ['fa-cloud-bolt', 'fa-cloud-bolt', 'Thunderstorm'],
-    99: ['fa-cloud-bolt', 'fa-cloud-bolt', 'Severe Thunderstorm']
-};
-
 let lockDragState = null;
 
 /* ── DOM ──────────────────────────────────────────────────────────────── */
@@ -89,9 +60,9 @@ function ensureLockScreenDom() {
                     <img src="assets/Professionalimage.jpeg" alt="">
                 </div>
                 <div class="lock-account-name">Mudit Agrawal</div>
-                <button type="button" class="lock-swipe-hint" id="lock-swipe-hint" aria-label="Swipe up to unlock">
+                <button type="button" class="lock-swipe-hint" id="lock-swipe-hint" aria-label="Unlock">
                     <i class="fas fa-chevron-up"></i>
-                    <span>Swipe up to unlock</span>
+                    <span>Click or swipe up to unlock</span>
                 </button>
             </div>
         </div>
@@ -216,127 +187,9 @@ function refreshLockBattery() {
 
 /* ── Weather ──────────────────────────────────────────────────────────── */
 
-function readWeatherCache() {
-    try {
-        const raw = sessionStorage.getItem(LOCK_WEATHER_CACHE_KEY);
-        if (!raw) return null;
-        const data = JSON.parse(raw);
-        if (Date.now() - data.timestamp > LOCK_WEATHER_CACHE_TTL_MS) return null;
-        return data;
-    } catch (e) {
-        return null;
-    }
-}
-
-function writeWeatherCache(data) {
-    try {
-        sessionStorage.setItem(LOCK_WEATHER_CACHE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }));
-    } catch (e) { /* ignore */ }
-}
-
-/* Timezone → approximate city coords. Resolving location this way needs NO
-   network call and NO permission prompt, so the widget populates instantly
-   and keeps working even if the IP lookup is rate-limited or blocked. The
-   IP lookup below only runs to refine the city NAME. */
-const TZ_COORDS = {
-    'Asia/Kolkata':        [28.61, 77.21, 'India'],
-    'Asia/Calcutta':       [28.61, 77.21, 'India'],
-    'Asia/Dubai':          [25.20, 55.27, 'Dubai'],
-    'Asia/Singapore':      [1.35, 103.82, 'Singapore'],
-    'Asia/Tokyo':          [35.68, 139.69, 'Tokyo'],
-    'Asia/Shanghai':       [31.23, 121.47, 'Shanghai'],
-    'Europe/London':       [51.51, -0.13, 'London'],
-    'Europe/Paris':        [48.86, 2.35, 'Paris'],
-    'Europe/Berlin':       [52.52, 13.40, 'Berlin'],
-    'Europe/Amsterdam':    [52.37, 4.90, 'Amsterdam'],
-    'America/New_York':    [40.71, -74.01, 'New York'],
-    'America/Chicago':     [41.88, -87.63, 'Chicago'],
-    'America/Denver':      [39.74, -104.99, 'Denver'],
-    'America/Los_Angeles': [34.05, -118.24, 'Los Angeles'],
-    'America/Toronto':     [43.65, -79.38, 'Toronto'],
-    'Australia/Sydney':    [-33.87, 151.21, 'Sydney'],
-    'Africa/Lagos':        [6.52, 3.38, 'Lagos'],
-    'America/Sao_Paulo':   [-23.55, -46.63, 'São Paulo']
-};
-
-function coordsFromTimezone() {
-    try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (TZ_COORDS[tz]) {
-            const [lat, lon, city] = TZ_COORDS[tz];
-            return { lat, lon, city, tz };
-        }
-        // Unknown zone — fall back to the region's rough centre so the
-        // widget still shows something plausible rather than nothing.
-        return null;
-    } catch (e) { return null; }
-}
-
-/**
- * Weather provider note (why not OpenWeatherMap):
- *
- *   Open-Meteo — used here — needs NO API key, has no signup, and allows
- *   ~10,000 requests/day for non-commercial use. Because it needs no key,
- *   nothing secret ships to the browser.
- *
- *   OpenWeatherMap's free tier requires an API key. In a purely static
- *   site that key would have to sit in client JS where anyone can read
- *   and burn it — the exact problem we just removed for the Groq key.
- *   Using it safely would mean routing weather through a serverless proxy
- *   for no benefit over a keyless provider.
- *
- * Requests are additionally cached for 30 minutes per session, so a
- * visitor costs about one call regardless of how often they lock/unlock.
- */
 async function loadLockWeather() {
-    const cached = readWeatherCache();
-    if (cached) { renderLockWeather(cached); return; }
-
-    const local = coordsFromTimezone();
-
     try {
-        let lat, lon, place, countryCode = null;
-
-        if (local) {
-            ({ lat, lon, city: place } = local);
-        }
-
-        // Refine with an IP lookup when possible — better city precision —
-        // but never block on it: if it fails and we already have timezone
-        // coords, carry on with those.
-        try {
-            const geoRes = await fetch('https://ipwho.is/');
-            const geo = await geoRes.json();
-            if (geo && geo.success !== false && typeof geo.latitude === 'number') {
-                lat = geo.latitude;
-                lon = geo.longitude;
-                place = geo.city || geo.region || geo.country || place;
-                countryCode = geo.country_code;
-            }
-        } catch (e) { /* keep timezone coords */ }
-
-        if (typeof lat !== 'number') throw new Error('no location available');
-
-        // US visitors see Fahrenheit; everyone else Celsius.
-        const prefersFahrenheit = /-US$/i.test(navigator.language || '') || countryCode === 'US';
-        const unit = prefersFahrenheit ? 'fahrenheit' : 'celsius';
-
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-            + `&current=temperature_2m,weather_code,is_day&temperature_unit=${unit}`;
-        const weatherRes = await fetch(weatherUrl);
-        const weather = await weatherRes.json();
-        const current = weather && weather.current;
-        if (!current) throw new Error('weather lookup failed');
-
-        const payload = {
-            temp: Math.round(current.temperature_2m),
-            unit: unit === 'fahrenheit' ? '°F' : '°C',
-            code: current.weather_code,
-            isDay: current.is_day === 1,
-            place: place || 'Your Location'
-        };
-        writeWeatherCache(payload);
-        renderLockWeather(payload);
+        renderLockWeather(await fetchLiveWeather());
     } catch (e) {
         renderLockWeatherError();
     }
@@ -376,13 +229,21 @@ function wireLockSwipe(overlay) {
 
     const UNLOCK_DISTANCE = 120;   // px dragged before it counts as unlocked
     const UNLOCK_VELOCITY = 0.6;   // px/ms — a fast flick unlocks even if short
+    const TAP_SLOP = 8;            // px of movement still treated as a tap
+    const TAP_MAX_MS = 500;
 
     function onPointerDown(e) {
         if (overlay.classList.contains('unlocking')) return;
+        // The hint is a real button with its own click handler. Starting a
+        // drag (and capturing the pointer) here retargeted its click to the
+        // overlay, so clicking "unlock" did nothing at all.
+        if (e.target.closest && e.target.closest('#lock-swipe-hint')) return;
         lockDragState = {
             startY: e.clientY,
             lastY: e.clientY,
+            startT: performance.now(),
             lastT: performance.now(),
+            maxTravel: 0,
             velocity: 0,
             dragging: true
         };
@@ -406,6 +267,7 @@ function wireLockSwipe(overlay) {
             lockDragState.lastY = e.clientY;
             lockDragState.lastT = now;
         }
+        lockDragState.maxTravel = Math.max(lockDragState.maxTravel, Math.abs(dy));
 
         // Only upward movement drags the content; resist downward motion.
         const clamped = Math.min(0, dy);
@@ -414,15 +276,21 @@ function wireLockSwipe(overlay) {
         overlay.style.setProperty('--lock-progress', progress.toFixed(3));
     }
 
-    function onPointerUp() {
+    function onPointerUp(e) {
         if (!lockDragState) return;
+        if (e && typeof e.clientY === 'number') lockDragState.lastY = e.clientY;
         const traveled = lockDragState.startY - lockDragState.lastY;
         const fastFlick = lockDragState.velocity < -UNLOCK_VELOCITY;
+        // A plain click/tap wakes the Mac — most visitors click rather than
+        // drag, and a lock screen that ignores clicks reads as frozen.
+        const isTap = e && e.type === 'pointerup'
+            && lockDragState.maxTravel < TAP_SLOP
+            && (performance.now() - lockDragState.startT) < TAP_MAX_MS;
         lockDragState.dragging = false;
 
         content.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
 
-        if (traveled > UNLOCK_DISTANCE || fastFlick) {
+        if (traveled > UNLOCK_DISTANCE || fastFlick || isTap) {
             content.style.transform = 'translateY(-120vh)';
             unlockDesktop();
         } else {
@@ -448,11 +316,22 @@ function wireLockSwipe(overlay) {
         });
     }
 
-    // Arrow-up also unlocks, for keyboard-only visitors.
-    overlay.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowUp' || e.key === 'Enter') {
+    // Keyboard: listened for on the window in the capture phase, so it works
+    // without focus inside the overlay (it used to require focus, i.e. it
+    // never fired) AND so global shortcuts — ⌘K, ⌥L, F3 — can't open things
+    // behind the lock screen.
+    window.addEventListener('keydown', (e) => {
+        if (!isLockScreenActive()) return;
+        if (e.key === 'Tab') return;
+        e.stopImmediatePropagation();
+        if (e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
             e.preventDefault();
             hint && hint.click();
         }
-    });
+    }, true);
+}
+
+function isLockScreenActive() {
+    const overlay = document.getElementById('lock-screen-overlay');
+    return Boolean(overlay && overlay.classList.contains('active') && !overlay.classList.contains('unlocking'));
 }
