@@ -23,6 +23,11 @@ const { chromium, devices } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHOTS = path.join(ROOT, 'test-results') + path.sep;
+const setup = require('../setup/apply.js');
+// Expectations come from the info bank, so the suite still passes after `npm run setup`.
+const P = setup.normalize(setup.readProfile(ROOT), ROOT);
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const firstWord = (org) => (org.split(/[^A-Za-z0-9]+/).find(w => w.length >= 4 && !/^(the|and|for)$/i.test(w)) || '');
 fs.mkdirSync(SHOTS, { recursive: true });
 let BASE = '';
 
@@ -44,8 +49,8 @@ function startServer() {
 
 /* ── Fixtures for live APIs ────────────────────────────────────────────── */
 const GITHUB_FIXTURE = JSON.stringify([
-    { name: 'OmniDoc', description: 'Multimodal RAG', language: 'Python', stargazers_count: 3, pushed_at: new Date(Date.now() - 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/OmniDoc', fork: false, archived: false },
-    { name: 'Sliver-Smart-Video-Clipping-Tool', description: 'Video', language: 'Python', stargazers_count: 1, pushed_at: new Date(Date.now() - 3 * 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', fork: false, archived: false }
+    { name: 'Lighthouse', description: 'Sample repository', language: 'Python', stargazers_count: 3, pushed_at: new Date(Date.now() - 864e5).toISOString(), html_url: 'https://github.com/octocat/Lighthouse', fork: false, archived: false },
+    { name: 'Sextant-Command-Line-Tool', description: 'Sample repository', language: 'Python', stargazers_count: 1, pushed_at: new Date(Date.now() - 3 * 864e5).toISOString(), html_url: 'https://github.com/octocat/Sextant-Command-Line-Tool', fork: false, archived: false }
 ]);
 // Current conditions plus 24 hourly and 7 daily entries, timed from now (local time, as Open-Meteo's timezone=auto returns).
 function WEATHER_FIXTURE() {
@@ -247,16 +252,16 @@ const section = (name) => !only || only.test(name);
   }
 
   if (section('welcome')) {
-    console.log('\nAbout Mudit (first run)');
+    console.log(`\nAbout ${P.first} (first run)`);
     const page = await freshPage(browser, { welcome: true });
     await page.waitForTimeout(900);
     await page.screenshot({ path: SHOTS + 'welcome.png' });
-    await test('the About Mudit window greets a first-time visitor', async () => {
+    await test('the About window greets a first-time visitor', async () => {
       expect(await page.evaluate(() => !document.getElementById('welcome-window').classList.contains('hidden')), 'not shown');
     });
     await test('its stats are computed from real data', async () => {
       const t = await page.textContent('.welcome-stats');
-      expect(/3\s*internships/.test(t) && /10\s*projects/.test(t), t);
+      expect(new RegExp(`${P.experience.length}\\s*(internships?|roles?)`).test(t) && new RegExp(`${P.projects.length}\\s*projects`).test(t), t);
     });
     await test('Résumé / Projects / Contact buttons work', async () => {
       await page.click('.welcome-btn:has-text("Projects")');
@@ -344,7 +349,7 @@ const section = (name) => !only || only.test(name);
       });
     }
     const appNames = {
-      'welcome-window': 'About Mudit',
+      'welcome-window': `About ${P.first}`,
       'finder-window': 'Finder', 'safari-window': 'Safari', 'mail-window': 'Mail', 'notes-window': 'Notes',
       'terminal-window': 'Terminal', 'music-window': 'Music', 'photobooth-window': 'Photo Booth',
       'breakout-window': 'Breakout', 'snake-window': 'Snake', 'photos-window': 'Photos',
@@ -426,7 +431,7 @@ const section = (name) => !only || only.test(name);
       expect(await page.isVisible('#spotlight-overlay.active'));
     });
     await test('Spotlight finds a project and every result has a visible icon', async () => {
-      await page.fill('#spotlight-input', 'omnidoc');
+      await page.fill('#spotlight-input', P.projects.length ? P.projects[0].name : 'notes');
       await page.waitForTimeout(150);
       const rows = await page.$$eval('.spotlight-row', r => r.length);
       expect(rows > 0, 'no rows');
@@ -679,7 +684,7 @@ const section = (name) => !only || only.test(name);
       expect(!/1,840,000/.test(t), 'shows fake "About 1,840,000 results"');
     });
     await test('typing a domain navigates instead of searching', async () => {
-      await page.fill('#safari-url-input', 'github.com/muditagrawal-alt');
+      await page.fill('#safari-url-input', 'github.com/octocat');
       await page.press('#safari-url-input', 'Enter');
       await page.waitForTimeout(300);
       const isSearch = await page.evaluate(() => safariTabs.find(t => t.id === activeSafariTabId).type === 'ddg_search');
@@ -714,7 +719,7 @@ const section = (name) => !only || only.test(name);
     console.log('\nTerminal');
     const page = await freshPage(browser);
     await page.evaluate(() => openWindow('terminal-window'));
-    const cmds = ['help', 'whoami', 'cat resume.txt', 'history', 'about me', 'experience', 'education', 'projects', 'skills', 'contact', 'ls', 'ls projects/', 'pwd', 'cd projects', 'cat README.txt', 'cat Philosophy.txt', 'sudo hire-me', 'brew install talent', 'date', 'uname -a', 'echo hello', 'git status', 'git log', 'neofetch', 'curl mudit.dev'];
+    const cmds = ['help', 'whoami', 'cat resume.txt', 'history', 'about me', 'experience', 'education', 'projects', 'skills', 'contact', 'ls', 'ls projects/', 'pwd', 'cd projects', 'cat README.txt', 'cat Philosophy.txt', 'sudo hire-me', 'brew install talent', 'date', 'uname -a', 'echo hello', 'git status', 'git log', 'neofetch', 'curl me'];
     for (const c of cmds) {
       await test(`terminal: "${c}" is understood`, async () => {
         await page.evaluate(() => { openWindow('terminal-window'); document.querySelectorAll('.window:not(.hidden)').forEach(w => { if (w.id !== 'terminal-window') closeWindow(w.id); }); });
@@ -921,9 +926,9 @@ const section = (name) => !only || only.test(name);
       const dmg = await page.evaluate(() => !document.getElementById('dmg-window').classList.contains('hidden'));
       expect(!dmg && page.context().pages().length === pages && a.length > 20, `dmg mounted=${dmg} answer=${a.slice(0, 80)}`);
     });
-    await test('"what is VLM leads?" does not pop a new tab', async () => {
+    await test('asking what a project is does not pop a new tab', async () => {
       const pages = page.context().pages().length;
-      await ask('what is VLM leads?');
+      await ask(`what is ${(P.projects.find(x => x.live) || P.projects[0] || { name: 'the portfolio' }).name}?`);
       expect(page.context().pages().length === pages, 'opened a tab for a question');
     });
     await test('"switch to dark mode" answers honestly instead of silently toggling a theme', async () => {
@@ -936,25 +941,29 @@ const section = (name) => !only || only.test(name);
       const a = await ask('what is the capital of peru?');
       expect(/only know|couldn.t find/i.test(a), a);
     });
-    await test('skill questions are answered from his listed stack', async () => {
-      const yes = await ask('does he know PyTorch?');
-      const no = await ask('does he know Haskell?');
-      expect(/^Yes/.test(yes.trim()) && /don.t see/i.test(no), `pytorch: ${yes.slice(0, 60)} | haskell: ${no.slice(0, 60)}`);
+    await test('skill questions are answered from the listed stack', async () => {
+      const knows = (skill) => ask(`${P.pron.subject === 'they' ? 'do they' : `does ${P.pron.subject}`} know ${skill}?`);
+      const all = P.skills.flatMap(g => g.items);
+      const unlisted = ['Haskell', 'COBOL', 'Fortran'].find(s => !all.some(i => i.toLowerCase() === s.toLowerCase()));
+      const yes = all.length ? await knows(all[0]) : 'Yes';
+      const no = await knows(unlisted);
+      expect(/^Yes/.test(yes.trim()) && /don.t see/i.test(no), `${all[0]}: ${yes.slice(0, 60)} | ${unlisted}: ${no.slice(0, 60)}`);
     });
-    await test('"open his résumé" (a command) does open it', async () => {
-      await ask('open his résumé');
+    await test('"open the résumé" (a command) does open it', async () => {
+      await ask(`open ${P.pron.possessive} résumé`);
       await page.waitForTimeout(300);
       expect(await page.evaluate(() => !document.getElementById('resume-window').classList.contains('hidden')), 'résumé not opened');
       await page.evaluate(() => closeWindow('resume-window'));
     });
-    await test('"who is Mudit?" gives a real answer', async () => {
-      const a = await ask('who is Mudit?');
-      expect(/IILM|engineer|AI/i.test(a), a);
+    await test(`"who is ${P.first}?" gives a real answer`, async () => {
+      const a = await ask(`who is ${P.first}?`);
+      expect(a.includes(P.name), a);
     });
     await test('answers cite where they came from', async () => {
-      const a = await ask('tell me about his work at Carnot');
+      const org = P.experience.length ? firstWord(P.experience[0].org) : '';
+      const a = await ask(org ? `tell me about ${P.pron.possessive} work at ${org}` : `who is ${P.first}?`);
       const cites = await page.evaluate(() => { const m = [...document.querySelectorAll('.iris-message.iris')].pop(); return m ? m.querySelectorAll('.iris-source, .iris-sources').length : 0; });
-      expect(/Carnot/.test(a) && cites > 0, `cites=${cites} answer=${a.slice(0, 100)}`);
+      expect(a.includes(org) && cites > 0, `cites=${cites} answer=${a.slice(0, 100)}`);
     });
     await test('iris had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
     await page.context().close();
@@ -994,9 +1003,11 @@ const section = (name) => !only || only.test(name);
       expect(title.length > 2 && grid, `title=${title} grid=${grid}`);
     });
     await test('Launchpad project tiles open the right product page', async () => {
-      await page.evaluate(() => openProjectDetails('Monocular RGB SLAM'));
+      const project = P.projects[P.projects.length - 1];
+      if (!project) return;
+      await page.evaluate(name => openProjectDetails(name), project.name);
       const t = await page.textContent('#appstore-product h2');
-      expect(/SLAM/.test(t), t);
+      expect(t.includes(project.name), t);
     });
     await test('app store had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
     await page.context().close();
@@ -1081,7 +1092,7 @@ const section = (name) => !only || only.test(name);
       const [dl] = await Promise.all([page.waitForEvent('download'), page.click('.airdrop-target:has-text("Contact Card")')]);
       const fs = require('fs');
       const body = fs.readFileSync(await dl.path(), 'utf8');
-      expect(/BEGIN:VCARD/.test(body) && /muditagrawal03@gmail.com/.test(body) && dl.suggestedFilename().endsWith('.vcf'), body.slice(0, 80));
+      expect(/BEGIN:VCARD/.test(body) && body.includes(`FN:${P.name}`) && body.includes(P.contact.email) && dl.suggestedFilename().endsWith('.vcf'), body.slice(0, 80));
     });
     await test('Résumé download serves the real PDF', async () => {
       const [dl] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => downloadResume())]);
@@ -1237,7 +1248,7 @@ const section = (name) => !only || only.test(name);
         github: document.querySelector('#ios-widget-github').textContent
       }));
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
-      expect(r.icons.length === 12 && r.weather === '23°' && /OmniDoc/.test(r.github), JSON.stringify(r));
+      expect(r.icons.length === 12 && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify(r));
     });
     await test('tapping an icon opens the app', async () => {
       await page.click('#ios-home [data-app-icon="about"]');
@@ -1265,7 +1276,7 @@ const section = (name) => !only || only.test(name);
     });
     await test('Search finds portfolio content and can hand the question to Iris', async () => {
       await page.click('#ios-search-pill');
-      await page.fill('#ios-search-input', 'omnidoc');
+      await page.fill('#ios-search-input', P.projects.length ? P.projects[0].name : P.first);
       await page.waitForTimeout(200);
       const results = await page.textContent('#ios-search-results');
       await page.screenshot({ path: SHOTS + 'ios-search.png' });
@@ -1398,18 +1409,19 @@ const section = (name) => !only || only.test(name);
     });
     await test('Safari searches the portfolio and recognises web addresses', async () => {
       await iosGo(page, 'safari');
-      await page.fill('.safari-field input', 'rag');
+      const query = P.projects.length ? P.projects[0].name : P.first;
+      await page.fill('.safari-field input', query);
       const results = await page.textContent(`${topPage} .safari-scroll`);
       await page.fill('.safari-field input', 'example.com');
       const address = await page.textContent(`${topPage} .safari-scroll`);
-      expect(/From this portfolio/.test(results) && /OmniDoc/.test(results) && /Opens in a new tab/.test(address), address.slice(0, 120));
+      expect(/From this portfolio/.test(results) && results.includes(query) && /Opens in a new tab/.test(address), address.slice(0, 120));
     });
     await test('Résumé opens the current PDF', async () => {
       await iosGo(page, 'resume');
       await page.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
       await page.click(`${topPage} .resume-actions [data-action="open"]`);
       const opened = await page.evaluate(() => window.__opened[0] || '');
-      expect(/MuditAgrawalResumeAugust2026\.pdf$/.test(opened), opened);
+      expect(!P.resume.file || new RegExp(`${escapeRe(path.basename(P.resume.file))}$`).test(opened), opened);
     });
     await test('Settings: Dark appearance and a new wallpaper persist after a reload', async () => {
       await iosGo(page, 'settings', ['display']);

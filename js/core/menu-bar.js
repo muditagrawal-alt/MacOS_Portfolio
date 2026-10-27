@@ -72,7 +72,7 @@ const SHARED_MENUS = {
 
 const FINDER_FILE_MENU = [
     { label: 'New Finder Window', shortcut: OPT + 'N', run: "openWindow('finder-window')" },
-    { label: 'New Message to Mudit', run: "openWindow('mail-window'); openMailCompose();" },
+    { label: `New Message to ${window.PROFILE_DATA.first}`, run: "openWindow('mail-window'); openMailCompose();" },
     { sep: true },
     { label: 'Download Résumé', run: 'downloadResume()' },
     { label: 'Save Contact Card', run: 'downloadContactCard()' },
@@ -80,9 +80,9 @@ const FINDER_FILE_MENU = [
     { label: 'Close Window', shortcut: OPT + 'W', run: 'closeActiveWindow()' }
 ];
 const FINDER_EDIT_MENU = [
-    { label: 'Copy Email Address', run: "copyTextToClipboard('muditagrawal03@gmail.com', 'Email address copied')" },
-    { label: 'Copy Phone Number', run: "copyTextToClipboard('+91-7289887349', 'Phone number copied')" },
-    { label: 'Copy LinkedIn URL', run: "copyTextToClipboard('https://www.linkedin.com/in/mudit-agrawal-167610318', 'LinkedIn URL copied')" }
+    ...(window.PROFILE_DATA.contact.email ? [{ label: 'Copy Email Address', run: "copyContactDetail('email')" }] : []),
+    ...(window.PROFILE_DATA.contact.phone ? [{ label: 'Copy Phone Number', run: "copyContactDetail('phone')" }] : []),
+    ...(window.PROFILE_DATA.contact.linkedin ? [{ label: 'Copy LinkedIn URL', run: "copyContactDetail('linkedin')" }] : [])
 ];
 const FINDER_GO_MENU = [
     { label: 'Recents',      run: "openFinderPane('recents')" },
@@ -131,7 +131,7 @@ const APP_MENUS = {
         }
     },
     'welcome-window': {
-        name: 'About Mudit',
+        name: `About ${window.PROFILE_DATA.first}`,
         menus: {
             'File': [
                 { label: 'Download Résumé', run: 'downloadResume()' },
@@ -225,7 +225,7 @@ const APP_MENUS = {
         menus: {
             'Store': [
                 { label: 'Discover',       run: "filterAppStoreCategory('all', document.querySelector('.appstore-sidebar .sidebar-item'))" },
-                { label: 'All on GitHub ↗', run: "openExternal('https://github.com/muditagrawal-alt')" }
+                ...(window.PROFILE_DATA.github.url ? [{ label: 'All on GitHub ↗', run: "openProfileLink('github')" }] : [])
             ]
         }
     },

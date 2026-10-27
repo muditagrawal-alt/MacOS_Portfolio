@@ -15,8 +15,9 @@ console.log('🔍 [CI Gate 2] Verifying Static Asset & Reference Integrity in ' 
 const patterns = [
     { type: 'Stylesheet', regex: /<link\s+[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi },
     { type: 'Icon/Manifest', regex: /<link\s+[^>]*rel=["'](?:icon|apple-touch-icon|manifest|preload)["'][^>]*href=["']([^"']+)["']/gi },
-    { type: 'Script', regex: /<script\s+[^>]*src=["']([^"']+)["']/gi },
-    { type: 'Image', regex: /<img\s+[^>]*src=["']([^"']+)["']/gi },
+    { type: 'Script', regex: /<script\s+(?:[^>]*\s)?src=["']([^"']+)["']/gi },
+    // `\ssrc=` so data-tpl-src="{photo}" (filled from the info bank) isn't read as a path.
+    { type: 'Image', regex: /<img\s+(?:[^>]*\s)?src=["']([^"']+)["']/gi },
     { type: 'Social image', regex: /<meta\s+[^>]*content=["']([^"']+\.(?:png|jpe?g))["']/gi },
     { type: 'Audio', regex: /<audio\s+[^>]*src=["']([^"']+)["']/gi }
 ];
@@ -58,6 +59,18 @@ for (const page of PAGES) {
 const manifestPath = path.join(ROOT_DIR, 'manifest.webmanifest');
 if (fs.existsSync(manifestPath)) {
     (JSON.parse(fs.readFileSync(manifestPath, 'utf8')).icons || []).forEach(icon => check('Manifest icon', icon.src, 'manifest.webmanifest'));
+}
+
+// Files the info bank points at: photo, résumé, certificates, project icons.
+{
+    const setup = require('../setup/apply.js');
+    const p = setup.normalize(setup.readProfile(ROOT_DIR), ROOT_DIR);
+    const local = (v) => v && !/^(data:|https?:)/.test(v);
+    [
+        ['Photo', p.photo], ['Résumé', p.resume.file], ['Résumé preview', p.resume.preview], ['Link preview', p.site.image],
+        ...p.certificates.flatMap(c => [['Certificate image', c.image], ['Certificate file', c.file]]),
+        ...p.projects.map(x => ['Project icon', x.icon])
+    ].filter(([, v]) => local(v)).forEach(([type, v]) => check(type, v, 'js/data/profile.js'));
 }
 
 // Asset paths referenced from JavaScript (Dock/Launchpad/Spotlight icons,

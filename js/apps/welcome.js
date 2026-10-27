@@ -1,5 +1,5 @@
 /* ==========================================================================
-   About Mudit — the first window a visitor sees
+   About — the first window a visitor sees
    --------------------------------------------------------------------------
    The desktop used to open on a Finder window listing "Desktop, Documents,
    Downloads…" — true to macOS, but it told a recruiter nothing. This window
@@ -19,14 +19,18 @@ function renderWelcome() {
         ? AAKASH_STYLE_FS['projects-folder'].items.map(id => FS_ITEMS[id]).filter(Boolean) : [];
     const live = projects.filter(it => it.link && !/github\.com/.test(it.link));
     const current = exp[0];
+    // "internships" only when every role is one; a grade only if there is one.
+    const interns = exp.length > 0 && exp.every(e => /\bintern/i.test(e.role));
+    const roles = interns ? (exp.length === 1 ? 'internship' : 'internships') : (exp.length === 1 ? 'role' : 'roles');
+    const skillCount = (p.skills || []).reduce((n, g) => n + (g.items || []).length, 0);
 
     const stat = (n, label) => `<div class="welcome-stat"><span>${escapeHtml(String(n))}</span><small>${escapeHtml(label)}</small></div>`;
 
     root.innerHTML = `
         <header class="welcome-hero">
-            <img class="welcome-portrait" src="assets/Professionalimage.jpeg" alt="${escapeHtml(p.name || '')}">
+            <img class="welcome-portrait" src="${escapeHtml(p.photo)}" alt="${escapeHtml(p.name)}">
             <div>
-                <h1>${escapeHtml(p.name || 'Mudit Agrawal')}</h1>
+                <h1>${escapeHtml(p.name)}</h1>
                 <p class="welcome-tagline">${escapeHtml(p.tagline || '')}</p>
                 ${current ? `<p class="welcome-now"><span class="welcome-dot"></span>${escapeHtml(current.role)} · ${escapeHtml(current.org.replace(' Pvt. Ltd.', ''))}</p>` : ''}
             </div>
@@ -35,14 +39,14 @@ function renderWelcome() {
         <p class="welcome-bio">${escapeHtml(p.bio || '')}</p>
 
         <div class="welcome-stats">
-            ${stat(exp.length, exp.length === 1 ? 'internship' : 'internships')}
-            ${stat(projects.length, 'projects')}
-            ${stat(live.length, 'live apps')}
-            ${stat((p.education || {}).cgpa || '—', 'CGPA')}
+            ${stat(exp.length, roles)}
+            ${stat(projects.length, projects.length === 1 ? 'project' : 'projects')}
+            ${stat(live.length, live.length === 1 ? 'live app' : 'live apps')}
+            ${p.education.grade ? stat(p.education.grade, p.education.gradeLabel || 'GPA') : stat(skillCount, skillCount === 1 ? 'skill' : 'skills')}
         </div>
 
         <div class="welcome-highlights">
-            ${exp.map(e => `
+            ${exp.slice(0, 4).map(e => `
                 <div class="welcome-highlight">
                     <div class="welcome-highlight-org">${escapeHtml(e.org.split(' (')[0].replace(' Pvt. Ltd.', ''))}</div>
                     <div class="welcome-highlight-text">${escapeHtml((e.bullets || [])[0] || e.role)}</div>

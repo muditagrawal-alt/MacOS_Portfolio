@@ -27,7 +27,7 @@ function isTypingTarget() {
    reaches a web page — the OS switcher takes it first. */
 
 const APP_ORDER = [
-    { id: 'welcome-window',    name: 'About Mudit',     icon: 'assets/Professionalimage.jpeg' },
+    { id: 'welcome-window',    name: `About ${window.PROFILE_DATA.first}`, icon: window.PROFILE_DATA.photo },
     { id: 'finder-window',     name: 'Finder',          icon: 'assets/icons/finder.png' },
     { id: 'safari-window',     name: 'Safari',          icon: 'assets/icons/safari.png' },
     { id: 'music-window',      name: 'Music',           icon: 'assets/icons/music.png' },
@@ -42,7 +42,7 @@ const APP_ORDER = [
     { id: 'settings-window',   name: 'System Settings', icon: 'assets/icons/settings.png' },
     { id: 'textedit-window',   name: 'TextEdit',        icon: 'assets/icons/filetype-txt.svg' },
     { id: 'resume-window',     name: 'Preview',         icon: 'assets/icons/filetype-pdf.svg' },
-    { id: 'dmg-window',        name: 'OmniDoc',         icon: 'assets/icons/filetype-dmg.svg' },
+    { id: 'dmg-window',        name: 'Disk Image',      icon: 'assets/icons/filetype-dmg.svg' },
     { id: 'trash-window',      name: 'Trash',           icon: 'assets/icons/trash-full.png' }
 ];
 

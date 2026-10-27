@@ -13,13 +13,13 @@
    critical path for the most important feed.
    ========================================================================== */
 
-const FEEDS = [
-    { source: 'medium',   url: 'https://medium.com/feed/@muditagrawal03' },
-    { source: 'substack', url: 'https://standardissuemudit.substack.com/feed' }
-];
+import { OWNER } from './_owner.js';
+
+// The owner's Medium and Substack feeds (api/_owner.js, written by `npm run setup`).
+const FEEDS = OWNER.feeds;
 
 const ALLOWED_ORIGINS = [
-    'https://muditagrawal-alt.github.io',
+    ...OWNER.origins,
     'http://localhost:8080'
 ];
 

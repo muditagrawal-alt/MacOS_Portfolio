@@ -140,7 +140,7 @@ function finishAfter(ms) {
     assert(panes.length > 3 && missingPanes.length === 0, `every Settings pane that something links to exists (${panes.join(', ')})`, missingPanes.join(', '));
 
     const folders = [...new Set([...jsSource.matchAll(/(?:openFinderPane|finderSidebarNav)\(\s*'([\w-]+)'/g)].map(m => m[1]))];
-    const alias = { experience: 'experience-folder', education: 'education-folder', projects: 'projects-folder', skills: 'skills-folder', shared: 'home', 'macintosh-hd': 'home', 'icloud-drive': 'documents', about: 'home', mudit: 'home' };
+    const alias = { experience: 'experience-folder', education: 'education-folder', projects: 'projects-folder', skills: 'skills-folder', shared: 'home', 'macintosh-hd': 'home', 'icloud-drive': 'documents', about: 'home' };
     const fsRoots = window.eval('AAKASH_STYLE_FS');
     const missingFolders = folders.filter(f => !fsRoots[alias[f] || f]);
     assert(missingFolders.length === 0, `every Finder location that something links to exists (${folders.length})`, missingFolders.join(', '));
@@ -164,7 +164,7 @@ function finishAfter(ms) {
     }
     assert(wmOk, `open / minimise / zoom / close work on all ${wins.length} windows`, wmWhy);
 
-    const names = { 'welcome-window': 'About Mudit', 'finder-window': 'Finder', 'music-window': 'Music', 'photobooth-window': 'Photo Booth', 'breakout-window': 'Breakout', 'snake-window': 'Snake', 'terminal-window': 'Terminal', 'safari-window': 'Safari' };
+    const names = { 'welcome-window': `About ${window.PROFILE_DATA.first}`, 'finder-window': 'Finder', 'music-window': 'Music', 'photobooth-window': 'Photo Booth', 'breakout-window': 'Breakout', 'snake-window': 'Snake', 'terminal-window': 'Terminal', 'safari-window': 'Safari' };
     const wrongNames = Object.entries(names).filter(([id, n]) => { window.openWindow(id); const shown = document.querySelector('.app-name-item').textContent; window.closeWindow(id); return shown !== n; }).map(([id]) => id);
     assert(wrongNames.length === 0, 'the menu bar names the frontmost app', wrongNames.join(', '));
 
@@ -191,7 +191,10 @@ function finishAfter(ms) {
 
     /* ── 3. Notes & Mail ───────────────────────────────────────────────── */
     console.log('\n--- 3. Notes & Mail ---');
-    const emptyFolders = ['philosophy', 'learning', 'stack'].filter(c => { window.switchNotesCategory(c); return document.querySelectorAll('#notes-list .note-item').length === 0; });
+    // One sidebar row per folder in the info bank's notes, and none of them empty.
+    const folderIds = [...document.querySelectorAll('.notes-sidebar .sidebar-item[data-category]')].map(r => r.dataset.category).filter(c => c !== 'all');
+    assert(folderIds.length === window.eval('notesFolders()').length && folderIds.length > 0, 'the Notes sidebar lists the info bank’s folders', folderIds.join(', '));
+    const emptyFolders = folderIds.filter(c => { window.switchNotesCategory(c); return document.querySelectorAll('#notes-list .note-item').length === 0; });
     window.switchNotesCategory('all');
     assert(emptyFolders.length === 0, 'every Notes folder shows its notes', emptyFolders.join(', '));
     window.addNewNotePrompt();
@@ -214,7 +217,7 @@ function finishAfter(ms) {
     const out = window.buildSearchResultsHtml(evil, [{ title: 'T', snippet: '<span class="searchmatch">m</span><script>x</script>' }], { title: 'T', extract: '<b>e</b>' }, []);
     assert(!out.includes('<img src=x') && !out.includes('<script>'), 'Safari escapes the query and every Wikipedia field');
     assert(!/1,840,000/.test(window.searchStatsText(3, 1)), 'search stats are real numbers');
-    assert(window.normaliseTypedUrl('github.com/muditagrawal-alt') === 'https://github.com/muditagrawal-alt' && window.normaliseTypedUrl('what is rag') === null && window.normaliseTypedUrl('javascript:alert(1)') === null, 'typed addresses navigate; phrases search; unsafe schemes refused');
+    assert(window.normaliseTypedUrl('github.com/octocat') === 'https://github.com/octocat' &&window.normaliseTypedUrl('what is rag') === null && window.normaliseTypedUrl('javascript:alert(1)') === null, 'typed addresses navigate; phrases search; unsafe schemes refused');
     const m = window.evaluateMathExpression;
     assert(m('12*8') === 96 && m('2^8') === 256 && m('(1+2)*3') === 9 && m('2^3^2') === 512, 'calculator: arithmetic, precedence and powers');
     assert(m('1/0') === null && m('alert(1)') === null && m('42') === null, 'calculator rejects division by zero, code and bare numbers');
@@ -223,13 +226,19 @@ function finishAfter(ms) {
     console.log('\n--- 5. Iris ---');
     assert(window.__srStarts === 0, 'the microphone is not started without consent');
     const brain = window.IrisBrain;
-    const who = brain.respond('who is Mudit?');
-    assert(/IILM/.test(who.text) && who.sources.length > 0, 'answers "who is he" from the profile, with sources');
-    assert(/^Yes/.test(brain.respond('does he know PyTorch?').text.trim()), 'confirms a skill that is listed');
-    assert(/don.t see/i.test(brain.respond('does he know Haskell?').text), 'says so when a skill is not listed');
+    // Asked about whoever the info bank describes, so this holds after `npm run setup`.
+    const P = window.PROFILE_DATA;
+    const who = brain.respond(`who is ${P.first}?`);
+    assert(who.text.includes(P.name) && who.sources.length > 0, 'answers "who is …" from the profile, with sources');
+    const knows = (skill) => brain.respond(`${P.pron.subject === 'they' ? 'do they' : `does ${P.pron.subject}`} know ${skill}?`).text.trim();
+    const listed = P.skills.flatMap(g => g.items);
+    const unlisted = ['Haskell', 'COBOL', 'Fortran'].find(s => !listed.some(i => i.toLowerCase() === s.toLowerCase()));
+    assert(!listed.length || /^Yes/.test(knows(listed[0])), 'confirms a skill that is listed');
+    assert(/don.t see/i.test(knows(unlisted)), 'says so when a skill is not listed');
     assert(brain.respond('what is the capital of Peru?').outOfScope === true, 'declines out-of-scope questions');
-    const carnot = brain.respond('tell me about his work at Carnot');
-    assert(/Carnot/.test(carnot.text) && carnot.sources.some(s => /Carnot/.test(s.label)), 'employer questions cite that employer');
+    const org = P.experience.length ? (P.experience[0].org.split(/[^A-Za-z0-9]+/).find(w => w.length >= 4 && !/^(the|and|for)$/i.test(w)) || '') : '';
+    const work = org ? brain.respond(`tell me about ${P.pron.possessive} work at ${org}`) : null;
+    assert(!work || (work.text.includes(org) && work.sources.some(s => s.label.includes(org))), 'employer questions cite that employer');
     assert(window.evaluateUserPromptSemantics('what is RAG?') === null, 'questions never trigger side effects');
     assert(window.evaluateUserPromptSemantics('open terminal') !== null, 'imperatives still run commands');
     window.closeWindow('terminal-window');
@@ -270,7 +279,7 @@ function finishAfter(ms) {
     window.closePhotoBooth();
     assert((window.__tracks || []).every(t => t.readyState === 'ended'), 'closing Photo Booth releases the camera');
 
-    const notFound = ['help', 'neofetch', 'whoami', 'ls projects/', 'cat resume.txt', 'curl mudit.dev', 'sudo hire-me'].filter(cmd => {
+    const notFound = ['help', 'neofetch', 'whoami', 'ls projects/', 'cat resume.txt', 'curl me', 'sudo hire-me'].filter(cmd => {
         window.runTerminalCommand(cmd);
         const last = document.getElementById('terminal-output').lastElementChild;
         return !last || /command not found/.test(last.textContent);

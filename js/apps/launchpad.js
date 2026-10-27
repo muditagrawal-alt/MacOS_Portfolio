@@ -7,8 +7,8 @@ let launchpadOpen = false;
 const LAUNCHPAD_APPS = [
     {
         id: 'welcome',
-        name: 'About Mudit',
-        icon: 'assets/Professionalimage.jpeg',
+        name: `About ${window.PROFILE_DATA.first}`,
+        icon: window.PROFILE_DATA.photo,
         action: () => openWelcome()
     },
     {
@@ -120,103 +120,24 @@ const LAUNCHPAD_APPS = [
         // Opened an empty window unless README had been opened first.
         action: () => openTextFile('readme')
     },
-    {
+    // The owner's projects, from the info bank: a demo installer for a
+    // project with a `demo`, then one icon per project, which opens its App
+    // Store page (where OPEN launches the live app).
+    ...window.PROFILE_DATA.projects.filter(x => x.demo).slice(0, 1).map(x => ({
         id: 'disk-image',
-        name: 'OmniDoc Installer',
+        name: `${x.name} Installer`,
         icon: 'assets/icons/filetype-dmg.svg',
-        // "Disk Utility" opened an empty window with nothing mounted.
-        action: () => mountDiskImage('omnidoc')
-    },
-    {
-        id: 'omnidoc',
-        name: 'OmniDoc',
-        icon: 'assets/icons/app-omnidoc.svg',
+        action: () => mountDiskImage(x.id)
+    })),
+    ...window.PROFILE_DATA.projects.map(x => ({
+        id: `project-${x.id}`,
+        name: x.name,
+        icon: x.icon,
         action: () => {
-            if (typeof openProjectDetails === 'function') {
-                openProjectDetails('OmniDoc');
-            } else {
-                openWindow('appstore-window');
-            }
-        }
-    },
-    {
-        id: 'sword',
-        name: 'S.W.O.R.D',
-        icon: 'assets/icons/app-sword.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') {
-                openProjectDetails('Project S.W.O.R.D');
-            } else {
-                openWindow('appstore-window');
-            }
-        }
-    },
-    {
-        id: 'sliver',
-        name: 'Sliver.Ai',
-        icon: 'assets/icons/app-sliver.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') {
-                openProjectDetails('Sliver.Ai');
-            } else {
-                openWindow('appstore-window');
-            }
-        }
-    },
-    {
-        id: 'multiva',
-        name: 'Multiva.Ai',
-        icon: 'assets/icons/app-multiva.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') {
-                openProjectDetails('Multiva.Ai');
-            } else {
-                openWindow('appstore-window');
-            }
-        }
-    },
-    {
-        id: 'helix',
-        name: 'Helix Compiler',
-        icon: 'assets/icons/app-helix.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') {
-                openProjectDetails('Helix-Compiler');
-            } else {
-                openWindow('appstore-window');
-            }
-        }
-    },
-    {
-        id: 'vlm',
-        name: 'VLM Leads (Live)',
-        icon: 'assets/icons/app-vlm.svg',
-        action: () => window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer')
-    },
-    {
-        id: 'veritas',
-        name: 'Veritas Check (Live)',
-        icon: 'assets/icons/app-veritas.svg',
-        action: () => window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer')
-    },
-    {
-        id: 'slam',
-        name: 'Monocular SLAM',
-        icon: 'assets/icons/app-slam.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') openProjectDetails('Monocular RGB SLAM');
+            if (typeof openProjectDetails === 'function') openProjectDetails(x.name);
             else openWindow('appstore-window');
         }
-    },
-    {
-        id: 'skyguard',
-        name: 'Skyguard AI',
-        icon: 'assets/icons/app-skyguard.svg',
-        action: () => {
-            if (typeof openProjectDetails === 'function') openProjectDetails('Skyguard AI');
-            else openWindow('appstore-window');
-        }
-    },
+    })),
     {
         id: 'missioncontrol',
         name: 'Mission Control',
@@ -292,7 +213,7 @@ function renderLaunchpadGrid(apps) {
 
     grid.innerHTML = apps.map(app => `
         <button class="launchpad-app-item" data-app-id="${app.id}" data-app-name="${escapeHtml(app.name)}" onclick="launchApp('${app.id}')" title="${escapeHtml(app.name)}">
-            <div class="launchpad-app-icon-wrapper${/Professionalimage/.test(app.icon) ? ' is-photo' : ''}">
+            <div class="launchpad-app-icon-wrapper${app.icon === window.PROFILE_DATA.photo ? ' is-photo' : ''}">
                 <img src="${escapeHtml(app.icon)}" alt="">
             </div>
             <div class="launchpad-app-name">${escapeHtml(app.name)}</div>

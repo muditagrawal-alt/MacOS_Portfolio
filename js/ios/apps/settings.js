@@ -3,7 +3,7 @@
    ========================================================================== */
 
 (function () {
-    const P = window.PROFILE_DATA || {};
+    const P = window.PROFILE_DATA;
     const WALLPAPERS = [
         ['assets/Wallpapers/26-Tahoe-Beach-Day.jpg', 'Tahoe Beach'],
         ['assets/Wallpapers/27-Golden-Gate-Bridge.jpg', 'Golden Gate'],
@@ -27,7 +27,7 @@
         const mode = IOS.readPref('appearance', 'auto');
         content.innerHTML = `
             <button type="button" class="set-profile" data-action="about">
-                <img src="assets/Professionalimage.jpeg" alt="">
+                <img src="${escapeHtml(P.photo)}" alt="">
                 <span><strong>${escapeHtml(P.name)}</strong><small>Résumé, projects, experience</small></span>
                 <i class="fas fa-chevron-right ios-row-chevron"></i>
             </button>
@@ -99,7 +99,7 @@
             <div class="ios-group set-prose">
                 <p><strong>No analytics, no ads, no cookies.</strong> Nothing you do here is tracked.</p>
                 <p><strong>Stays on this device:</strong> your settings, notes you write, your Mail draft and the conversation with Iris (until you close the tab).</p>
-                <p><strong>Sent only when you ask:</strong> a message you send from Mail goes to Mudit through Web3Forms. With a hosted model configured, Iris sends your question and the matching portfolio passages to it.</p>
+                <p><strong>Sent only when you ask:</strong> a message you send from Mail goes to ${escapeHtml(P.first)} through Web3Forms. With a hosted model configured, Iris sends your question and the matching portfolio passages to it.</p>
                 <p><strong>Fetched without an account:</strong> weather (Open-Meteo, from your approximate location) and public GitHub activity.</p>
             </div>`;
     }
@@ -107,16 +107,13 @@
     function general(content) {
         content.innerHTML = `
             ${IOS.group([
-                { title: 'Name', detail: `${(P.name || 'Mudit').split(' ')[0]}’s iPhone` },
+                { title: 'Name', detail: `${P.first}’s iPhone` },
                 { title: 'Version', detail: VERSION },
                 { title: 'Built with', detail: 'HTML, CSS & JavaScript' },
                 { title: 'Frameworks', detail: 'None' },
                 { title: 'Shared with the Mac', detail: 'Data, Iris, Music' }
             ])}
-            ${IOS.group([
-                { icon: 'fab fa-github', color: '#24292f', title: 'GitHub', href: (P.contact || {}).github },
-                { icon: 'fab fa-linkedin-in', color: '#0a66c2', title: 'LinkedIn', href: (P.contact || {}).linkedin }
-            ], { header: 'Mudit online' })}
+            ${P.links.length ? IOS.group(P.links.map(l => ({ icon: l.fa, color: l.color, title: l.label, href: l.url })), { header: `${P.first} online` }) : ''}
             <p class="ios-section-footer">The iPhone and Mac versions are one site: the same link opens the right one for each device.</p>`;
     }
 

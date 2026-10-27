@@ -7,7 +7,8 @@
 
 (function () {
     const certs = () => ((window.PHOTO_LIBRARY || {}).certificates || { items: [] }).items;
-    const PORTRAIT = { file: 'portrait', title: 'Mudit Agrawal', issuer: 'Portrait', thumb: 'assets/Professionalimage.jpeg', full: 'assets/Professionalimage.jpeg' };
+    const P = window.PROFILE_DATA;
+    const PORTRAIT = { file: 'portrait', title: P.name, issuer: 'Portrait', thumb: P.photo, full: P.photo };
     const find = (file) => (file === 'portrait' ? PORTRAIT : certs().find(c => c.file === file));
 
     function library(content) {

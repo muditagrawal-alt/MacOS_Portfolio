@@ -192,9 +192,10 @@ function renderNotifications(sections) {
     });
 
     // LinkedIn can't be fetched (see header note) — link out instead of faking it.
-    html += `
+    const linkedin = window.PROFILE_DATA.link('linkedin');
+    if (linkedin) html += `
         <div class="notif-section-title">Elsewhere</div>
-        <a class="notif-card" href="https://www.linkedin.com/in/mudit-agrawal-167610318"
+        <a class="notif-card" href="${escapeHtml(safeUrl(linkedin.url))}"
            target="_blank" rel="noopener noreferrer">
             <img class="notif-card-icon" src="assets/icons/social-linkedin.svg" alt="">
             <div class="notif-card-body">

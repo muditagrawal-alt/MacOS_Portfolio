@@ -6,20 +6,28 @@
     <!-- Device router: laptops/desktops go to the Mac version (index.html)
          before anything paints. Must stay first and synchronous. -->
     <script src="js/router.js?v=2.5"></script>
-    <title>Mudit Agrawal — Portfolio</title>
-    <meta name="description" content="Mudit Agrawal — AI/ML engineer (agentic and RAG systems, computer vision). The iPhone edition of his portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Mudit">
     <meta name="format-detection" content="telephone=no">
+    <!-- profile:meta — generated from the info bank by `npm run setup`; edit js/data/profile.js, not here -->
+    <title>Mudit Agrawal — Portfolio</title>
+    <meta name="description" content="Mudit Agrawal — AI/ML Engineer &amp; Computer Science Undergraduate. The iPhone edition of his portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
+    <meta name="apple-mobile-web-app-title" content="Mudit">
     <meta property="og:title" content="Mudit Agrawal — Portfolio">
-    <meta property="og:description" content="AI/ML engineer — résumé, projects and experience, plus an assistant that answers questions about his work.">
+    <meta property="og:description" content="AI/ML Engineer &amp; Computer Science Undergraduate — résumé, projects and experience, plus an assistant that answers questions about his work.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/og-image.jpg">
+    <meta property="og:url" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/">
+    <meta property="og:image" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/assets/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Mudit Agrawal's portfolio on iPhone">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="assets/og-image.jpg">
+    <meta name="twitter:title" content="Mudit Agrawal — Portfolio">
+    <meta name="twitter:description" content="AI/ML Engineer &amp; Computer Science Undergraduate — résumé, projects and experience, plus an assistant that answers questions about his work.">
+    <meta name="twitter:image" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/assets/og-image.jpg">
+    <!-- /profile:meta -->
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="manifest.webmanifest">
@@ -70,7 +78,7 @@
                 <img src="assets/icons/messages.png" alt="">
                 <span class="ios-ln-text">
                     <span class="ios-ln-head"><strong>Iris</strong><small>now</small></span>
-                    <span class="ios-ln-body">Hi, I’m Mudit’s assistant. Ask me anything about his work — I’ll show you where each answer comes from.</span>
+                    <span class="ios-ln-body" id="ios-ln-body"></span>
                 </span>
             </button>
             <div class="ios-lock-hint" id="ios-lock-hint">Swipe up or tap to open</div>
@@ -101,12 +109,13 @@
 
     <!-- Shown only in the framed desktop preview -->
     <div class="ios-frame-caption" id="ios-frame-caption" hidden>
-        <span>iPhone version of Mudit’s portfolio</span>
+        <span id="ios-frame-owner">iPhone version of this portfolio</span>
         <button type="button" onclick="PORTFOLIO_SHELL.switchTo('mac')"><i class="fas fa-laptop"></i> Back to the Mac version</button>
     </div>
 
     <!-- Shared data & engines (same files the Mac version uses) -->
     <script src="js/data/profile.js?v=2.5"></script>
+    <script src="js/data/profile-schema.js?v=2.5"></script>
     <script src="js/data/corpus.js?v=2.5"></script>
     <script src="js/data/desktop-files.js?v=2.5"></script>
     <script src="js/data/filesystem.js?v=2.5"></script>

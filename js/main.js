@@ -3,16 +3,7 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Sync UI elements from single source of truth (window.PROFILE_DATA)
-    if (window.PROFILE_DATA) {
-        const p = window.PROFILE_DATA;
-        const nameEl = document.getElementById('menubar-profile-name');
-        const blurbEl = document.getElementById('menubar-profile-blurb');
-        const eduEl = document.getElementById('about-mac-education');
-        if (nameEl) nameEl.textContent = p.name;
-        if (blurbEl) blurbEl.textContent = 'AI Engineer';
-        if (eduEl) eduEl.textContent = `${p.education?.degree || ''} @ ${p.education?.university || ''}`;
-    }
+    // Personal details are filled in by js/core/profile-bind.js (data-tpl).
 
     // Bring window to front on click (delegated — works for any window,
     // including ones that gain content later).

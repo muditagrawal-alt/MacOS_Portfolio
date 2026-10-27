@@ -1,6 +1,6 @@
 /* ==========================================================================
    Boot Animation Controller — macOS Startup Sequence
-   Phase 1: "Mudit Agrawal" name logo with progress bar
+   Phase 1: the owner's name as a logo, with a progress bar
    Phase 2: Apple's handwritten "hello", drawn as one continuous stroke
    ========================================================================== */
 

@@ -81,7 +81,7 @@ function finderSidebarNav(folderId) {
     // while still keeping their own row highlighted.
     const aliasMap = {
         'about': 'home',
-        'mudit': 'home',
+        [window.PROFILE_DATA.first.toLowerCase()]: 'home',
         'experience': 'experience-folder',
         'education': 'education-folder',
         'projects': 'projects-folder',
@@ -121,7 +121,7 @@ function updateFinderHeader() {
 function updateFinderSidebarActive() {
     // Highlight what the visitor actually clicked. Several rows (AirDrop,
     // Network, iCloud Drive, Macintosh HD) all resolve to 'home', so matching
-    // on the resolved folder lit up "Mudit" no matter which one you picked.
+    // on the resolved folder lit up the home folder no matter which one you picked.
     const folderAliases = {
         'projects-folder': 'projects', 'experience-folder': 'experience',
         'education-folder': 'education', 'skills-folder': 'skills'
@@ -376,13 +376,13 @@ function renderAirDropView(container) {
         <div class="airdrop-view">
             <div class="airdrop-radar" aria-hidden="true">
                 <span></span><span></span><span></span>
-                <img src="assets/Professionalimage.jpeg" alt="">
+                <img src="${escapeHtml(window.PROFILE_DATA.photo)}" alt="">
             </div>
-            <h3>AirDrop from Mudit’s MacBook Pro</h3>
+            <h3>AirDrop from ${escapeHtml(window.PROFILE_DATA.first)}’s MacBook Pro</h3>
             <p>Take a copy with you — nothing to sign up for.</p>
             <div class="airdrop-targets">
                 <button type="button" class="airdrop-target" onclick="downloadResume()">
-                    <img src="assets/icons/filetype-pdf.svg" alt=""><span>Résumé</span><small>PDF · 58 KB</small>
+                    <img src="assets/icons/filetype-pdf.svg" alt=""><span>Résumé</span><small>PDF</small>
                 </button>
                 <button type="button" class="airdrop-target" onclick="downloadContactCard()">
                     <img src="assets/icons/filetype-contact.svg" alt=""><span>Contact Card</span><small>vCard</small>
@@ -456,7 +456,7 @@ function updateFinderBottomBar() {
             <span class="finder-path-sep">›</span>
             <span class="finder-path-segment" onclick="navigateFinderFolder('home')">Users</span>
             <span class="finder-path-sep">›</span>
-            <span class="finder-path-segment" onclick="navigateFinderFolder('home')">Mudit</span>
+            <span class="finder-path-segment" onclick="navigateFinderFolder('home')">${escapeHtml(window.PROFILE_DATA.first)}</span>
             ${currentFinderFolder !== 'home' ? `
                 <span class="finder-path-sep">›</span>
                 <span class="finder-path-segment active">${(AAKASH_STYLE_FS[currentFinderFolder] || {}).name || ''}</span>

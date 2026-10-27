@@ -47,7 +47,8 @@ function renderAppStore() {
     const empty = document.getElementById('appstore-empty-state');
     if (empty) empty.style.display = list.length ? 'none' : 'block';
     const title = document.getElementById('appstore-section-title');
-    if (title) title.textContent = q ? `Results for “${appStoreQuery}”` : ({ all: 'Everything Mudit has shipped', ai: 'AI & Language', vision: 'Vision & Video', systems: 'Systems', defense: 'Defense' })[appStoreCategory];
+    const category = getProjectCategories().find(c => c.id === appStoreCategory);
+    if (title) title.textContent = q ? `Results for “${appStoreQuery}”` : (category ? category.label : `Everything ${window.PROFILE_DATA.first} has shipped`);
 
     grid.innerHTML = list.map(p => `
         <div class="app-card" role="button" tabindex="0" data-project="${escapeHtml(p.id)}"
@@ -127,7 +128,7 @@ function filterAppStoreProjects(query) {
 /** Launchpad / Spotlight: jump straight to a project's product page. */
 window.openProjectDetails = function(name) {
     openWindow('appstore-window');
-    // Best word overlap ("Monocular RGB SLAM" ↔ "Monocular RGB Sparse Point Cloud SLAM").
+    // Best word overlap ("Image Search" ↔ "Semantic Image Search Engine").
     const words = s => String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 1);
     const want = words(name);
     let best = null, bestScore = 0;
@@ -140,4 +141,13 @@ window.openProjectDetails = function(name) {
     else closeAppStoreProduct();
 };
 
-document.addEventListener('DOMContentLoaded', () => setTimeout(renderAppStore, 150));
+/** Sidebar rows for the categories the projects actually fall into. */
+function renderAppStoreSidebar() {
+    const sidebar = document.querySelector('.appstore-sidebar');
+    if (!sidebar) return;
+    sidebar.querySelectorAll('.sidebar-item:not([data-cat="all"])').forEach(r => r.remove());
+    sidebar.insertAdjacentHTML('beforeend', getProjectCategories().map(c =>
+        `<div class="sidebar-item" data-cat="${escapeHtml(c.id)}" onclick="filterAppStoreCategory('${escapeAttr(c.id)}', this)"><i class="${escapeHtml(c.icon)}"></i> ${escapeHtml(c.label)}</div>`).join(''));
+}
+
+document.addEventListener('DOMContentLoaded', () => { renderAppStoreSidebar(); setTimeout(renderAppStore, 150); });

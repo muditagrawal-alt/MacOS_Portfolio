@@ -5,145 +5,115 @@
 let activeMailbox = 'inbox';
 let activeEmailId = 1;
 
-const profileRef = window.PROFILE_DATA || {};
-const expSummaryList = (profileRef.experience || []).map(e => `<strong>${e.role}</strong> at <strong>${e.org}</strong> (${e.dates})`).join(', ');
+// The inbox is written from the info bank: a note from the owner, their
+// networks, their repositories, every way to reach them, and the résumé.
+const profileRef = window.PROFILE_DATA;
+const OWNER_ADDRESS = `${profileRef.name}${profileRef.contact.email ? ` <${profileRef.contact.email}>` : ''}`;
 
-const emailStore = [
-    {
-        id: 1,
-        mailbox: 'inbox',
-        starred: true,
-        unread: true,
-        initials: 'MA',
-        avatarBg: 'linear-gradient(135deg, #007aff, #00c6ff)',
-        from: `${profileRef.name || 'Mudit Agrawal'} <${profileRef.contact?.email || 'muditagrawal03@gmail.com'}>`,
-        senderName: profileRef.name || 'Mudit Agrawal',
-        to: 'Recruiter / Engineering Leader <you@future.org>',
-        date: 'Today at 4:30 PM',
-        subject: 'Open for AI/ML Roles & SWE Opportunities',
-        snippet: "Hi! I'm actively seeking opportunities in Applied Machine Learning, LLMs, and Computer Vision...",
+const emailStore = (() => {
+    const P = profileRef;
+    const e = escapeHtml;
+    const link = (href, text) => `<a href="${e(safeUrl(href))}" target="_blank" rel="noopener noreferrer" style="color:#007aff;">${e(text)}</a>`;
+    const resume = P.resume.file ? { title: P.resume.downloadName, size: 'PDF Document', action: 'openResumeWindow()' } : null;
+    const li = P.link('linkedin');
+    const gh = P.link('github');
+    const repos = P.projects.filter(x => x.repo || x.link).slice(0, 4);
+    const mails = [];
+    let id = 1;
+
+    mails.push({
+        id: id++, mailbox: 'inbox', starred: true, unread: true,
+        initials: P.initials, avatarBg: 'linear-gradient(135deg, #007aff, #00c6ff)',
+        from: OWNER_ADDRESS, senderName: P.name,
+        to: 'You', date: 'Today at 4:30 PM',
+        subject: P.lookingFor ? `Open to ${P.lookingFor}` : `Hello from ${P.first}`,
+        snippet: P.bio,
         body: `
             <p>Hi there,</p>
-            <p>Thank you for exploring my macOS portfolio workspace!</p>
-            <p>${profileRef.bio || 'Computer Science Undergraduate (AI/ML) at IILM University, building applied AI systems that work reliably outside sandboxes.'}</p>
-            <p>My internship experience includes: ${expSummaryList}.</p>
-            <p>I am actively open for engineering and machine learning roles where I can contribute to mission-critical systems and learn by doing.</p>
-        `,
+            <p>Thank you for exploring my portfolio.</p>
+            <p>${e(P.bio)}</p>
+            ${P.experience.length ? `<p>My experience includes: ${P.experience.map(x => `<strong>${e(x.role)}</strong> at <strong>${e(x.org)}</strong> (${e(x.dates)})`).join(', ')}.</p>` : ''}
+            ${P.lookingFor ? `<p>I’m looking for ${e(P.lookingFor)}.</p>` : ''}
+            <p>— ${e(P.first)}</p>`,
         actions: [
-            { text: 'Reply via Email', icon: 'fas fa-reply', href: `mailto:${profileRef.contact?.email || 'muditagrawal03@gmail.com'}?subject=Opportunity%20Discussion%20with%20Mudit`, primary: true },
-            { text: 'Connect on LinkedIn', icon: 'fab fa-linkedin', href: profileRef.contact?.linkedin || 'https://www.linkedin.com/in/mudit-agrawal-167610318', primary: false, target: '_blank' },
-            { text: `Call ${profileRef.contact?.phone || '+91-7289887349'}`, icon: 'fas fa-phone', href: `tel:${profileRef.contact?.phone || '+917289887349'}`, primary: false }
-        ],
-        attachment: {
-            title: 'MuditAgrawalResumeAugust2026.pdf',
-            size: '1.2 MB • PDF Document',
-            action: 'openResumeWindow()'
-        }
-    },
-    {
-        id: 2,
-        mailbox: 'inbox',
-        starred: true,
-        unread: false,
-        initials: 'LI',
-        avatarBg: 'linear-gradient(135deg, #0a66c2, #004182)',
-        from: 'LinkedIn Network <notifications@linkedin.com>',
-        senderName: 'LinkedIn Network',
-        to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
-        date: 'Yesterday at 6:15 PM',
-        subject: 'Connect on LinkedIn & Professional Discussions',
-        snippet: 'Expand your professional network and discuss technology, engineering collaborations, and research...',
-        body: `
-            <p>Hello Mudit,</p>
-            <p>Your profile is open for networking and professional inquiries across AI/ML and software systems.</p>
-            <p>Feel free to reach out directly to connect, review recommendations, or discuss potential collaborations and roles.</p>
-            <p><strong>Profile:</strong> <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" rel="noopener noreferrer" style="color:#007aff;text-decoration:underline;">linkedin.com/in/mudit-agrawal-167610318</a></p>
-        `,
-        actions: [
-            { text: 'Open LinkedIn Profile', icon: 'fab fa-linkedin', href: 'https://www.linkedin.com/in/mudit-agrawal-167610318', primary: true, target: '_blank' }
-        ]
-    },
-    {
-        id: 3,
-        mailbox: 'inbox',
-        starred: false,
-        unread: false,
-        initials: 'GH',
-        avatarBg: 'linear-gradient(135deg, #24292e, #0d1117)',
-        from: 'GitHub Notifications <notifications@github.com>',
-        senderName: 'GitHub Repositories',
-        to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
-        date: 'Aug 15 at 11:20 AM',
-        subject: 'Latest Repos: OmniDoc, Sliver.Ai & S.W.O.R.D',
-        snippet: 'Recent commits and architectures updated across @muditagrawal-alt open source projects...',
-        body: `
-            <p>Recent repository highlights on GitHub <strong>@muditagrawal-alt</strong>:</p>
-            <ul style="padding-left:20px;margin-bottom:15px;color:#ccc;line-height:1.7;">
-                <li><strong>OmniDoc:</strong> Multimodal RAG with Mistral-7B, Nomic quantized embeddings, and BLIP QA.</li>
-                <li><strong>Sliver.Ai:</strong> Sub-second video clipping pipeline with YOLOv8-Face & YOLO11m.</li>
-                <li><strong>Project S.W.O.R.D:</strong> Real-time weapon observation using YOLOv8 defense module.</li>
-                <li><strong>Helix-Compiler:</strong> C-based parsing and language translation engine.</li>
-            </ul>
-        `,
-        actions: [
-            { text: 'View GitHub Profile', icon: 'fab fa-github', href: 'https://github.com/muditagrawal-alt', primary: true, target: '_blank' }
-        ]
-    },
-    {
-        id: 4,
-        mailbox: 'inbox',
-        starred: false,
-        unread: false,
-        initials: 'AB',
-        avatarBg: 'linear-gradient(135deg, #f6d365, #fda085)',
-        from: "Mudit's Address Book <contact@muditagrawal.dev>",
-        senderName: 'Direct Contact Channels',
-        to: 'Visitor <guest@macbook>',
-        date: 'Aug 12 at 10:00 AM',
-        subject: 'Direct Reach: Email, Phone & Schedule a Chat',
-        snippet: 'All direct contact lines: muditagrawal03@gmail.com, +91-7289887349, Substack...',
-        body: `
-            <p>Here are all the direct channels where you can reach Mudit Agrawal:</p>
-            <div style="background:rgba(0,0,0,0.3);padding:14px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);margin:14px 0;line-height:1.8;">
-                <div>📧 <strong>Email:</strong> <a href="mailto:muditagrawal03@gmail.com" style="color:#007aff;">muditagrawal03@gmail.com</a></div>
-                <div>📱 <strong>Phone:</strong> <a href="tel:+917289887349" style="color:#007aff;">+91-7289887349</a></div>
-                <div>💼 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/mudit-agrawal-167610318" target="_blank" rel="noopener noreferrer" style="color:#007aff;">mudit-agrawal-167610318</a></div>
-                <div>🐙 <strong>GitHub:</strong> <a href="https://github.com/muditagrawal-alt" target="_blank" rel="noopener noreferrer" style="color:#007aff;">muditagrawal-alt</a></div>
-                <div>✍️ <strong>Substack:</strong> <a href="https://substack.com/@standardissuemudit" target="_blank" rel="noopener noreferrer" style="color:#007aff;">@standardissuemudit</a></div>
-            </div>
-        `,
-        actions: [
-            { text: 'Send Direct Email', icon: 'fas fa-envelope', href: 'mailto:muditagrawal03@gmail.com', primary: true },
-            { text: 'Call Mobile', icon: 'fas fa-phone', href: 'tel:+917289887349', primary: false }
-        ]
-    },
-    {
-        id: 5,
-        mailbox: 'inbox',
-        starred: true,
-        unread: false,
-        initials: 'CV',
-        avatarBg: 'linear-gradient(135deg, #43e97b, #38f9d7)',
-        from: 'Career Documents <resume@muditagrawal.dev>',
-        senderName: 'Resume & Credentials',
-        to: 'Visitor <guest@macbook>',
-        date: 'Aug 10 at 9:00 AM',
-        subject: 'Attached: Mudit Agrawal Resume (PDF Pack)',
-        snippet: 'Download or preview the August 2026 résumé for Mudit Agrawal (B.Tech CS AI/ML)...',
-        body: `
-            <p>Attached is the updated resume document for ${profileRef.name || 'Mudit Agrawal'}.</p>
-            <p>Includes complete coursework, academic achievements at ${profileRef.education?.university || 'IILM University'}, ${(profileRef.experience || []).map(e => e.org.split(' (')[0]).join(', ')} internships, and projects.</p>
-        `,
-        attachment: {
-            title: 'MuditAgrawalResumeAugust2026.pdf',
-            size: '58 KB • PDF Document',
-            action: 'openResumeWindow()'
-        },
-        actions: [
-            { text: 'View Resume Viewer', icon: 'fas fa-file-pdf', href: '#', onclick: 'openResumeWindow()', primary: true }
-        ]
+            P.contact.email && { text: 'Reply via Email', icon: 'fas fa-reply', href: `mailto:${P.contact.email}?subject=${encodeURIComponent(`Hello ${P.first}`)}`, primary: true },
+            li && { text: 'Connect on LinkedIn', icon: 'fab fa-linkedin', href: li.url, primary: !P.contact.email, target: '_blank' },
+            P.contact.phone && { text: `Call ${P.contact.phone}`, icon: 'fas fa-phone', href: `tel:${P.contact.phone.replace(/[^+\d]/g, '')}`, primary: false }
+        ].filter(Boolean),
+        attachment: resume
+    });
+
+    if (li) {
+        mails.push({
+            id: id++, mailbox: 'inbox', starred: true, unread: false,
+            initials: 'LI', avatarBg: 'linear-gradient(135deg, #0a66c2, #004182)',
+            from: 'LinkedIn Network <notifications@linkedin.com>', senderName: 'LinkedIn Network',
+            to: OWNER_ADDRESS, date: 'Yesterday at 6:15 PM',
+            subject: 'Connect on LinkedIn',
+            snippet: `${P.first}’s profile is open for networking and professional enquiries.`,
+            body: `
+                <p>${e(P.first)}’s profile is open for networking and professional enquiries.</p>
+                <p>Reach out to connect, review recommendations, or discuss collaborations and roles.</p>
+                <p><strong>Profile:</strong> ${link(li.url, li.url.replace(/^https?:\/\/(www\.)?/, ''))}</p>`,
+            actions: [{ text: 'Open LinkedIn Profile', icon: 'fab fa-linkedin', href: li.url, primary: true, target: '_blank' }]
+        });
     }
-];
+
+    if (gh && repos.length) {
+        mails.push({
+            id: id++, mailbox: 'inbox', starred: false, unread: false,
+            initials: 'GH', avatarBg: 'linear-gradient(135deg, #24292e, #0d1117)',
+            from: 'GitHub Notifications <notifications@github.com>', senderName: 'GitHub Repositories',
+            to: OWNER_ADDRESS, date: 'Yesterday at 9:42 AM',
+            subject: `Latest repos: ${repos.slice(0, 3).map(x => x.name).join(', ')}`,
+            snippet: `Recent work across ${gh.handle || P.github.user}…`,
+            body: `
+                <p>Repository highlights on GitHub <strong>${e(gh.handle || P.github.user)}</strong>:</p>
+                <ul style="line-height:1.7;">${repos.map(x => `<li><strong>${e(x.name)}:</strong> ${e(x.summary)}</li>`).join('')}</ul>`,
+            actions: [{ text: 'View GitHub Profile', icon: 'fab fa-github', href: gh.url, primary: true, target: '_blank' }]
+        });
+    }
+
+    const channels = [
+        P.contact.email && `<div>📧 <strong>Email:</strong> <a href="mailto:${e(P.contact.email)}" style="color:#007aff;">${e(P.contact.email)}</a></div>`,
+        P.contact.phone && `<div>📱 <strong>Phone:</strong> <a href="tel:${e(P.contact.phone.replace(/[^+\d]/g, ''))}" style="color:#007aff;">${e(P.contact.phone)}</a></div>`,
+        ...P.links.map(l => `<div>🔗 <strong>${e(l.label)}:</strong> ${link(l.url, l.handle || l.url.replace(/^https?:\/\/(www\.)?/, ''))}</div>`)
+    ].filter(Boolean);
+    if (channels.length) {
+        mails.push({
+            id: id++, mailbox: 'inbox', starred: false, unread: false,
+            initials: 'AB', avatarBg: 'linear-gradient(135deg, #f6d365, #fda085)',
+            from: `${P.first}’s Address Book`, senderName: 'Contact Channels',
+            to: 'You', date: 'Monday at 10:00 AM',
+            subject: 'Every way to reach me',
+            snippet: [P.contact.email, P.contact.phone, ...P.links.map(l => l.label)].filter(Boolean).join(', '),
+            body: `
+                <p>Here are all the ways to reach ${e(P.name)}:</p>
+                <div style="background:rgba(0,0,0,0.3);padding:14px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);margin:14px 0;line-height:1.8;">${channels.join('')}</div>`,
+            actions: [
+                P.contact.email && { text: 'Send Direct Email', icon: 'fas fa-envelope', href: `mailto:${P.contact.email}`, primary: true },
+                P.contact.phone && { text: 'Call Mobile', icon: 'fas fa-phone', href: `tel:${P.contact.phone.replace(/[^+\d]/g, '')}`, primary: false }
+            ].filter(Boolean)
+        });
+    }
+
+    if (resume) {
+        mails.push({
+            id: id++, mailbox: 'inbox', starred: true, unread: false,
+            initials: 'CV', avatarBg: 'linear-gradient(135deg, #43e97b, #38f9d7)',
+            from: 'Career Documents', senderName: 'Résumé',
+            to: 'You', date: 'Last week',
+            subject: `Attached: ${P.name} — Résumé`,
+            snippet: `${P.resume.updated ? `The ${P.resume.updated} résumé` : 'The current résumé'} for ${P.name}.`,
+            body: `
+                <p>Attached is the current résumé for ${e(P.name)}${P.resume.updated ? ` (updated ${e(P.resume.updated)})` : ''}.</p>
+                ${P.education.degree ? `<p>${e(P.education.degree)}${P.education.university ? `, ${e(P.education.university)}` : ''}.</p>` : ''}`,
+            attachment: resume,
+            actions: [{ text: 'View Résumé', icon: 'fas fa-file-pdf', href: '#', onclick: 'openResumeWindow()', primary: true }]
+        });
+    }
+    return mails;
+})();
 
 function updateMailBadges() {
     const unreadCount = emailStore.filter(e => e.mailbox === 'inbox' && e.unread).length;
@@ -375,7 +345,7 @@ function closeMailCompose(options = {}) {
             avatarBg: 'linear-gradient(135deg, #8e8e93, #636366)',
             from: `${f.name || 'You'}${f.email ? ` <${f.email}>` : ''}`,
             senderName: f.name || 'Draft',
-            to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
+            to: OWNER_ADDRESS,
             date: 'Draft', subject: f.subject || '(No Subject)',
             snippet: f.message.slice(0, 100),
             body: `<p>${escapeHtml(f.message).replace(/\n/g, '<br>')}</p>`,
@@ -487,8 +457,8 @@ async function sendMailCompose() {
     const sendBtn = document.getElementById('compose-send-btn');
 
     if (!f.message) { setComposeStatus('Write a message first.', '#ff9f0a'); return; }
-    // Without a reply-to address Mudit has no way to answer.
-    if (!f.email) { setComposeStatus('Add your email so Mudit can reply.', '#ff9f0a'); document.getElementById('compose-sender-email').focus(); return; }
+    // Without a reply-to address the owner has no way to answer.
+    if (!f.email) { setComposeStatus(`Add your email so ${profileRef.first} can reply.`, '#ff9f0a'); document.getElementById('compose-sender-email').focus(); return; }
     if (!isValidEmail(f.email)) { setComposeStatus('That email address doesn’t look right.', '#ff9f0a'); return; }
 
     if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
@@ -507,7 +477,7 @@ async function sendMailCompose() {
             avatarBg: 'linear-gradient(135deg, #ff9500, #ff5e3a)',
             from: `${f.name || 'You'} <${f.email}>`,
             senderName: f.name || 'You',
-            to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
+            to: OWNER_ADDRESS,
             date: 'Just now', subject: f.subject || '(No Subject)',
             snippet: f.message.length > 100 ? f.message.substring(0, 100) + '…' : f.message,
             body: `<p>${escapeHtml(f.message).replace(/\n/g, '<br>')}</p>`,
@@ -522,11 +492,11 @@ async function sendMailCompose() {
             const sentTab = document.querySelector('.mail-sidebar .sidebar-item[data-mailbox="sent"]');
             switchMailbox('sent', sentTab);
             updateMailBadges();
-            if (typeof showToast === 'function') showToast('Message sent', { body: 'Mudit will reply to ' + f.email, icon: 'fas fa-paper-plane' });
+            if (typeof showToast === 'function') showToast('Message sent', { body: `${profileRef.first} will reply to ${f.email}`, icon: 'fas fa-paper-plane' });
         }, 900);
     } else {
         // No silent redirect: offer the visitor's own mail app explicitly.
-        const href = `mailto:muditagrawal03@gmail.com?subject=${encodeURIComponent(f.subject)}&body=${encodeURIComponent(f.message)}`;
+        const href = `mailto:${profileRef.contact.email}?subject=${encodeURIComponent(f.subject)}&body=${encodeURIComponent(f.message)}`;
         setComposeStatus('', '#ff453a', `Couldn’t send right now. <a href="${escapeHtml(href)}" style="color:#0a84ff;text-decoration:underline;">Open in your mail app</a>`);
     }
 }

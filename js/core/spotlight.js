@@ -11,7 +11,7 @@ let spotlightResults = [];
 let spotlightIndex = 0;
 
 const SPOTLIGHT_APPS = [
-    { name: 'About Mudit',     icon: 'assets/Professionalimage.jpeg', action: () => openWelcome() },
+    { name: `About ${window.PROFILE_DATA.first}`, icon: window.PROFILE_DATA.photo, action: () => openWelcome() },
     { name: 'Finder',          icon: 'assets/icons/finder.png',       action: () => openWindow('finder-window') },
     { name: 'Safari',          icon: 'assets/icons/safari.png',       action: () => openWindow('safari-window') },
     { name: 'Mail',            icon: 'assets/icons/mail.png',         action: () => openWindow('mail-window') },
@@ -34,9 +34,9 @@ const SPOTLIGHT_APPS = [
 // Things a visitor most often wants to *do*, matched on keywords.
 const SPOTLIGHT_ACTIONS = [
     { title: 'Download Résumé (PDF)', keys: 'resume résumé cv download pdf', glyph: 'fas fa-file-arrow-down', run: () => downloadResume() },
-    { title: 'Email Mudit', keys: 'email mail contact message hire reach write', glyph: 'fas fa-paper-plane', run: () => { openWindow('mail-window'); openMailCompose(); } },
+    { title: `Email ${window.PROFILE_DATA.first}`, keys: 'email mail contact message hire reach write', glyph: 'fas fa-paper-plane', run: () => { openWindow('mail-window'); openMailCompose(); } },
     { title: 'Save Contact Card', keys: 'contact vcard vcf card phone save', glyph: 'fas fa-address-card', run: () => downloadContactCard() },
-    { title: 'Copy Email Address', keys: 'copy email address', glyph: 'fas fa-copy', run: () => copyTextToClipboard('muditagrawal03@gmail.com', 'Email address copied') },
+    ...(window.PROFILE_DATA.contact.email ? [{ title: 'Copy Email Address', keys: 'copy email address', glyph: 'fas fa-copy', run: () => copyContactDetail('email') }] : []),
     { title: 'Ask Iris a Question', keys: 'ask iris siri question ai assistant chat', glyph: 'fas fa-wand-magic-sparkles', run: () => openIris() },
     { title: 'Keyboard Shortcuts', keys: 'keyboard shortcuts keys help hotkeys', glyph: 'fas fa-keyboard', run: () => showKeyboardShortcuts() }
 ];
@@ -84,7 +84,7 @@ function closeSpotlight() {
     spotlightOpen = false;
 }
 
-/** Collapses "OmniDoc", "proj-omnidoc" and "OmniDoc.app" to one key. */
+/** Collapses "Notebook", "proj-notebook" and "Notebook.app" to one key. */
 function normaliseTitle(t) {
     return String(t).toLowerCase().replace(/^proj-/, '').replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]/g, '');
 }
@@ -169,7 +169,7 @@ function renderSpotlightResults() {
             lastGroup = r.group;
         }
         const art = r.icon
-            ? `<img src="${escapeHtml(r.icon)}" alt=""${/Professionalimage/.test(r.icon) ? ' class="round"' : ''}>`
+            ? `<img src="${escapeHtml(r.icon)}" alt=""${r.icon === window.PROFILE_DATA.photo ? ' class="round"' : ''}>`
             : `<i class="${escapeHtml(r.glyph || 'fas fa-file')}"></i>`;
         html += `
             <div class="spotlight-row ${i === spotlightIndex ? 'selected' : ''}" data-index="${i}" role="option" aria-selected="${i === spotlightIndex}">

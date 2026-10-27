@@ -1,46 +1,47 @@
 /* ==========================================================================
-   Mail — a short inbox from Mudit, and a way to write back
+   Mail — a short inbox from the owner, and a way to write back
    --------------------------------------------------------------------------
    Compose sends through js/shared/contact-form.js, the same path the Mac's
-   Mail uses. A reply-to address is required (otherwise Mudit can't answer),
-   drafts survive closing the app, and a failed send says so and offers the
-   visitor's own mail app instead of pretending it worked.
+   Mail uses. A reply-to address is required (otherwise the owner can't
+   answer), drafts survive closing the app, and a failed send says so and
+   offers the visitor's own mail app instead of pretending it worked.
    ========================================================================== */
 
 (function () {
-    const P = window.PROFILE_DATA || {};
-    const C = P.contact || {};
+    const P = window.PROFILE_DATA;
+    const C = P.contact;
     const DRAFT_KEY = 'ios-mail-draft';
     const READ_KEY = 'ios-mail-read';
-    const first = (P.name || 'Mudit').split(' ')[0];
+    const first = P.first;
 
     function readIds() { try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); } catch (e) { return []; } }
     function markRead(id) { const r = new Set(readIds()); r.add(id); try { localStorage.setItem(READ_KEY, JSON.stringify([...r])); } catch (e) { /* ignore */ } }
 
+    /** Written from the info bank: a hello, what's live, and how to use Iris. */
     function inbox() {
-        const exp = P.experience || [];
-        const projects = typeof getPortfolioProjects === 'function' ? getPortfolioProjects() : [];
-        const live = projects.filter(p => p.live);
+        const exp = P.experience;
+        const live = P.projects.filter(p => p.live);
+        const org = exp[0] && IOS.shortOrg(exp[0].org).split(' ')[0];
         return [
             {
-                id: 'hello', date: 'Today', subject: 'Open to AI/ML & SWE roles',
-                snippet: `Thanks for opening my portfolio on your phone. ${P.bio || ''}`,
+                id: 'hello', date: 'Today', subject: P.lookingFor ? `Open to ${P.lookingFor}` : `Hello from ${first}`,
+                snippet: `Thanks for opening my portfolio on your phone. ${P.bio}`,
                 body: `<p>Hi there,</p>
                     <p>Thanks for opening my portfolio on your phone.</p>
-                    <p>${escapeHtml(P.bio || '')}</p>
-                    <p>So far I’ve worked at ${exp.map(x => `<strong>${escapeHtml(IOS.shortOrg(x.org))}</strong>`).join(', ')}. I’m looking for roles in applied ML, LLM systems and computer vision.</p>
+                    <p>${escapeHtml(P.bio)}</p>
+                    ${exp.length ? `<p>So far I’ve worked at ${exp.map(x => `<strong>${escapeHtml(IOS.shortOrg(x.org))}</strong>`).join(', ')}.${P.lookingFor ? ` I’m looking for ${escapeHtml(P.lookingFor)}.` : ''}</p>` : ''}
                     <p>— ${escapeHtml(first)}</p>`,
-                attachment: true
+                attachment: Boolean(P.resume.file)
             },
-            {
-                id: 'live', date: 'Yesterday', subject: `${live.length} things you can try right now`,
+            ...(live.length ? [{
+                id: 'live', date: 'Yesterday', subject: `${live.length} ${live.length === 1 ? 'thing' : 'things'} you can try right now`,
                 snippet: live.map(p => p.name).join(' · '),
-                body: `<p>These are deployed — open them in your browser:</p><ul>${live.map(p => `<li><a href="${escapeHtml(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.name)}</a> — ${escapeHtml(p.subtitle)}</li>`).join('')}</ul><p>Everything else is open source on GitHub.</p>`
-            },
+                body: `<p>These are deployed — open them in your browser:</p><ul>${live.map(p => `<li><a href="${escapeHtml(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.name)}</a> — ${escapeHtml(p.subtitle)}</li>`).join('')}</ul>`
+            }] : []),
             {
                 id: 'iris', date: 'Monday', subject: 'Ask Iris anything',
                 snippet: 'An assistant that answers from my portfolio — and shows its sources.',
-                body: `<p>Iris lives in Messages. It answers questions about my projects, experience and skills using only what’s on this site, and every answer lists the sources it came from.</p><p>Try: <em>“What did he build at Zee?”</em></p>`,
+                body: `<p>Iris lives in Messages. It answers questions about my projects, experience and skills using only what’s on this site, and every answer lists the sources it came from.</p>${org ? `<p>Try: <em>“What did ${escapeHtml(P.pron.subject)} do at ${escapeHtml(org)}?”</em></p>` : ''}`,
                 cta: 'Open Messages'
             }
         ];
@@ -76,7 +77,7 @@
         content.innerHTML = `
             <article class="mail-message">
                 <header>
-                    <span class="mail-avatar">${escapeHtml((P.name || 'M A').split(' ').map(w => w[0]).join('').slice(0, 2))}</span>
+                    <span class="mail-avatar">${escapeHtml(P.initials)}</span>
                     <span class="mail-from">
                         <strong>${escapeHtml(P.name)}</strong>
                         <small>To: You · ${escapeHtml(m.date)}</small>
@@ -84,12 +85,12 @@
                 </header>
                 <h2>${escapeHtml(m.subject)}</h2>
                 <div class="mail-body">${m.body}</div>
-                ${m.attachment ? `<button type="button" class="mail-attachment" data-action="resume"><i class="fas fa-file-pdf"></i><span><strong>MuditAgrawalResumeAugust2026.pdf</strong><small>PDF Document</small></span><i class="fas fa-chevron-right"></i></button>` : ''}
+                ${m.attachment ? `<button type="button" class="mail-attachment" data-action="resume"><i class="fas fa-file-pdf"></i><span><strong>${escapeHtml(P.resume.downloadName)}</strong><small>PDF Document</small></span><i class="fas fa-chevron-right"></i></button>` : ''}
                 ${m.cta ? `<button type="button" class="ios-btn block" data-action="iris">${escapeHtml(m.cta)}</button>` : ''}
             </article>
             <div class="mail-reply-bar">
                 <button type="button" class="ios-btn" data-action="reply"><i class="fas fa-reply"></i> Reply</button>
-                <a class="ios-btn secondary" href="${escapeHtml(safeUrl(C.linkedin))}" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+                ${P.link('linkedin') ? `<a class="ios-btn secondary" href="${escapeHtml(safeUrl(P.link('linkedin').url))}" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i> LinkedIn</a>` : ''}
             </div>`;
         IOS.bind(content, {
             resume: () => IOS.go('resume'),
@@ -130,7 +131,7 @@
         const f = Object.fromEntries(new FormData(compose));
         const hint = compose.querySelector('.mail-hint');
         const bad = (name, msg) => { hint.textContent = msg; hint.classList.add('error'); compose.querySelector(`[name="${name}"]`).focus(); };
-        if (!isValidEmail(f.email)) return bad('email', 'Add an email address so Mudit can reply.');
+        if (!isValidEmail(f.email)) return bad('email', `Add an email address so ${first} can reply.`);
         if (!String(f.message || '').trim()) return bad('message', 'Write a message first.');
         hint.classList.remove('error');
         hint.textContent = 'Sending…';

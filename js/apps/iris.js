@@ -480,14 +480,18 @@ function renderIrisSuggestions() {
         return;
     }
 
+    // Written from the info bank, so they always have an answer.
+    const P = window.PROFILE_DATA;
+    const pr = P.pron;
+    const firstSkill = (P.skills[0] || { items: [] }).items[0];
     const suggestions = [
-        "What has Mudit built?",
-        "Tell me about his work at Carnot",
-        "Does he know PyTorch?",
-        "Why should I hire him?",
-        "What is RAG?",
-        "Open his résumé"
-    ];
+        `What ${pr.have} ${P.first} built?`,
+        P.experience[0] && `Tell me about ${pr.possessive} work at ${P.experience[0].org.split(/[ (,]/)[0]}`,
+        firstSkill && `Does ${pr.subject} know ${firstSkill}?`,
+        `Why should I hire ${pr.object}?`,
+        P.projects[0] && `What is ${P.projects[0].name}?`,
+        P.resume.file && `Open ${pr.possessive} résumé`
+    ].filter(Boolean);
 
     container.style.display = 'flex';
     container.innerHTML = suggestions.map(s =>
@@ -627,10 +631,10 @@ function evaluateUserPromptSemantics(rawPrompt) {
         if (/\b(download|save|export|get|grab|fetch|pdf|file)\b/i.test(q)) {
             if (typeof downloadResume === 'function') downloadResume(null);
             return {
-                text: "Downloading Mudit Agrawal's official resume PDF.",
+                text: `Downloading ${window.PROFILE_DATA.name}’s résumé (PDF).`,
                 card: {
-                    title: 'MuditAgrawalResume.pdf',
-                    subtitle: 'Official AI/ML Software Engineering CV',
+                    title: window.PROFILE_DATA.resume.downloadName || 'Résumé',
+                    subtitle: 'Résumé · PDF',
                     icon: 'fas fa-file-pdf',
                     btnText: 'Download',
                     action: 'downloadResume(null)'
@@ -644,7 +648,7 @@ function evaluateUserPromptSemantics(rawPrompt) {
                 if (overlay && overlay.classList.contains('active')) closeIris();
             }, 2200);
             return {
-                text: "Here is Mudit's resume preview.",
+                text: `Here is ${window.PROFILE_DATA.first}’s résumé.`,
                 card: {
                     title: 'Resume Viewer',
                     subtitle: 'Full career and academic credentials',
@@ -656,117 +660,34 @@ function evaluateUserPromptSemantics(rawPrompt) {
         }
     }
 
-    // ── 2. DEPLOYED PROJECTS & LIVE WEB APPS ───────────────────────────────
-    // VLM Leads
-    if (/\b(vlm|leads?|business card|card extraction|ocr lead|lead extraction|crm extractor)\b/i.test(q)) {
-        irisLastReferencedEntity = 'vlm';
-        window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Launching **VLM Lead Extraction** deployed live on Vercel.",
-            card: {
-                title: 'VLM Lead Extraction (Live App)',
-                subtitle: 'Bulk business card parsing & CRM export • Vercel',
-                icon: 'fas fa-id-card',
-                btnText: 'Open App',
-                action: "window.open('https://muditagrawal-lead-extraction.vercel.app', '_blank', 'noopener,noreferrer')"
+    // ── 2. THE OWNER'S PROJECTS ───────────────────────────────────────────
+    // "open <project>": a project with a demo mounts its disk image, a live
+    // one opens the app, anything else opens its repository.
+    {
+        const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const nq = norm(q);
+        const project = window.PROFILE_DATA.projects.find(x => {
+            const n = norm(x.name).replace(/ai$/, '');
+            return (n.length > 2 && nq.includes(n)) || x.aliases.some(a => q.toLowerCase().includes(a.toLowerCase()));
+        });
+        if (project) {
+            irisLastReferencedEntity = project.id;
+            const target = project.link || project.repo;
+            if (project.demo && typeof mountDiskImage === 'function') {
+                mountDiskImage(project.id);
+                return {
+                    text: `Mounted **${project.name} 1.0** disk image on your desktop.`,
+                    card: { title: `${project.name} 1.0.dmg`, subtitle: project.subtitle, icon: 'fas fa-hdd', btnText: 'View Demo', action: `mountDiskImage('${escapeAttr(project.id)}')` }
+                };
             }
-        };
-    }
-
-    // Veritas Check / Deepfake Detector
-    if (/\b(veritas|deepfake|fake news|media forensics|fact check|fake detector|forensics)\b/i.test(q)) {
-        irisLastReferencedEntity = 'veritas';
-        window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Opening **Veritas Check** media forensics web app on Vercel.",
-            card: {
-                title: 'Veritas Check (Live)',
-                subtitle: 'Multimodal Deepfake & Fake News Forensics',
-                icon: 'fas fa-shield-alt',
-                btnText: 'Open App',
-                action: "window.open('https://veritas-check.vercel.app', '_blank', 'noopener,noreferrer')"
+            if (target) {
+                window.open(target, '_blank', 'noopener,noreferrer');
+                return {
+                    text: `Opening **${project.name}**${project.live ? ' — live' : ' on GitHub'}.`,
+                    card: { title: project.live ? `${project.name} (Live)` : project.name, subtitle: project.subtitle, icon: project.live ? 'fas fa-globe' : 'fas fa-code-branch', btnText: project.live ? 'Open App' : 'View Code', action: `openExternal('${escapeAttr(target)}')` }
+                };
             }
-        };
-    }
-
-    // Helix Compiler
-    if (/\b(helix|compiler|c compiler|ast parser|language compiler|hugging face space)\b/i.test(q)) {
-        irisLastReferencedEntity = 'helix';
-        window.open('https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Opening **Helix Compiler** interactive playground on Hugging Face Spaces.",
-            card: {
-                title: 'Helix Compiler (Live Space)',
-                subtitle: 'C-based systems compiler & web playground',
-                icon: 'fas fa-code',
-                btnText: 'Open Space',
-                action: "window.open('https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', '_blank', 'noopener,noreferrer')"
-            }
-        };
-    }
-
-    // Monocular SLAM
-    if (/\b(slam|point cloud|3d|sparse point|monocular|camera tracking|rgb slam)\b/i.test(q)) {
-        irisLastReferencedEntity = 'slam';
-        window.open('https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Opening **Monocular RGB SLAM** repository on GitHub.",
-            card: {
-                title: 'Monocular RGB SLAM',
-                subtitle: 'Sparse 3D point cloud reconstruction from single video',
-                icon: 'fas fa-cube',
-                btnText: 'GitHub Repo',
-                action: "window.open('https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', '_blank', 'noopener,noreferrer')"
-            }
-        };
-    }
-
-    // OmniDoc RAG
-    if (/\b(omnidoc|rag|blip|mistral|document intelligence|pdf rag|mount omnidoc)\b/i.test(q)) {
-        irisLastReferencedEntity = 'omnidoc';
-        if (typeof mountDiskImage === 'function') mountDiskImage('omnidoc');
-        return {
-            text: "Mounted **OmniDoc 1.0** disk image on your desktop.",
-            card: {
-                title: 'OmniDoc 1.0.dmg',
-                subtitle: 'Multimodal RAG with Mistral-7B & BLIP',
-                icon: 'fas fa-hdd',
-                btnText: 'View Demo',
-                action: "mountDiskImage('omnidoc')"
-            }
-        };
-    }
-
-    // Sliver.Ai
-    if (/\b(sliver|smart video|clipping|highlight|video highlight)\b/i.test(q)) {
-        irisLastReferencedEntity = 'sliver';
-        window.open('https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Opening **Sliver.Ai** video clipping tool on GitHub.",
-            card: {
-                title: 'Sliver.Ai',
-                subtitle: 'Automated video highlights with YOLOv8 & YOLO11',
-                icon: 'fas fa-video',
-                btnText: 'GitHub Repo',
-                action: "window.open('https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', '_blank', 'noopener,noreferrer')"
-            }
-        };
-    }
-
-    // Skyguard AI
-    if (/\b(skyguard|drone|airspace|sih|smart india hackathon|aerial threat)\b/i.test(q)) {
-        irisLastReferencedEntity = 'skyguard';
-        window.open('https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', '_blank', 'noopener,noreferrer');
-        return {
-            text: "Opening **Skyguard AI** defense surveillance repository.",
-            card: {
-                title: 'Skyguard AI (SIH 2026)',
-                subtitle: 'Airspace drone tracking & threat classification',
-                icon: 'fas fa-shield-virus',
-                btnText: 'GitHub Repo',
-                action: "window.open('https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', '_blank', 'noopener,noreferrer')"
-            }
-        };
+        }
     }
 
     // ── 3. WINDOW & APPLICATION MANAGEMENT ─────────────────────────────────
@@ -906,7 +827,8 @@ function evaluateUserPromptSemantics(rawPrompt) {
     }
 
     // ── 7. COMPOSE EMAIL / CONTACT ─────────────────────────────────────────
-    if (/\b(compose|send\s+(an?\s+)?(email|mail|message)|write\s+(an?\s+)?(email|mail|message)|email\s+mudit|mail\s+mudit|send\s+mail)\b/i.test(q)) {
+    const ownerFirst = window.PROFILE_DATA.first.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (/\b(compose|send\s+(an?\s+)?(email|mail|message)|write\s+(an?\s+)?(email|mail|message)|send\s+mail)\b/i.test(q) || new RegExp(`\\b(e?mail|message|write to)\\s+(${ownerFirst}|him|her|them)\\b`, 'i').test(q)) {
         if (typeof openWindow === 'function') {
             openWindow('mail-window');
             if (typeof bringToFront === 'function') bringToFront('mail-window');
@@ -916,10 +838,10 @@ function evaluateUserPromptSemantics(rawPrompt) {
             if (overlay && overlay.classList.contains('active')) closeIris();
         }, 2200);
         return {
-            text: "Opening Mail app to compose a message to Mudit.",
+            text: `Opening Mail to write to ${window.PROFILE_DATA.first}.`,
             card: {
                 title: 'New Message',
-                subtitle: 'Recipient: muditagrawal03@gmail.com',
+                subtitle: `Recipient: ${window.PROFILE_DATA.contact.email || window.PROFILE_DATA.name}`,
                 icon: 'fas fa-paper-plane',
                 btnText: 'Compose',
                 action: "closeIris(); openWindow('mail-window');"
@@ -997,7 +919,7 @@ async function sendIrisMessage(overrideMessage) {
     } catch (error) {
         console.error('Iris execution error:', error);
         hideIrisTyping();
-        const fallback = "I'm right here! You can ask me to open any app or project, download Mudit's resume, or change the wallpaper.";
+        const fallback = `I'm right here! You can ask me to open any app or project, download ${window.PROFILE_DATA.first}'s résumé, or change the wallpaper.`;
         addIrisMessage('iris', fallback);
         speakIris(fallback);
     }

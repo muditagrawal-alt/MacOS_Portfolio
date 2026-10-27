@@ -16,6 +16,20 @@
 .resume-preview img { display: block; width: 100%; height: auto; }
 .resume-preview:active { transform: scale(0.99); }
 
+/* No preview image in the info bank: a document card instead. */
+.resume-doc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 46px 20px 60px;
+    color: #111;
+}
+
+.resume-doc i { font-size: 54px; color: #ff3b30; margin-bottom: 6px; }
+.resume-doc strong { font-size: 16px; word-break: break-all; }
+.resume-doc small { color: #8e8e93; font-size: 13px; }
+
 .resume-preview-badge {
     position: absolute;
     left: 12px;

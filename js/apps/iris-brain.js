@@ -24,7 +24,9 @@
         'what who whom which how why when where does do did doing has have had having can could would should will may might ' +
         'i me my you your he him his she her they them their we us our about tell show give list explain describe please ' +
         'any some much many more most there here with into from by at as so than then also just only very really ' +
-        'mudit agrawal mudits agrawals iris thing things know').split(' '));
+        'iris thing things know').split(' '));
+    // The owner's own name says nothing about which passage is relevant.
+    String((window.PROFILE_DATA || {}).name || '').toLowerCase().split(/\s+/).filter(Boolean).forEach(w => { STOP.add(w); STOP.add(w + 's'); });
 
     const SYNONYMS = {
         job: ['experience', 'intern'], jobs: ['experience', 'intern'], work: ['experience', 'project'], worked: ['experience', 'intern'],
@@ -34,7 +36,7 @@
         ml: ['machine', 'learning'], ai: ['ai', 'artificial', 'intelligence'], llms: ['llm'],
         rag: ['rag', 'retrieval'], vision: ['vision', 'computer'], detection: ['detection', 'yolo'],
         built: ['project'], build: ['project'], made: ['project'], create: ['project'], created: ['project'], apps: ['project', 'app'],
-        defence: ['defense'], navy: ['navy', 'wesee', 'naval'], military: ['defense', 'navy'],
+        defence: ['defense'], military: ['defense'],
         speech: ['speech', 'voice', 'audio'], voice: ['voice', 'speech', 'audio'], video: ['video', 'clipping'],
         database: ['database', 'postgresql'], databases: ['database', 'postgresql'], languages: ['programming', 'language']
     };
@@ -106,16 +108,18 @@
     }
 
     function buildIndex() {
-        const P = window.PROFILE_DATA || {};
-        const fs = (typeof FS_ITEMS === 'object') ? FS_ITEMS : {};
+        const P = window.PROFILE_DATA;
         const list = [];
         const add = (title, text, source, extra = {}) => list.push({ title, text, source, ...extra });
 
         add('About', `${P.name} is an ${P.tagline}. ${P.bio}`, { label: 'About', open: () => openWelcome() }, { kind: 'about' });
 
-        const e = P.education || {};
-        add('Education', `${e.degree} at ${e.university} (${e.years}), CGPA ${e.cgpa}. Class 12 at Navy Children School, New Delhi (2023) with 74%. Class 10 at Navy Children School, Mumbai (2021) with 89%.`,
-            { label: 'Education', open: () => openFinderPane('education') }, { kind: 'education' });
+        const e = P.education;
+        const schooling = e.schooling.map(s => `${s.title} at ${s.school}${s.year ? ` (${s.year})` : ''}${s.score ? ` with ${s.score}` : ''}.`).join(' ');
+        if (e.degree || schooling) {
+            add('Education', `${e.degree ? `${e.degree} at ${e.university}${e.years ? ` (${e.years})` : ''}${e.grade ? `, ${e.gradeLabel} ${e.grade}` : ''}. ` : ''}${schooling}`,
+                { label: 'Education', open: () => openFinderPane('education') }, { kind: 'education' });
+        }
 
         (P.experience || []).forEach(x => {
             const org = shortOrg(x.org);
@@ -124,24 +128,18 @@
             (x.bullets || []).forEach(b => add(`${org}`, `At ${org}, ${x.role}: ${b}.`, src, { kind: 'experience-bullet', org, exp: x }));
         });
 
-        const projIds = (typeof AAKASH_STYLE_FS === 'object' && AAKASH_STYLE_FS['projects-folder']) ? AAKASH_STYLE_FS['projects-folder'].items : [];
-        const corpus = window.PORTFOLIO_CORPUS || [];
-        projects = projIds.map(id => fs[id]).filter(Boolean).map(it => {
-            const pv = it.preview || {};
-            const c = corpus.find(x => x.type === 'Project' && (x.url === it.link || normaliseName(x.title).includes(normaliseName(it.name)) || normaliseName(it.name).includes(normaliseName(x.title))));
-            return {
-                id: it.id, name: it.name, link: it.link, live: Boolean(it.link && !/github\.com/.test(it.link)),
-                summary: pv.subtitle || it.kind, desc: (pv.desc || '').split('\n')[0],
-                text: `${pv.title || it.name} — ${pv.subtitle || ''}. ${pv.desc || ''} ${c ? c.text + ' ' + (c.tags || []).join(' ') : ''}`
-            };
-        });
+        projects = P.projects.map(x => ({
+            id: x.fsId, name: x.name, link: x.link, live: x.live, aliases: x.aliases,
+            summary: x.subtitle || x.kind, desc: x.description.split('\n')[0],
+            text: `${x.title} — ${x.subtitle}. ${x.description} ${x.summary} ${x.tags.join(' ')}`
+        }));
         projects.forEach(pr => add(`Project · ${pr.name}`, pr.text, {
             label: `Project · ${pr.name}`, open: () => pr.link ? openExternal(pr.link) : openFinderPane('projects')
         }, { kind: 'project', project: pr }));
 
-        Object.values(fs).filter(it => /^skill-/.test(it.id)).forEach(it => {
-            const pv = it.preview || {};
-            add(`Skills · ${pv.title}`, `${pv.title} (${pv.subtitle}): ${pv.desc}.`, { label: 'Skills', open: () => openFinderPane('skills') }, { kind: 'skills', skillList: pv.desc });
+        P.skills.forEach(g => {
+            const skillList = g.items.join(', ');
+            add(`Skills · ${g.label}`, `${g.label}: ${skillList}.`, { label: 'Skills', open: () => openFinderPane('skills') }, { kind: 'skills', skillList });
         });
 
         if (typeof notesData === 'object') {
@@ -162,8 +160,8 @@
             add(`Trash · ${t.name}`, `${t.name} (${t.kind}): ${t.reason}`, { label: 'Trash · cut ideas', open: () => openWindow('trash-window') }, { kind: 'trash' });
         });
 
-        const c = P.contact || {};
-        add('Contact', `Email ${c.email}. Phone ${c.phone}. LinkedIn ${c.linkedin}. GitHub ${c.github}.`, { label: 'Contact', open: () => { openWindow('mail-window'); openMailCompose(); } }, { kind: 'contact' });
+        const c = P.contact;
+        add('Contact', [c.email && `Email ${c.email}.`, c.phone && `Phone ${c.phone}.`, ...P.links.map(l => `${l.label} ${l.url}.`)].filter(Boolean).join(' '), { label: 'Contact', open: () => { openWindow('mail-window'); openMailCompose(); } }, { kind: 'contact' });
 
         list.forEach(p => { p.tokens = tokenize(p.text); p.len = p.tokens.length; });
         const df = {};
@@ -210,14 +208,22 @@
 
     function respond(rawQuestion) {
         if (!passages) buildIndex();
-        const P = window.PROFILE_DATA || {};
+        const P = window.PROFILE_DATA;
         const q = String(rawQuestion || '').trim();
         const ql = q.toLowerCase();
-        const exp = P.experience || [];
+        const exp = P.experience;
+        const pr = P.pron;
+        const first = P.first;
         const src = (kind) => passages.filter(p => p.kind === kind).map(p => p.source);
+        // Words that point at the owner: their name and pronouns.
+        const ownerWords = [...new Set([pr.subject, pr.object, pr.possessive, ...P.name.toLowerCase().split(/\s+/)])].map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const ownerRe = new RegExp(`\\b(${ownerWords.join('|')}|yourself)\\b`, 'i');
+        // Distinctive words in each employer's name ("acme", "globex"…), to answer "what did they do at X?".
+        const GENERIC_ORG = new Set(['pvt', 'ltd', 'llc', 'inc', 'the', 'and', 'for', 'of', 'research', 'centre', 'center', 'tech', 'technologies', 'innovation', 'startup', 'incubated', 'labs', 'lab', 'group', 'company', 'india', 'indian', 'defense', 'defence', 'university', 'institute', 'school']);
+        const orgKeys = exp.flatMap(x => x.org.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2 && !GENERIC_ORG.has(w)).map(w => [w, x]));
 
         if (/^(hi|hello|hey|yo|good (morning|afternoon|evening))\b[!. ]*$/i.test(ql)) {
-            return answer(`Hi! I can answer questions about ${P.name ? P.name.split(' ')[0] : 'Mudit'}’s experience, projects and skills — or open things for you. Try “What has he built?”`, []);
+            return answer(`Hi! I can answer questions about ${first}’s experience, projects and skills — or open things for you. Try “What ${pr.have} ${pr.subject} built?”`, []);
         }
         if (/^(thanks|thank you|thx|cool|nice|great|awesome|ok(ay)?)\b/i.test(ql)) {
             return answer('Any time. Anything else you’d like to know?', []);
@@ -226,49 +232,51 @@
             return answer('I’m Iris. I answer from this portfolio’s own content — every reply lists the sources it came from — and I can operate the Mac: “open Terminal”, “play music”, “download the résumé”. If something isn’t in the portfolio, I’ll say so rather than guess.', []);
         }
 
-        // Who is he / introduce
-        if (/\b(who is|who's|about|introduce|summary|summari[sz]e|tell me about)\b.*\b(him|mudit|he|yourself)\b|^who is\b|^about (him|mudit)\b|\bbackground\b/i.test(ql) && !/\b(carnot|zee|wesee|navy)\b/i.test(ql)) {
+        // Who are they / introduce
+        const mentionsOrg = orgKeys.some(([w]) => new RegExp(`\\b${w}\\b`).test(ql));
+        if (((/\b(who is|who's|who are|about|introduce|summary|summari[sz]e|tell me about)\b/i.test(ql) && ownerRe.test(ql)) || /^who is\b/i.test(ql) || /\bbackground\b/i.test(ql)) && !mentionsOrg) {
             const now = exp[0];
-            return answer(`**${P.name}** is an ${P.tagline}. ${P.bio}${now ? `\n\nRight now he’s **${now.role}** at ${shortOrg(now.org)} (${now.dates}).` : ''}`,
+            return answer(`**${P.name}** — ${P.tagline}. ${P.bio}${now ? `\n\nRight now ${pr.contraction} **${now.role}** at ${shortOrg(now.org)} (${now.dates}).` : ''}`,
                 [...src('about'), ...src('experience').slice(0, 1)]);
         }
 
         // Why hire / strengths
-        if (/\b(why (should|would) (i|we|you) hire|why hire|reasons? to hire|strengths?|what makes him|stand out|good fit|best at)\b/i.test(ql)) {
+        if (/\b(why (should|would) (i|we|you) hire|why hire|reasons? to hire|strengths?|what makes (him|her|them)|stand out|good fit|best at)\b/i.test(ql)) {
             const lines = exp.slice(0, 3).map(x => `• **${shortOrg(x.org)}** — ${(x.bullets || [x.role])[0]}.`);
             const live = projects.filter(p => p.live).length;
             lines.push(`• **${projects.length} projects** in the portfolio, ${live} of them deployed and usable right now.`);
-            return answer(`The evidence, straight from his record:\n${lines.join('\n')}`, [...src('experience').slice(0, 3), { label: 'Projects', open: () => openFinderPane('projects') }]);
+            return answer(`The evidence, straight from ${pr.possessive} record:\n${lines.join('\n')}`, [...src('experience').slice(0, 3), { label: 'Projects', open: () => openFinderPane('projects') }]);
         }
 
         // Contact
-        if (/\b(contact|reach|email|e-mail|phone|call|linkedin|get in touch|hire him)\b/i.test(ql) && !/\b(project|built)\b/i.test(ql)) {
-            const c = P.contact || {};
-            return answer(`You can reach ${P.name.split(' ')[0]} at **${c.email}** or ${c.phone}. LinkedIn: [profile](${c.linkedin}).`, src('contact'), {
-                card: { title: 'Write to Mudit', subtitle: c.email, icon: 'fas fa-paper-plane', btnText: 'Compose', action: "closeIris(); openWindow('mail-window'); openMailCompose();" }
+        if (/\b(contact|reach|email|e-mail|phone|call|linkedin|get in touch|hire (him|her|them))\b/i.test(ql) && !/\b(project|built)\b/i.test(ql)) {
+            const c = P.contact;
+            const ways = [c.email && `at **${c.email}**`, c.phone && `on ${c.phone}`].filter(Boolean).join(' or ');
+            const li = P.link('linkedin');
+            return answer(`You can reach ${first} ${ways || 'through Mail on this site'}.${li ? ` LinkedIn: [profile](${li.url}).` : ''}`, src('contact'), {
+                card: { title: `Write to ${first}`, subtitle: c.email || 'Opens Mail', icon: 'fas fa-paper-plane', btnText: 'Compose', action: "closeIris(); openWindow('mail-window'); openMailCompose();" }
             });
         }
 
         // Education
-        if (/\b(education|degree|university|college|cgpa|gpa|grades?|school|studying|b\.?tech|graduat)/i.test(ql)) {
-            const e = P.education || {};
-            return answer(`He’s doing a **${e.degree}** at **${e.university}** (${e.years}) with a **${e.cgpa} CGPA**. Before that: Class 12 at Navy Children School, New Delhi (74%) and Class 10 at Navy Children School, Mumbai (89%).`, src('education'));
+        if (/\b(education|degree|university|college|cgpa|gpa|grades?|school|studying|b\.?tech|graduat)/i.test(ql) && src('education').length) {
+            const e = P.education;
+            const degree = e.degree ? `**${e.degree}**${e.university ? ` at **${e.university}**` : ''}${e.years ? ` (${e.years})` : ''}${e.grade ? ` — ${e.gradeLabel} **${e.grade}**` : ''}.` : '';
+            const before = e.schooling.map(s => `• ${s.title}, ${s.school}${s.year ? ` (${s.year})` : ''}${s.score ? ` — ${s.score}` : ''}`).join('\n');
+            return answer(`${degree}${before ? `${degree ? '\n\nBefore that:\n' : ''}${before}` : ''}`, src('education'));
         }
 
         // A specific employer
-        const orgMatch = ql.match(/\b(carnot|zee|wesee|navy|naval)\b/i);
-        if (orgMatch) {
-            const key = orgMatch[1].toLowerCase().replace('naval', 'navy');
-            const x = exp.find(e => e.org.toLowerCase().includes(key === 'navy' ? 'navy' : key));
-            if (x) {
-                return answer(`**${x.role}**, ${x.org} (${x.dates}):\n${(x.bullets || []).map(b => `• ${b}.`).join('\n')}`,
-                    passages.filter(p => p.exp === x).map(p => p.source));
-            }
+        const orgHit = orgKeys.find(([w]) => new RegExp(`\\b${w}\\b`).test(ql));
+        if (orgHit) {
+            const x = orgHit[1];
+            return answer(`**${x.role}**, ${x.org} (${x.dates}):\n${x.bullets.map(b => `• ${b}.`).join('\n')}`,
+                passages.filter(p => p.exp === x).map(p => p.source));
         }
 
         // Experience overview
         if (/\b(experience|intern(ship)?s?|jobs?|worked|work history|career|employ)/i.test(ql) && !/\bwith\b/i.test(ql)) {
-            return answer(`${exp.length} internships, most recent first:\n${exp.map(x => `• **${x.role}**, ${shortOrg(x.org)} — ${x.dates}`).join('\n')}\n\nAsk about any of them for details.`, src('experience'));
+            return answer(`${exp.length} ${exp.length === 1 ? 'role' : 'roles'}, most recent first:\n${exp.map(x => `• **${x.role}**, ${shortOrg(x.org)} — ${x.dates}`).join('\n')}\n\nAsk about any of them for details.`, src('experience'));
         }
 
         // Glossary: "what is RAG", "explain SLAM"
@@ -277,11 +285,11 @@
         if (g && (isDefinitional || ql.split(/\s+/).length <= 3)) {
             const uses = passages.filter(p => !['trash', 'cert', 'note'].includes(p.kind) && g.find.some(f => p.text.toLowerCase().includes(f)))
                 .sort((a, b) => (a.kind === 'project' ? 0 : 1) - (b.kind === 'project' ? 0 : 1)).slice(0, 3);
-            const where = uses.length ? `\n\n**Where Mudit uses it:**\n${uses.map(u => `• ${u.title.replace(/^Project · /, '')} — ${trimSentence(u.text.replace(/^At [^,]+, [^:]+: /, ''), 120)}`).join('\n')}` : '';
+            const where = uses.length ? `\n\n**Where ${first} uses it:**\n${uses.map(u => `• ${u.title.replace(/^Project · /, '')} — ${trimSentence(u.text.replace(/^At [^,]+, [^:]+: /, ''), 120)}`).join('\n')}` : '';
             return answer(`**${g.term}** — ${g.def}${where}`, [{ label: 'Glossary' }, ...uses.map(u => u.source)]);
         }
 
-        // Skills: "does he know PyTorch?", "tech stack"
+        // Skills: "do they know PyTorch?", "tech stack"
         const skillAsk = ql.match(/\b(?:know|knows|use|uses|used|familiar with|experience (?:with|in)|work(?:ed)? with|proficient in|skilled in)\s+([a-z0-9.+#\- ]{2,30})/i);
         const skillPassages = passages.filter(p => p.kind === 'skills');
         if (skillAsk) {
@@ -294,7 +302,8 @@
                 const evidence = used.map(r => `• ${r.p.title.replace(/^Project · /, '')} — ${trimSentence(r.p.text.replace(/^At [^,]+, [^:]+: /, ''), 110)}`).join('\n');
                 return answer(`Yes — **${term}**${where ? ` is listed under *${where}*` : ''}.${evidence ? `\n\n${evidence}` : ''}`, [...inSkills.map(p => p.source), ...used.map(r => r.p.source)]);
             }
-            return answer(`I don’t see **${term}** in his listed skills or projects. His core stack is Python, PyTorch, LangChain, OpenCV and FastAPI — ask “what’s his tech stack?” for the full list.`, skillPassages.map(p => p.source));
+            const core = P.skills.flatMap(g => g.items.slice(0, 3)).slice(0, 5).join(', ');
+            return answer(`I don’t see **${term}** in ${pr.possessive} listed skills or projects.${core ? ` ${pr.Possessive} core stack includes ${core} — ask “what’s ${pr.possessive} tech stack?” for the full list.` : ''}`, skillPassages.map(p => p.source));
         }
         if (/\b(skills?|tech(nology)? stack|stack|tools|frameworks|languages)\b/i.test(ql)) {
             return answer(skillPassages.map(p => `• **${p.title.replace('Skills · ', '')}:** ${trimSentence(p.skillList, 160)}`).join('\n'), skillPassages.map(p => p.source));
@@ -304,7 +313,7 @@
         const named = projects.find(pr => {
             const n = normaliseName(pr.name).replace(/ai$/, '');
             return n.length > 2 && normaliseName(ql).includes(n);
-        }) || projects.find(pr => (pr.id === 'proj-deepfake' && /\bveritas|deepfake|fake news\b/i.test(ql)) || (pr.id === 'proj-vlm' && /\bvlm|lead|business card\b/i.test(ql)) || (pr.id === 'proj-sword' && /\bsword|weapon\b/i.test(ql)));
+        }) || projects.find(x => x.aliases.some(a => ql.includes(a.toLowerCase())));
         if (named) {
             return answer(`**${named.name}** — ${named.summary}.\n${named.desc}${named.link ? `\n\n${named.live ? 'Try it live' : 'Source'}: [${named.link.replace(/^https?:\/\//, '')}](${named.link})` : ''}`,
                 passages.filter(p => p.project === named).map(p => p.source), named.link ? {
@@ -314,7 +323,7 @@
 
         // Projects, optionally by topic
         if (/\b(projects?|built|build|made|portfolio|apps?|work on|working on)\b/i.test(ql)) {
-            const topic = ql.replace(/\b(what|which|has|have|he|mudit|built|build|made|projects?|show|me|list|his|the|any|are|is|of|on|in|about|does|do|did|work|working|portfolio|apps?|with|using|use|uses)\b/g, ' ').trim();
+            const topic = ql.replace(ownerRe, ' ').replace(/\b(what|which|has|have|built|build|made|projects?|show|me|list|the|any|are|is|of|on|in|about|does|do|did|work|working|portfolio|apps?|with|using|use|uses)\b/g, ' ').replace(/\s+/g, ' ').trim();
             let list = projects;
             if (topic.length > 1) {
                 const hits = retrieve(topic, { k: 6, kinds: ['project'] });
@@ -328,7 +337,7 @@
         // Lessons / failures
         if (/\b(fail|failure|mistake|lesson|learned|cut|abandon|didn'?t work)/i.test(ql)) {
             const t = passages.filter(p => p.kind === 'trash').slice(0, 3);
-            return answer(`A few ideas he cut, and why:\n${t.map(p => `• ${trimSentence(p.text, 150)}`).join('\n')}`, t.map(p => p.source));
+            return answer(`A few ideas ${pr.subject} cut, and why:\n${t.map(p => `• ${trimSentence(p.text, 150)}`).join('\n')}`, t.map(p => p.source));
         }
 
         // General retrieval
@@ -339,7 +348,7 @@
         }
 
         // Out of scope — refuse rather than invent.
-        return answer(`I only know what’s in this portfolio, and I couldn’t find anything about that. Try asking about his **experience**, **projects**, **skills** or **education** — or say “open Terminal”.`, [], { outOfScope: true });
+        return answer(`I only know what’s in this portfolio, and I couldn’t find anything about that. Try asking about ${pr.possessive} **experience**, **projects**, **skills** or **education** — or say “open Terminal”.`, [], { outOfScope: true });
     }
 
     function trimSentence(text, max) {

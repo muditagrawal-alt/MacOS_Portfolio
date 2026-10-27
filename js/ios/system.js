@@ -320,6 +320,8 @@ const IOS = (() => {
             if (!lock.classList.contains('visible')) return;
             if (['Enter', ' ', 'ArrowUp'].includes(e.key)) { e.preventDefault(); unlock(); }
         });
+        const P = window.PROFILE_DATA;
+        $('ios-ln-body').textContent = `Hi, I’m ${P.first}’s assistant. Ask me anything about ${P.pron.possessive} work — I’ll show you where each answer comes from.`;
         renderLockWidgets();
     }
 
@@ -373,12 +375,12 @@ const IOS = (() => {
     }
 
     function renderHome() {
-        const P = window.PROFILE_DATA || {};
-        const now = (P.experience || [])[0];
+        const P = window.PROFILE_DATA;
+        const now = P.experience[0];
         const grid = $('ios-home-grid');
         grid.innerHTML = `
             <button type="button" class="ios-widget ios-widget-profile" data-open="about" aria-label="About ${escapeHtml(P.name)}">
-                <img src="assets/Professionalimage.jpeg" alt="">
+                <img src="${escapeHtml(P.photo)}" alt="">
                 <span class="ios-wp-text">
                     <strong>${escapeHtml(P.name)}</strong>
                     <span>${escapeHtml(P.tagline)}</span>
@@ -413,11 +415,16 @@ const IOS = (() => {
             w.querySelector('.ios-ww-range').textContent = 'Unavailable';
         }
         const g = $('ios-widget-github');
+        const P = window.PROFILE_DATA;
+        // No GitHub activity (or no GitHub in the info bank): point at the projects instead.
+        const fallback = `<span class="ios-wg-row"><strong>${escapeHtml(P.github.user ? `@${P.github.user}` : `${P.projects.length} projects`)}</strong><small>Projects →</small></span>`;
         try {
             const repos = (await fetchGitHubActivity()).slice(0, 2);
-            g.querySelector('.ios-wg-list').innerHTML = repos.map(r => `<span class="ios-wg-row"><strong>${escapeHtml(r.title)}</strong><small>${escapeHtml([r.language, relativeTime(r.time)].filter(Boolean).join(' · '))}</small></span>`).join('');
+            g.querySelector('.ios-wg-list').innerHTML = repos.length
+                ? repos.map(r => `<span class="ios-wg-row"><strong>${escapeHtml(r.title)}</strong><small>${escapeHtml([r.language, relativeTime(r.time)].filter(Boolean).join(' · '))}</small></span>`).join('')
+                : fallback;
         } catch (e) {
-            g.querySelector('.ios-wg-list').innerHTML = '<span class="ios-wg-row"><strong>@muditagrawal-alt</strong><small>Projects →</small></span>';
+            g.querySelector('.ios-wg-list').innerHTML = fallback;
         }
     }
 
@@ -602,6 +609,7 @@ const IOS = (() => {
         const framed = shell.detected === 'mac';
         document.body.classList.toggle('ios-framed', framed);
         $('ios-frame-caption').hidden = !framed;
+        $('ios-frame-owner').textContent = `iPhone version of ${window.PROFILE_DATA.first}’s portfolio`;
 
         const sizeForm = () => { dev.dataset.form = dev.clientWidth >= 700 ? 'tablet' : 'phone'; };
         sizeForm();
@@ -642,8 +650,9 @@ const IOS = (() => {
             }
         }
 
-        let wasUnlocked = false;
-        try { wasUnlocked = sessionStorage.getItem('ios-unlocked') === '1'; } catch (e) { wasUnlocked = false; }
+        // The setup questionnaire's live preview starts on the Home Screen.
+        let wasUnlocked = Boolean(window.PORTFOLIO_PREVIEW);
+        try { wasUnlocked = wasUnlocked || sessionStorage.getItem('ios-unlocked') === '1'; } catch (e) { /* private mode */ }
         if (wasUnlocked) {
             unlocked = true;
             document.body.classList.add('ios-unlocked');

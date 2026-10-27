@@ -108,7 +108,7 @@
     function mediaSession() {
         if (!('mediaSession' in navigator) || !current) return;
         try {
-            navigator.mediaSession.metadata = new MediaMetadata({ title: current.item.title || current.item.name, artist: current.item.artist || current.item.desc || 'Radio', album: current.item.album || 'Mudit’s Portfolio' });
+            navigator.mediaSession.metadata = new MediaMetadata({ title: current.item.title || current.item.name, artist: current.item.artist || current.item.desc || 'Radio', album: current.item.album || `${window.PROFILE_DATA.first}’s Portfolio` });
             navigator.mediaSession.setActionHandler('play', toggle);
             navigator.mediaSession.setActionHandler('pause', toggle);
             navigator.mediaSession.setActionHandler('nexttrack', () => next(1));

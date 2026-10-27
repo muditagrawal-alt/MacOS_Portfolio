@@ -57,9 +57,9 @@ function ensureLockScreenDom() {
 
             <div class="lock-account">
                 <div class="lock-avatar">
-                    <img src="assets/Professionalimage.jpeg" alt="">
+                    <img src="${escapeHtml(window.PROFILE_DATA.photo)}" alt="">
                 </div>
-                <div class="lock-account-name">Mudit Agrawal</div>
+                <div class="lock-account-name">${escapeHtml(window.PROFILE_DATA.name)}</div>
                 <button type="button" class="lock-swipe-hint" id="lock-swipe-hint" aria-label="Unlock">
                     <i class="fas fa-chevron-up"></i>
                     <span>Click or swipe up to unlock</span>

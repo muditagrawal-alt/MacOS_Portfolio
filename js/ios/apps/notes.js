@@ -10,13 +10,10 @@
 
 (function () {
     const USER_NOTES_KEY = 'notes-user-v1';
-    const FOLDERS = [
-        ['philosophy', 'Philosophy', 'fas fa-lightbulb'],
-        ['learning', 'Current Learning', 'fas fa-brain'],
-        ['stack', 'Tech Notes', 'fas fa-layer-group'],
-        ['personal', 'Personal', 'fas fa-user'],
-        ['notes', 'Notes', 'fas fa-note-sticky']
-    ];
+    // Folders come from the info bank's notes (notesFolders in js/data/notes.js),
+    // plus "Notes" for the visitor's own.
+    const ICONS = { philosophy: 'fas fa-lightbulb', 'current-learning': 'fas fa-brain', learning: 'fas fa-brain', 'tech-notes': 'fas fa-layer-group', personal: 'fas fa-user', notes: 'fas fa-note-sticky' };
+    const FOLDERS = [...notesFolders(), { id: 'notes', label: 'Notes' }].map(f => [f.id, f.label, ICONS[f.id] || 'fas fa-folder']);
     const folderLabel = (key) => (FOLDERS.find(f => f[0] === key) || [key, 'Notes'])[1];
     let query = '';
 
@@ -133,7 +130,7 @@
     function deletedList(content) {
         const items = window.TRASH_ITEMS || [];
         content.innerHTML = `
-            <p class="notes-deleted-intro">Things Mudit tried, built or drafted — and cut. Each one says why.</p>
+            <p class="notes-deleted-intro">Things ${escapeHtml(window.PROFILE_DATA.first)} tried, built or drafted — and cut. Each one says why.</p>
             ${IOS.group(items.map((t, i) => ({ icon: 'fas fa-file-circle-xmark', color: '#8e8e93', title: t.name, sub: t.kind, chevron: true, action: `t-${i}` })))}`;
         const handlers = {};
         items.forEach((_, i) => { handlers[`t-${i}`] = () => IOS.go('notes', ['deleted', String(i)]); });

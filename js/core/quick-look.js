@@ -9,6 +9,7 @@ let quickLookOpen = false;
 // the desktop's files, the way Quick Look steps through a Finder selection).
 let qlSource = null;
 
+// Every entry is built from the info bank (window.PROFILE_DATA) when it's previewed.
 const QUICKLOOK_DATA = {
     'about': {
         title: 'About Me',
@@ -16,10 +17,10 @@ const QUICKLOOK_DATA = {
         icon: 'fas fa-user',
         meta: 'Text Document',
         get content() {
-            const p = window.PROFILE_DATA || {};
-            return `<h2>${p.name || 'Mudit Agrawal'}</h2>
-            <h3>${p.tagline || 'AI/ML Engineer & Undergraduate'}</h3>
-            <p>${p.bio || ''}</p>`;
+            const p = window.PROFILE_DATA;
+            return `<h2>${escapeHtml(p.name)}</h2>
+            <h3>${escapeHtml(p.tagline)}</h3>
+            <p>${escapeHtml(p.bio)}</p>`;
         },
         openAction: "openFinderPane('about')"
     },
@@ -28,14 +29,12 @@ const QUICKLOOK_DATA = {
         type: 'text',
         icon: 'fas fa-briefcase',
         get meta() {
-            const p = window.PROFILE_DATA || {};
-            return `Folder — ${(p.experience || []).length} items`;
+            return `Folder — ${window.PROFILE_DATA.experience.length} items`;
         },
         get content() {
-            const p = window.PROFILE_DATA || {};
-            const expBlocks = (p.experience || []).map(e => `
-                <h3>${e.role} — ${e.org}</h3>
-                <p style="color:#888;">${e.dates}</p>
+            const expBlocks = window.PROFILE_DATA.experience.map(e => `
+                <h3>${escapeHtml(e.role)} — ${escapeHtml(e.org)}</h3>
+                <p style="color:#888;">${escapeHtml(e.dates)}</p>
             `).join('');
             return `<h2>Work Experience</h2>${expBlocks}`;
         },
@@ -45,23 +44,20 @@ const QUICKLOOK_DATA = {
         title: 'Education',
         type: 'text',
         icon: 'fas fa-graduation-cap',
-        meta: 'Folder — 4 items',
+        get meta() {
+            const p = window.PROFILE_DATA;
+            return `Folder — ${(p.education.degree ? 1 : 0) + p.education.schooling.length + p.courses.length} items`;
+        },
         get content() {
-            const p = window.PROFILE_DATA || {};
-            const edu = p.education || {};
+            const p = window.PROFILE_DATA;
+            const edu = p.education;
             return `<h2>Education</h2>
-            <h3>${edu.degree || 'B.Tech in Computer Science (AI/ML)'}</h3>
-            <p>${edu.university || 'IILM University'} — ${edu.years || '2023 – 2027'}</p>
-            <p>CGPA: ${edu.cgpa || ''}</p>
-            <h3>Class 12</h3><p>Navy Children School, New Delhi — 74%</p>
-            <h3>Class 10</h3><p>Navy Children School, Mumbai — 89%</p>
-            <h2 style="margin-top:16px;">Certifications</h2>
-            <ul>
-                <li><strong>Machine Learning Specialization</strong> — Stanford / DeepLearning.AI</li>
-                <li><strong>Python Specialisation</strong> — University of Michigan</li>
-                <li><strong>Technology Job Simulation</strong> — Deloitte</li>
-                <li><strong>Java Programming and OOP</strong> — Duke University</li>
-            </ul>`;
+            ${edu.degree ? `<h3>${escapeHtml(edu.degree)}</h3>
+            <p>${escapeHtml([edu.university, edu.years].filter(Boolean).join(' — '))}</p>
+            ${edu.grade ? `<p>${escapeHtml(edu.gradeLabel)}: ${escapeHtml(edu.grade)}</p>` : ''}` : ''}
+            ${edu.schooling.map(s => `<h3>${escapeHtml(s.title)}</h3><p>${escapeHtml([s.school, s.score].filter(Boolean).join(' — '))}</p>`).join('')}
+            ${p.courses.length ? `<h2 style="margin-top:16px;">Certifications</h2>
+            <ul>${p.courses.map(c => `<li><strong>${escapeHtml(c.title)}</strong>${c.issuer ? ` — ${escapeHtml(c.issuer)}` : ''}</li>`).join('')}</ul>` : ''}`;
         },
         openAction: "openFinderPane('education')"
     },
@@ -69,20 +65,13 @@ const QUICKLOOK_DATA = {
         title: 'Projects',
         type: 'text',
         icon: 'fas fa-folder-open',
-        meta: 'Folder — 10 items',
-        content: `<h2>Featured Projects</h2>
-            <ul>
-                <li><strong>OmniDoc</strong> — Multimodal RAG system using Mistral-7B & BLIP</li>
-                <li><strong>VLM Leads (Live)</strong> — Vision-Language business card lead extractor on Vercel</li>
-                <li><strong>Monocular SLAM</strong> — Sparse 3D point cloud reconstruction from RGB</li>
-                <li><strong>Sliver.Ai</strong> — Smart video clipping with YOLOv8 & YOLO11m</li>
-                <li><strong>Project S.W.O.R.D</strong> — Real-time weapon observation with YOLOv8</li>
-                <li><strong>Deepfake Detector</strong> — ML-based deepfake media detection</li>
-                <li><strong>Helix-Compiler</strong> — C-based systems compiler</li>
-                <li><strong>Skyguard AI</strong> — Airspace threat detection & drone tracking</li>
-                <li><strong>Multiva.Ai</strong> — AI voice cloning with Whisper & XTTS</li>
-                <li><strong>Artifex</strong> — Creative generative AI design platform</li>
-            </ul>`,
+        get meta() {
+            return `Folder — ${window.PROFILE_DATA.projects.length} items`;
+        },
+        get content() {
+            return `<h2>Featured Projects</h2>
+            <ul>${window.PROFILE_DATA.projects.map(x => `<li><strong>${escapeHtml(x.name)}${x.live ? ' (Live)' : ''}</strong> — ${escapeHtml(x.subtitle)}</li>`).join('')}</ul>`;
+        },
         openAction: "openFinderPane('projects')"
     },
     'skills': {
@@ -90,13 +79,10 @@ const QUICKLOOK_DATA = {
         type: 'text',
         icon: 'fas fa-code',
         meta: 'Technical Skills Document',
-        content: `<h2>Skills & Stacks</h2>
-            <h3>Programming</h3><p>Python, Java, C, SQL</p>
-            <h3>Frameworks & ML</h3><p>LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy</p>
-            <h3>Models & Architectures</h3><p>YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings, BGE-M3 ReRanker, SentenceTransformers</p>
-            <h3>Databases & Vector Stores</h3><p>PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB</p>
-            <h3>Evaluation & Validation</h3><p>RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA</p>
-            <h3>Tools & DevOps</h3><p>Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude</p>`,
+        get content() {
+            return `<h2>Skills & Stacks</h2>
+            ${window.PROFILE_DATA.skills.map(g => `<h3>${escapeHtml(g.label)}</h3><p>${escapeHtml(g.items.join(', '))}</p>`).join('')}`;
+        },
         openAction: "openFinderPane('skills')"
     },
     'mail': {
@@ -108,17 +94,16 @@ const QUICKLOOK_DATA = {
             <i class="fas fa-envelope" style="font-size:48px;color:#007aff;margin-bottom:12px;"></i>
             <h2>Apple Mail</h2>
             <p style="color:#888;">Contact & Connect</p>
-            <p>5 messages • 1 unread</p>
         </div>`,
         openAction: "openWindow('mail-window')"
     },
     'resume': {
-        title: 'MuditAgrawalResumeAugust2026.pdf',
+        get title() { return window.PROFILE_DATA.resume.downloadName || 'Résumé'; },
         type: 'pdf',
         icon: 'fas fa-file-pdf',
-        meta: '58 KB — PDF Document',
+        meta: 'PDF Document',
         openLabel: 'Open with Preview',
-        src: 'assets/MuditAgrawalResumePreview.png',
+        get src() { return window.PROFILE_DATA.resume.preview; },
         openAction: "openResumeWindow()"
     }
 };
@@ -129,7 +114,6 @@ const QUICKLOOK_ACTIONS = {
     "openWindow('mail-window')":     () => openWindow('mail-window'),
     "openWindow('photos-window')":   () => openWindow('photos-window'),
     "openWindow('textedit-window')": () => openWindow('textedit-window'),
-    "mountDiskImage('omnidoc')":     () => mountDiskImage('omnidoc'),
     "openFinderPane('about')":       () => openFinderPane('about'),
     "openFinderPane('projects')":    () => openFinderPane('projects'),
     "openFinderPane('experience')":  () => openFinderPane('experience'),
@@ -296,7 +280,9 @@ function openQuickLookForFile(item) {
             title: item.name,
             icon: 'fas fa-file-pdf',
             meta: item.size || '',
-            imageSrc: 'assets/MuditAgrawalResumePreview.png',
+            imageSrc: window.PROFILE_DATA.resume.preview,
+            // No preview image in the info bank: a document card instead of a broken image.
+            html: window.PROFILE_DATA.resume.preview ? undefined : `<div class="ql-app-card"><img class="ql-app-icon" src="assets/icons/filetype-pdf.svg" alt=""><h2>${escapeHtml(item.name)}</h2><p>Open to read the PDF.</p></div>`,
             openLabel: 'Open with Preview',
             onOpen: () => { closeQuickLook(); openResumeWindow(); }
         });

@@ -6,23 +6,26 @@
     <!-- Device router: phones and tablets go to the iPhone/iPad version (ios.html)
          before anything paints. Must stay first and synchronous. -->
     <script src="js/router.js?v=2.5"></script>
-    <title>Mudit Agrawal - macOS Portfolio</title>
-    <meta name="description" content="Mudit Agrawal — AI/ML engineer (agentic and RAG systems, computer vision). An interactive macOS-style portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
     <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- profile:meta — generated from the info bank by `npm run setup`; edit js/data/profile.js, not here -->
+    <title>Mudit Agrawal - macOS Portfolio</title>
+    <meta name="description" content="Mudit Agrawal — AI/ML Engineer &amp; Computer Science Undergraduate. An interactive macOS-style portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
     <meta property="og:title" content="Mudit Agrawal - macOS Portfolio">
-    <meta property="og:description" content="Explore Mudit Agrawal's interactive macOS portfolio with native desktop apps, live projects, games, and voice agent.">
+    <meta property="og:description" content="Explore Mudit Agrawal's interactive macOS portfolio: résumé, projects, experience, and an assistant that answers questions about his work.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/og-image.jpg">
+    <meta property="og:url" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/">
+    <meta property="og:image" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/assets/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Mudit Agrawal's portfolio: a macOS desktop with an About window showing his role, projects and experience">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Mudit Agrawal - macOS Portfolio">
-    <meta name="twitter:description" content="Explore Mudit Agrawal's interactive macOS portfolio with native desktop apps, live projects, games, and voice agent.">
-    <meta name="twitter:image" content="assets/og-image.jpg">
+    <meta name="twitter:description" content="Explore Mudit Agrawal's interactive macOS portfolio: résumé, projects, experience, and an assistant that answers questions about his work.">
+    <meta name="twitter:image" content="https://muditagrawal-alt.github.io/MacOS_Portfolio/assets/og-image.jpg">
+    <!-- /profile:meta -->
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <!-- Resource hints for external typography and icons -->
@@ -98,7 +101,7 @@
         </div>
 
         <div class="boot-name-container">
-            <div class="boot-name" id="boot-name">Mudit Agrawal</div>
+            <div class="boot-name" id="boot-name" data-tpl="{name}"></div>
             <div class="boot-progress-container">
                 <div class="boot-progress-bar" id="boot-progress-bar"></div>
             </div>
@@ -161,10 +164,10 @@ C 890,381 908,392 928,394"/>
                 </span>
                 <div class="menu-dropdown hidden" id="apple-menu">
                     <div class="dropdown-item profile-item is-static" style="display: flex; align-items: center; padding: 10px;">
-                        <img loading="lazy" decoding="async" src="assets/Professionalimage.jpeg" width="44" height="44" style="border-radius: 50%; margin-right: 12px; object-fit: cover; aspect-ratio: 1 / 1; flex-shrink: 0; width: 44px; height: 44px;" alt="Mudit Agrawal">
+                        <img loading="lazy" decoding="async" data-tpl-src="{photo}" alt="" data-tpl-alt="{name}" width="44" height="44" style="border-radius: 50%; margin-right: 12px; object-fit: cover; aspect-ratio: 1 / 1; flex-shrink: 0; width: 44px; height: 44px;">
                         <div style="line-height: 1.3;">
-                            <strong style="font-size: 15px; color: #fff;" id="menubar-profile-name">Mudit Agrawal</strong><br>
-                            <span style="font-size: 12px; color: #aaa;" id="menubar-profile-blurb">AI Engineer</span>
+                            <strong style="font-size: 15px; color: #fff;" id="menubar-profile-name" data-tpl="{name}"></strong><br>
+                            <span style="font-size: 12px; color: #aaa;" id="menubar-profile-blurb" data-tpl="{role}"></span>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
@@ -212,15 +215,15 @@ C 890,381 908,392 928,394"/>
              is what the old desktop did. -->
         <div class="desktop-files" id="desktop-files"></div>
 
-        <!-- About Mudit — first-run window (js/apps/welcome.js) -->
+        <!-- About — first-run window (js/apps/welcome.js) -->
         <div class="window hidden" id="welcome-window" style="width: 640px; height: 560px;" role="dialog" aria-labelledby="welcome-window-title">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'welcome-window')">
                 <div class="window-controls">
-                    <button type="button" class="control close" aria-label="Close About Mudit" title="Close" onclick="closeWindow('welcome-window')"></button>
-                    <button type="button" class="control minimize" aria-label="Minimize About Mudit" title="Minimize" onclick="minimizeWindow('welcome-window')"></button>
-                    <button type="button" class="control maximize" aria-label="Zoom About Mudit" title="Zoom" onclick="maximizeWindow('welcome-window')"></button>
+                    <button type="button" class="control close" data-tpl-aria-label="Close About {first}" title="Close" onclick="closeWindow('welcome-window')"></button>
+                    <button type="button" class="control minimize" data-tpl-aria-label="Minimize About {first}" title="Minimize" onclick="minimizeWindow('welcome-window')"></button>
+                    <button type="button" class="control maximize" data-tpl-aria-label="Zoom About {first}" title="Zoom" onclick="maximizeWindow('welcome-window')"></button>
                 </div>
-                <div class="window-title" id="welcome-window-title">About Mudit</div>
+                <div class="window-title" id="welcome-window-title" data-tpl="About {first}"></div>
             </div>
             <div class="window-content welcome-content" id="welcome-content"></div>
         </div>
@@ -245,7 +248,7 @@ C 890,381 908,392 928,394"/>
                         </div>
                         <div class="finder-header-title">
                             <img src="assets/icons/folder-home.png" id="finder-title-icon" alt="Folder">
-                            <span id="finder-title-text">Mudit</span>
+                            <span id="finder-title-text" data-tpl="{first}"></span>
                         </div>
                     </div>
 
@@ -283,7 +286,7 @@ C 890,381 908,392 928,394"/>
                         <div class="sidebar-v2-section">
                             <div class="sidebar-v2-heading">Favorites</div>
                             <div class="sidebar-v2-item active" data-target="home" onclick="finderSidebarNav('home')">
-                                <i class="fas fa-home sb-icon-blue"></i> <span>Mudit</span>
+                                <i class="fas fa-home sb-icon-blue"></i> <span data-tpl="{first}"></span>
                             </div>
                             <div class="sidebar-v2-item" data-target="applications" onclick="finderSidebarNav('applications')">
                                 <i class="fas fa-rocket sb-icon-blue"></i> <span>Applications</span>
@@ -381,7 +384,7 @@ C 890,381 908,392 928,394"/>
                 <button type="button" id="resume-download-btn" onmousedown="event.stopPropagation()" onclick="downloadResume(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); color: #eee; font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;"><i class="fas fa-download"></i> Download</button>
             </div>
             <div class="window-content" style="overflow: auto; background: white; display: block;">
-                <img loading="lazy" decoding="async" src="assets/MuditAgrawalResumePreview.png" alt="Resume PDF preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
+                <img loading="lazy" decoding="async" data-tpl-src="{resumePreview}" data-tpl-if="resumePreview" alt="Résumé preview" style="display: block; width: 100%; height: auto; background: white;" onerror="this.outerHTML='<div style=\'padding:20px;text-align:center;width:100%;color:#111;\'>Resume preview not found.</div>'">
             </div>
         </div>
 
@@ -393,15 +396,15 @@ C 890,381 908,392 928,394"/>
                     <button type="button" class="control minimize" aria-label="Minimize Terminal" title="Minimize" onclick="minimizeWindow('terminal-window')"></button>
                     <button type="button" class="control maximize" aria-label="Zoom Terminal" title="Zoom" onclick="maximizeWindow('terminal-window')"></button>
                 </div>
-                <div class="window-title" style="color: #bbb;">muditagrawal@macbook ~ zsh</div>
+                <div class="window-title" style="color: #bbb;" data-tpl="{handle}@macbook ~ zsh"></div>
             </div>
             <div class="window-content" style="flex-direction: column; padding: 10px; font-family: var(--font-mono); font-size: 13px; overflow-y: auto;" id="terminal-content" onclick="document.getElementById('terminal-input').focus()">
                 <div id="terminal-output">
                     <div style="color: #8e8e93;" id="terminal-last-login">Last login on ttys000</div>
-                    <div style="color: #4facfe; margin-bottom: 10px;">Welcome to Mudit's Terminal. Type 'help' to see available commands, or 'neofetch' for the system card.</div>
+                    <div style="color: #4facfe; margin-bottom: 10px;" data-tpl="Welcome to {first}'s Terminal. Type 'help' to see available commands, or 'neofetch' for the system card."></div>
                 </div>
                 <div style="display: flex; align-items: center; margin-top: 5px;">
-                    <span style="color: #43e97b; margin-right: 8px;">muditagrawal@macbook</span> <span style="color: #4facfe;">~ %</span>
+                    <span style="color: #43e97b; margin-right: 8px;" data-tpl="{handle}@macbook"></span> <span style="color: #4facfe;">~ %</span>
                     <input type="text" id="terminal-input" aria-label="Terminal command" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex: 1; background: transparent; border: none; color: #fff; font-family: inherit; font-size: 13px; outline: none; margin-left: 8px; caret-color: #43e97b;" onkeydown="handleTerminalInput(event)">
                 </div>
             </div>
@@ -450,11 +453,11 @@ C 890,381 908,392 928,394"/>
                         <button type="button" class="mail-tool-btn" onclick="trashActiveEmail()"><i class="fas fa-trash-alt"></i> Trash</button>
                     </div>
                     <div class="mail-reader-header">
-                        <div class="mail-avatar" id="mail-reader-avatar">MA</div>
+                        <div class="mail-avatar" id="mail-reader-avatar" data-tpl="{initials}"></div>
                         <div class="mail-meta">
-                            <div class="mail-reader-subject" id="mail-reader-subject">Open for AI/ML Roles & SWE Opportunities</div>
-                            <div class="mail-reader-from" id="mail-reader-from">From: <strong style="color:#fff;">Mudit Agrawal</strong> &lt;muditagrawal03@gmail.com&gt; <i class="fas fa-check-circle mail-verified-badge" title="Verified Contact"></i></div>
-                            <div class="mail-reader-to" id="mail-reader-to">To: <span style="color:#aaa;">Recruiter / Engineering Leader</span> &lt;you@future.org&gt;</div>
+                            <div class="mail-reader-subject" id="mail-reader-subject"></div>
+                            <div class="mail-reader-from" id="mail-reader-from">From: <strong style="color:#fff;" data-tpl="{owner}"></strong> <i class="fas fa-check-circle mail-verified-badge" title="Verified Contact"></i></div>
+                            <div class="mail-reader-to" id="mail-reader-to">To: <span style="color:#aaa;">You</span></div>
                         </div>
                         <div class="mail-date" id="mail-reader-date">Today at 4:30 PM</div>
                     </div>
@@ -477,7 +480,7 @@ C 890,381 908,392 928,394"/>
                     <button type="button" class="close-compose-btn" onclick="closeMailCompose()" aria-label="Close and save draft">&times;</button>
                 </div>
                 <div class="mail-compose-fields">
-                    <div class="compose-row"><span>To:</span> <input type="text" value="Mudit Agrawal <muditagrawal03@gmail.com>" readonly style="color:#888;"></div>
+                    <div class="compose-row"><span>To:</span> <input type="text" data-tpl-value="{owner}" readonly style="color:#888;" aria-label="To"></div>
                     <div class="compose-row"><span>From:</span> <input type="text" id="compose-sender-name" placeholder="Your name" autocomplete="name"></div>
                     <div class="compose-row"><span>Reply-To:</span> <input type="email" id="compose-sender-email" placeholder="you@company.com (required)" autocomplete="email" required></div>
                     <div class="compose-row"><span>Subject:</span> <input type="text" id="compose-subject" placeholder="Project Inquiry / Job Opportunity / Collaboration"></div>
@@ -515,9 +518,7 @@ C 890,381 908,392 928,394"/>
                 <div class="notes-sidebar">
                     <div class="sidebar-title">iCloud</div>
                     <div class="sidebar-item active" data-category="all" onclick="switchNotesCategory('all', this)"><i class="fas fa-folder icon-color-yellow"></i> All iCloud <span class="notes-count" data-count="all"></span></div>
-                    <div class="sidebar-item" data-category="philosophy" onclick="switchNotesCategory('philosophy', this)"><i class="fas fa-lightbulb icon-color-yellow"></i> Philosophy <span class="notes-count" data-count="philosophy"></span></div>
-                    <div class="sidebar-item" data-category="learning" onclick="switchNotesCategory('learning', this)"><i class="fas fa-brain icon-color-yellow"></i> Current Learning <span class="notes-count" data-count="learning"></span></div>
-                    <div class="sidebar-item" data-category="stack" onclick="switchNotesCategory('stack', this)"><i class="fas fa-layer-group icon-color-yellow"></i> Tech Notes <span class="notes-count" data-count="stack"></span></div>
+                    <!-- One row per folder in the info bank's notes — js/apps/notes.js -->
                 </div>
                 <!-- Notes Snippet List — rendered from notesData by js/apps/notes.js -->
                 <div class="notes-list-column">
@@ -577,61 +578,8 @@ C 890,381 908,392 928,394"/>
                         <h1>Favorites</h1>
                     </div>
 
-                    <!-- 8 Core Platform Shortcuts Grid -->
-                    <div class="favorites-grid">
-                        <!-- 1. GitHub -->
-                        <div class="favorite-item" onclick="openSafariShortcut('github')">
-                            <div class="fav-icon-box bg-fav-github"><i class="fab fa-github"></i></div>
-                            <span class="fav-title">GitHub</span>
-                            <span class="fav-domain">@muditagrawal-alt</span>
-                        </div>
-                        <!-- 2. Hugging Face -->
-                        <div class="favorite-item" onclick="openSafariShortcut('huggingface')">
-                            <div class="fav-icon-box bg-fav-hf"><i class="fas fa-robot"></i></div>
-                            <span class="fav-title">Hugging Face</span>
-                            <span class="fav-domain">@muditagrawal03</span>
-                        </div>
-                        <!-- 3. LinkedIn -->
-                        <div class="favorite-item" onclick="openSafariShortcut('linkedin')">
-                            <div class="fav-icon-box bg-fav-linkedin"><i class="fab fa-linkedin-in"></i></div>
-                            <span class="fav-title">LinkedIn</span>
-                            <span class="fav-domain">Mudit Agrawal</span>
-                        </div>
-                        <!-- 4. Substack -->
-                        <div class="favorite-item" onclick="openSafariShortcut('substack')">
-                            <div class="fav-icon-box bg-fav-substack">
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="#ffffff"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                            </div>
-                            <span class="fav-title">Substack</span>
-                            <span class="fav-domain">@standardissuemudit</span>
-                        </div>
-                        <!-- 5. Medium -->
-                        <div class="favorite-item" onclick="openSafariShortcut('medium')">
-                            <div class="fav-icon-box bg-fav-medium"><i class="fab fa-medium"></i></div>
-                            <span class="fav-title">Medium</span>
-                            <span class="fav-domain">@muditagrawal03</span>
-                        </div>
-                        <!-- 6. Instagram -->
-                        <div class="favorite-item" onclick="openSafariShortcut('instagram')">
-                            <div class="fav-icon-box bg-fav-instagram"><i class="fab fa-instagram"></i></div>
-                            <span class="fav-title">Instagram</span>
-                            <span class="fav-domain">@muditagrawal_</span>
-                        </div>
-                        <!-- 7. X (Twitter) -->
-                        <div class="favorite-item" onclick="openSafariShortcut('x')">
-                            <div class="fav-icon-box bg-fav-x"><i class="fab fa-x-twitter"></i></div>
-                            <span class="fav-title">X (Twitter)</span>
-                            <span class="fav-domain">@muditag52751860</span>
-                        </div>
-                        <!-- 8. LeetCode -->
-                        <div class="favorite-item" onclick="openSafariShortcut('leetcode')">
-                            <div class="fav-icon-box bg-fav-leetcode">
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="#ffffff"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .666-1.795l3.86-4.133 5.304-5.694a1.376 1.376 0 0 0-.96-2.352zm3.896 9.615c-.76 0-1.378.618-1.378 1.378v4.973c0 .76.618 1.378 1.378 1.378h5.243c.76 0 1.378-.618 1.378-1.378v-4.973c0-.76-.618-1.378-1.378-1.378h-5.243z"/></svg>
-                            </div>
-                            <span class="fav-title">LeetCode</span>
-                            <span class="fav-domain">@muditagrawal03</span>
-                        </div>
-                    </div>
+                    <!-- One favourite per profile in the info bank — js/apps/safari.js -->
+                    <div class="favorites-grid" id="safari-favorites"></div>
 
                     <!-- Safari Privacy Report Card — every figure here is true of this site -->
                     <div class="safari-privacy-card">
@@ -649,29 +597,10 @@ C 890,381 908,392 928,394"/>
                         </div>
                     </div>
 
-                    <!-- Reading List & Articles -->
-                    <div class="safari-reading-section">
+                    <!-- Reading List: `writing` in the info bank — js/apps/safari.js -->
+                    <div class="safari-reading-section" id="safari-reading" hidden>
                         <h2>Reading List & Pinned Articles</h2>
-                        <div class="reading-grid">
-                            <div class="reading-card" onclick="openSafariShortcut('substack')">
-                                <div class="reading-badge">RAG & LLMs</div>
-                                <h4>Building Multimodal Document Intelligence with Mistral-7B & BLIP</h4>
-                                <p>Deep dive into architecture parsing, embeddings, and real-time grounded QA in OmniDoc.</p>
-                                <span class="reading-meta"><i class="far fa-clock"></i> 6 min read • substack.com/@standardissuemudit</span>
-                            </div>
-                            <div class="reading-card" onclick="openSafariShortcut('substack')">
-                                <div class="reading-badge">Computer Vision</div>
-                                <h4>Real-Time Automated Highlight Pipeline with YOLOv8 & YOLO11</h4>
-                                <p>Facial analysis, emotion scoring, and sub-second video chunking with FFmpeg.</p>
-                                <span class="reading-meta"><i class="far fa-clock"></i> 8 min read • substack.com/@standardissuemudit</span>
-                            </div>
-                            <div class="reading-card" onclick="openSafariShortcut('medium')">
-                                <div class="reading-badge">AI Systems</div>
-                                <h4>Evaluating LLMs for Mission-Critical Defense Systems</h4>
-                                <p>Lessons learned stress-testing hallucination boundaries and logic consistency at WESEE.</p>
-                                <span class="reading-meta"><i class="far fa-clock"></i> 5 min read • medium.com/@muditagrawal03</span>
-                            </div>
-                        </div>
+                        <div class="reading-grid"></div>
                     </div>
                 </div>
 
@@ -702,10 +631,7 @@ C 890,381 908,392 928,394"/>
                 <!-- App Store Sidebar -->
                 <div class="appstore-sidebar">
                     <div class="sidebar-item active" data-cat="all" onclick="filterAppStoreCategory('all', this)"><i class="fas fa-compass"></i> Discover</div>
-                    <div class="sidebar-item" data-cat="ai" onclick="filterAppStoreCategory('ai', this)"><i class="fas fa-brain"></i> AI &amp; Language</div>
-                    <div class="sidebar-item" data-cat="vision" onclick="filterAppStoreCategory('vision', this)"><i class="fas fa-eye"></i> Vision &amp; Video</div>
-                    <div class="sidebar-item" data-cat="systems" onclick="filterAppStoreCategory('systems', this)"><i class="fas fa-microchip"></i> Systems</div>
-                    <div class="sidebar-item" data-cat="defense" onclick="filterAppStoreCategory('defense', this)"><i class="fas fa-shield-halved"></i> Defense</div>
+                    <!-- One row per category the projects fall into — js/apps/appstore.js -->
                 </div>
                 <!-- App Store Main Feed — rendered by js/apps/appstore.js -->
                 <div class="appstore-feed">
@@ -716,7 +642,7 @@ C 890,381 908,392 928,394"/>
                             <div style="font-size:15px;color:#ddd;font-weight:600;">No Apps Found</div>
                             <p style="font-size:12.5px;margin-top:6px;">Try a different search or category.</p>
                         </div>
-                        <div class="appstore-section-title" id="appstore-section-title">Everything Mudit has shipped</div>
+                        <div class="appstore-section-title" id="appstore-section-title"></div>
                         <div class="appstore-grid" id="appstore-grid-container"></div>
                     </div>
                     <div class="appstore-product" id="appstore-product" style="display:none;"></div>
@@ -738,9 +664,9 @@ C 890,381 908,392 928,394"/>
                 <!-- Settings Sidebar -->
                 <div class="settings-sidebar">
                     <div class="settings-user-card">
-                        <img loading="lazy" decoding="async" src="assets/Professionalimage.jpeg" alt="Mudit Agrawal">
+                        <img loading="lazy" decoding="async" data-tpl-src="{photo}" alt="" data-tpl-alt="{name}">
                         <div>
-                            <strong>Mudit Agrawal</strong>
+                            <strong data-tpl="{name}"></strong>
                             <span>Apple Account</span>
                         </div>
                     </div>
@@ -854,14 +780,14 @@ C 890,381 908,392 928,394"/>
                     <!-- About This Mac Pane -->
                     <div class="settings-pane hidden" id="settings-pane-about-mac">
                         <div class="about-mac-dialog">
-                            <img class="about-mac-portrait" src="assets/Professionalimage.jpeg" alt="Mudit Agrawal" loading="lazy">
-                            <h2>Mudit Agrawal</h2>
-                            <p class="about-mac-sub">AI/ML Engineer · B.Tech CSE (AI/ML), 2027</p>
+                            <img class="about-mac-portrait" data-tpl-src="{photo}" alt="" data-tpl-alt="{name}" loading="lazy">
+                            <h2 data-tpl="{name}"></h2>
+                            <p class="about-mac-sub" data-tpl="{aboutSub}"></p>
                             <div class="spec-table">
-                                <div class="spec-row"><span class="spec-name">Focus</span><span class="spec-val">Agentic &amp; RAG systems, computer vision</span></div>
-                                <div class="spec-row"><span class="spec-name">Now</span><span class="spec-val">AI/ML Intern, Carnot Research (IIT Delhi-incubated)</span></div>
-                                <div class="spec-row"><span class="spec-name">Education</span><span class="spec-val" id="about-mac-education">B.Tech Computer Science (AI/ML) @ IILM University</span></div>
-                                <div class="spec-row"><span class="spec-name">Based in</span><span class="spec-val">India</span></div>
+                                <div class="spec-row" data-tpl-if="focus"><span class="spec-name">Focus</span><span class="spec-val" data-tpl="{focus}"></span></div>
+                                <div class="spec-row" data-tpl-if="now"><span class="spec-name">Now</span><span class="spec-val" data-tpl="{now}"></span></div>
+                                <div class="spec-row" data-tpl-if="education"><span class="spec-name">Education</span><span class="spec-val" id="about-mac-education" data-tpl="{education}"></span></div>
+                                <div class="spec-row" data-tpl-if="location"><span class="spec-name">Based in</span><span class="spec-val" data-tpl="{location}"></span></div>
                                 <div class="spec-row"><span class="spec-name">This Mac</span><span class="spec-val">Vanilla HTML, CSS &amp; JavaScript — no frameworks</span></div>
                             </div>
                             <div class="about-mac-actions">
@@ -1424,11 +1350,13 @@ C 890,381 908,392 928,394"/>
 
     <!-- Central Profile Data (Single Source of Truth) -->
     <script src="js/data/profile.js?v=2.5"></script>
+    <script src="js/data/profile-schema.js?v=2.5"></script>
     <script src="js/data/corpus.js?v=2.5"></script>
     <script src="js/data/desktop-files.js?v=2.5"></script>
     <script src="js/data/filesystem.js?v=2.5"></script>
     <script src="js/data/notes.js?v=2.5"></script>
     <script src="js/data/music.js?v=2.5"></script>
+    <script src="js/core/profile-bind.js?v=2.5"></script>
 
     <!-- Runtime config: endpoint for the serverless AI proxy. Contains no secrets. -->
     <script src="js/config/config.js?v=2.5"></script>

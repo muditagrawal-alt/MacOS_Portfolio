@@ -1,7 +1,7 @@
 /* ==========================================================================
    Resume.app Controller
    --------------------------------------------------------------------------
-   Serves assets/MuditAgrawalResumeAugust2026.pdf directly.
+   Serves the résumé named in the info bank (resume.file) directly.
 
    Previously this preferred a base64 copy of the PDF inlined into
    resume-data.js — which had drifted to an older January build, so the
@@ -9,8 +9,8 @@
    filename. There is now exactly one resume file, and one path to it.
    ========================================================================== */
 
-const RESUME_FILE = 'assets/MuditAgrawalResumeAugust2026.pdf';
-const RESUME_DOWNLOAD_NAME = 'MuditAgrawalResumeAugust2026.pdf';
+const RESUME_FILE = window.PROFILE_DATA.resume.file;
+const RESUME_DOWNLOAD_NAME = window.PROFILE_DATA.resume.downloadName;
 
 function openResumeWindow() {
     openWindow('resume-window');
@@ -25,6 +25,10 @@ function downloadResume(event) {
         event.stopPropagation();
     }
 
+    if (!RESUME_FILE) {
+        if (typeof showToast === 'function') showToast('No résumé added yet', { icon: 'fas fa-file-circle-xmark' });
+        return;
+    }
     const link = document.createElement('a');
     link.href = RESUME_FILE;
     link.download = RESUME_DOWNLOAD_NAME;

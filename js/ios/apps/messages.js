@@ -10,7 +10,16 @@
 
 (function () {
     const THREAD_KEY = 'ios-iris-thread';
-    const SUGGESTIONS = ['What has he built?', 'Where has he worked?', 'What is OmniDoc?', 'Which skills does he use for RAG?', 'How do I contact him?'];
+    const P = window.PROFILE_DATA;
+    const pr = P.pron;
+    // Written from the info bank, so each one has an answer.
+    const SUGGESTIONS = [
+        `What ${pr.have} ${pr.subject} built?`,
+        P.experience.length && `Where ${pr.have} ${pr.subject} worked?`,
+        P.projects[0] && `What is ${P.projects[0].name}?`,
+        P.skills.length && `What’s ${pr.possessive} tech stack?`,
+        `How do I contact ${pr.object}?`
+    ].filter(Boolean);
     let thread = [];          // [{ role: 'user'|'iris', text, q? }]
     let busy = false;
     let view = null;          // { list, input, send, suggest } while the page is mounted
@@ -50,10 +59,10 @@
             <div class="msg-intro">
                 <img src="assets/icons/siri.png" alt="">
                 <strong>Iris</strong>
-                <span>Mudit’s assistant · answers from his portfolio, with sources</span>
+                <span>${escapeHtml(P.first)}’s assistant · answers from ${escapeHtml(pr.possessive)} portfolio, with sources</span>
             </div>
             <div class="msg-stamp">Today</div>
-            <div class="msg-row iris"><div class="msg-bubble">Hi! I’m Iris. Ask me about Mudit’s projects, experience or skills — I’ll show where every answer comes from.</div></div>
+            <div class="msg-row iris"><div class="msg-bubble">Hi! I’m Iris. Ask me about ${escapeHtml(P.first)}’s projects, experience or skills — I’ll show where every answer comes from.</div></div>
             ${thread.map(bubble).join('')}
             ${busy ? '<div class="msg-row iris"><div class="msg-bubble msg-typing" aria-label="Iris is typing"><i></i><i></i><i></i></div></div>' : ''}`;
         view.suggest.hidden = thread.length > 0;

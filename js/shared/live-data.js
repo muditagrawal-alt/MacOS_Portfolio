@@ -205,12 +205,14 @@ async function requestLiveWeather() {
 
 // Shared by the Notification Centre, the desktop GitHub widget and the iPhone
 // widgets, so a page load costs one API call however many surfaces show it.
-const GITHUB_USER = 'muditagrawal-alt';
+// The owner's GitHub account, from the info bank (empty: no GitHub surfaces).
+const GITHUB_USER = window.PROFILE_DATA.github.user;
 const GITHUB_CACHE_TTL_MS = 15 * 60 * 1000;   // well inside GitHub's 60 req/hour
 let githubActivityPromise = null;
-const GITHUB_CACHE_KEY = 'mac-github-activity';
+const GITHUB_CACHE_KEY = `mac-github-activity-${GITHUB_USER}`;
 
 function fetchGitHubActivity() {
+    if (!GITHUB_USER) return Promise.resolve([]);
     try {
         const raw = sessionStorage.getItem(GITHUB_CACHE_KEY);
         if (raw) {

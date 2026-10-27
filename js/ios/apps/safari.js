@@ -8,17 +8,14 @@
    ========================================================================== */
 
 (function () {
-    const P = window.PROFILE_DATA || {};
-    const C = P.contact || {};
+    const P = window.PROFILE_DATA;
     let query = '';
 
+    /** The owner's profiles (brand glyph on a brand tile), then the live projects. */
     function favourites() {
-        const live = (typeof getPortfolioProjects === 'function' ? getPortfolioProjects() : []).filter(p => p.live);
         return [
-            { title: 'GitHub', url: C.github, glyph: 'fab fa-github', bg: '#24292f' },
-            { title: 'LinkedIn', url: C.linkedin, glyph: 'fab fa-linkedin-in', bg: '#0a66c2' },
-            ...live.map(p => ({ title: p.name, url: p.link, img: p.icon })),
-            { title: 'Hugging Face', url: 'https://huggingface.co', emoji: '🤗', bg: '#ffd21e' }
+            ...P.links.slice(0, 4).map(l => ({ title: l.label, url: l.url, glyph: l.fa, bg: l.color })),
+            ...P.projects.filter(p => p.live).map(p => ({ title: p.name, url: p.link, img: p.icon }))
         ];
     }
 
@@ -114,7 +111,7 @@
             const t = e.target.closest('[data-tool]');
             if (!t) return;
             if (t.dataset.tool === 'share') { if (navigator.share) sharePortfolio(); else copyTextToClipboard(portfolioUrl(), 'Link copied'); }
-            if (t.dataset.tool === 'ask') IOS.askIris(query.trim() || 'What has Mudit built?');
+            if (t.dataset.tool === 'ask') IOS.askIris(query.trim() || `What ${window.PROFILE_DATA.pron.have} ${window.PROFILE_DATA.first} built?`);
             if (t.dataset.tool === 'home') IOS.home();
         });
         scroll.addEventListener('click', (e) => {

@@ -1,18 +1,27 @@
+/* ==========================================================================
+   Terminal.app Controller: CLI Command Parser & System Shortcuts
+   --------------------------------------------------------------------------
+   Every command's output is written from the info bank (js/data/profile.js):
+   the résumé, experience, skills, project listing, timeline and `neofetch`
+   all follow whatever the owner put there.
+   ========================================================================== */
+
+const TERMINAL_OWNER = window.PROFILE_DATA;
+const TERMINAL_USER = TERMINAL_OWNER.handle;
+const TERMINAL_HOST = `${TERMINAL_USER}@macbook`;
+const TERMINAL_DOMAIN = `${TERMINAL_USER}.dev`;
+
 const TERMINAL_COMMANDS = [
     'help', 'neofetch', 'whoami', 'clear', 'ls', 'ls projects/', 'ls experience/',
     'ls education/', 'ls skills/', 'ls documents/', 'pwd', 'cd', 'date', 'uname',
     'echo', 'history', 'about me', 'experience', 'education', 'projects',
     'skills', 'contact', 'cat resume.txt', 'cat README.txt', 'cat Philosophy.txt',
     'iris', 'open finder', 'open safari', 'open mail', 'open notes', 'open appstore',
-    'open settings', 'open trash', 'open resume', 'open iris', 'open omnidoc',
-    'open vlm', 'open slam', 'open sliver', 'open sword', 'open deepfake', 'open veritas',
-    'open helix', 'open skyguard', 'open multiva', 'open artifex', 'sudo hire-me', 'brew install talent',
-    'git status', 'git log', 'matrix', 'curl mudit.dev', 'exit'
+    'open settings', 'open trash', 'open resume', 'open iris',
+    ...TERMINAL_OWNER.projects.map(x => `open ${x.id}`),
+    ...TERMINAL_OWNER.links.map(l => `open ${l.network}`),
+    'sudo hire-me', 'brew install talent', 'git status', 'git log', 'matrix', `curl ${TERMINAL_DOMAIN}`, 'exit'
 ];
-
-/* ==========================================================================
-   Terminal.app Controller: CLI Command Parser & System Shortcuts
-   ========================================================================== */
 
 /**
  * Appends one line to the terminal output.
@@ -34,35 +43,260 @@ function printTerminalLine(html, style) {
 const terminalHistory = [];
 let terminalHistoryIndex = -1;
 
-/* Project repository lookup registry */
-const PROJECT_REPOS = {
-    'omnidoc': { name: 'OmniDoc', url: 'https://github.com/muditagrawal-alt/OmniDoc', desc: 'Multimodal RAG Document Intelligence System' },
-    'vlm': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
-    'vlm-leads': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
-    'vlm leads': { name: 'VLM Lead Extraction', url: 'https://muditagrawal-lead-extraction.vercel.app', desc: 'Vision-Language Business Card Lead Extraction (Live Web App)' },
-    'slam': { name: 'Monocular RGB SLAM', url: 'https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', desc: 'Monocular RGB Sparse Point Cloud SLAM' },
-    'monocular-slam': { name: 'Monocular RGB SLAM', url: 'https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM', desc: 'Monocular RGB Sparse Point Cloud SLAM' },
-    'skyguard': { name: 'Skyguard AI', url: 'https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', desc: 'Airspace Drone Threat Detection & Tracking' },
-    'skyguard-ai': { name: 'Skyguard AI', url: 'https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026', desc: 'Airspace Drone Threat Detection & Tracking' },
-    'sliver': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
-    'sliver.ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
-    'sliver-ai': { name: 'Sliver.Ai', url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', desc: 'Smart Video Clipping & Highlight Tool' },
-    'sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
-    'project-sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
-    'project sword': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
-    'project-s.w.o.r.d': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
-    's.w.o.r.d': { name: 'Project S.W.O.R.D', url: 'https://github.com/muditagrawal-alt/Project-S.W.O.R.D', desc: 'Real-Time Weapon Surveillance System' },
-    'deepfake': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
-    'deepfake-detector': { name: 'Deepfake Detector', url: 'https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector', desc: 'Media Forensics & Fake News Detector' },
-    'veritas': { name: 'Veritas Check', url: 'https://veritas-check.vercel.app', desc: 'Live Deepfake & Fake News Forensics Web App' },
-    'helix': { name: 'Helix-Compiler', url: 'https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', desc: 'C-Based Language Compiler & Live Playground' },
-    'helix-compiler': { name: 'Helix-Compiler', url: 'https://huggingface.co/spaces/muditagrawal03/Helix-Compiler', desc: 'C-Based Language Compiler & Live Playground' },
-    'multiva': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
-    'multiva.ai': { name: 'Multiva.Ai', url: 'https://github.com/muditagrawal-alt/Multiva.Ai', desc: 'Multilingual AI Voice Cloning Platform' },
-    'artifex': { name: 'Artifex', url: 'https://github.com/muditagrawal-alt/Artifex.ai', desc: 'Creative Generative AI Design Experiments' },
-    'github': { name: 'Mudit Agrawal GitHub', url: 'https://github.com/muditagrawal-alt', desc: 'GitHub Profile' },
-    'linkedin': { name: 'Mudit Agrawal LinkedIn', url: 'https://www.linkedin.com/in/mudit-agrawal-167610318', desc: 'LinkedIn Profile' }
-};
+/* ── Output, built from the info bank ─────────────────────────────────── */
+
+const termEsc = (v) => escapeHtml(v);
+const TERM_RULE = `<span style="color:#555;">${'━'.repeat(80)}</span>`;
+const termPre = (body, color = '#f1f1f1') => `<pre style="font-family:inherit;margin:0;line-height:1.45;color:${color};">${body}</pre>`;
+const termHeading = (text) => `<strong style="color:#4facfe;">[ ${termEsc(text)} ]</strong>`;
+const termItem = (text) => `<span style="color:#ffbd2e;font-weight:700;">${termEsc(text)}</span>`;
+const termShortOrg = (org) => String(org).split(' (')[0].replace(/ Pvt\. Ltd\./, '');
+
+/** `open <x>` targets: a project (by id, name or alias) or one of the owner's profiles. */
+function findTerminalTarget(key) {
+    const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const k = norm(key.replace(/^projects\//, '').replace(/^proj-/, ''));
+    if (!k) return null;
+    const p = TERMINAL_OWNER.projects.find(x => norm(x.id) === k || norm(x.name) === k || norm(x.name).replace(/ai$/, '') === k || x.aliases.some(a => norm(a) === k));
+    if (p && (p.link || p.repo)) return { name: p.name, url: p.link || p.repo };
+    const l = TERMINAL_OWNER.links.find(x => x.network === k || norm(x.label) === k);
+    if (l) return { name: `${TERMINAL_OWNER.name} on ${l.label}`, url: l.url };
+    return null;
+}
+
+function terminalResume() {
+    const P = TERMINAL_OWNER;
+    const e = P.education;
+    const width = 80;
+    const center = (t) => ' '.repeat(Math.max(0, Math.floor((width - t.length) / 2))) + t;
+    const contact = [P.contact.email && `Email: ${P.contact.email}`, P.contact.phone && `Phone: ${P.contact.phone}`].filter(Boolean).join('  |  ');
+    const links = P.links.slice(0, 2).map(l => `${l.label}: ${l.url.replace(/^https?:\/\/(www\.)?/, '')}`).join('  |  ');
+    const sections = [
+        '='.repeat(width),
+        center(P.name.toUpperCase()),
+        center(P.tagline),
+        contact && `  ${contact}`,
+        links && `  ${links}`,
+        '='.repeat(width),
+        '',
+        '[ SUMMARY ]',
+        P.bio,
+        '',
+        (e.degree || e.schooling.length) && '[ EDUCATION ]',
+        e.degree && `  • ${e.degree}\n    ${[e.university, e.years].filter(Boolean).join(' ')}${e.grade ? ` — ${e.gradeLabel}: ${e.grade}` : ''}`,
+        ...e.schooling.map(s => `  • ${s.school} (${[s.title, s.year].filter(Boolean).join(' — ')})${s.score ? ` — ${s.score}` : ''}`),
+        (e.degree || e.schooling.length) && '',
+        P.experience.length && '[ WORK EXPERIENCE ]',
+        P.experience.map(x => `  • ${x.role} — ${x.org}\n    Dates: ${x.dates}${x.bullets.length ? '\n' + x.bullets.map(b => `    - ${b}`).join('\n') : ''}`).join('\n\n'),
+        P.experience.length && '',
+        P.projects.length && '[ CORE PROJECTS ]',
+        ...P.projects.slice(0, 6).map(x => `  • ${x.name.padEnd(17)}- ${x.subtitle}`),
+        P.projects.length && '',
+        P.skills.length && '[ TECHNICAL SKILLS ]',
+        ...P.skills.map(g => `  • ${g.label}: ${g.items.join(', ')}`),
+        P.skills.length && '',
+        '[ ACTIONS ]',
+        P.resume.file && "  • Type 'open resume' or double-click Resume.pdf on the desktop for the PDF.",
+        P.projects[0] && `  • Type 'open <project-name>' (e.g. 'open ${P.projects[0].id}') to open it.`,
+        '='.repeat(width)
+    ].filter(v => v !== false && v !== undefined && v !== null && v !== 0);
+    return termPre(termEsc(sections.join('\n')), '#e6edf3');
+}
+
+function terminalExperience(title = 'WORK EXPERIENCE') {
+    const P = TERMINAL_OWNER;
+    if (!P.experience.length) return 'No experience listed yet.';
+    return termPre(`${termHeading(title)}\n${TERM_RULE}\n${P.experience.map((x, i) =>
+        `${termItem(`${i + 1}. ${x.role} @ ${x.org}`)}\n   <span style="color:#888;">Dates: ${termEsc(x.dates)}</span>${x.bullets.map(b => `\n   – ${termEsc(b)}`).join('')}`
+    ).join('\n\n')}\n${TERM_RULE}`);
+}
+
+function terminalSkills() {
+    const P = TERMINAL_OWNER;
+    if (!P.skills.length) return 'No skills listed yet.';
+    return termPre(`${termHeading('TECHNICAL SKILLS')}\n${TERM_RULE}\n${P.skills.map(g => `${termItem(`• ${g.label}:`)}\n  ${termEsc(g.items.join(', '))}`).join('\n\n')}\n${TERM_RULE}`);
+}
+
+function terminalProjectListing() {
+    const P = TERMINAL_OWNER;
+    const width = Math.max(10, ...P.projects.map(x => x.name.length + 2));
+    const rows = P.projects.map(x => {
+        const name = `${x.name.replace(/\s+/g, '-')}/`;
+        return `drwxr-xr-x   8 ${termEsc(TERMINAL_USER)}  staff   256B  ${termEsc((x.date || '—').padEnd(9))} <span style="color:#4facfe;font-weight:600;">${termEsc(name)}</span>${' '.repeat(Math.max(1, width - name.length))}<span style="color:${x.live ? '#10b981' : '#888'};"># ${termEsc(x.subtitle)}${x.live ? ' (Live)' : ''}</span>`;
+    });
+    return `${termPre(`total ${P.projects.length} projects\n${rows.join('\n')}`, '#f1f1f1')}
+<div style="color:#888;margin-top:6px;">💡 Tip: Type <em>open &lt;project-name&gt;</em>${P.projects[0] ? ` (e.g. <span style="color:#43e97b">open ${termEsc(P.projects[0].id)}</span>)` : ''} to open its live app or repository.</div>`;
+}
+
+function terminalTimeline() {
+    const P = TERMINAL_OWNER;
+    const e = P.education;
+    const steps = [
+        ...e.schooling.slice().reverse().map(s => [s.year, s.title.toUpperCase(), `<strong>${termEsc(s.school)}</strong>${s.score ? ` (${termEsc(s.score)})` : ''}`]),
+        ...(e.degree ? [[e.years, e.degree.toUpperCase(), `<strong>${termEsc(e.degree)}${e.university ? ` @ ${termEsc(e.university)}` : ''}</strong>${e.grade ? ` (${termEsc(e.gradeLabel)}: ${termEsc(e.grade)})` : ''}`]] : []),
+        ...P.experience.slice().reverse().map(x => [x.dates, x.role.toUpperCase(), `<strong>${termEsc(x.role)} @ ${termEsc(x.org)}</strong>${x.bullets[0] ? `\n     ${termEsc(x.bullets[0])}` : ''}`])
+    ];
+    const built = P.projects.length ? `\n${termItem('• ALONG THE WAY [PROJECTS]')}\n  └─ ${P.projects.map(x => `<strong>${termEsc(x.name)}</strong>`).join(', ')}\n` : '';
+    return termPre(`<strong style="color:#4facfe;">[ ${termEsc(P.name.toUpperCase())} — TIMELINE ]</strong>
+${TERM_RULE}
+${steps.map(([when, what, detail]) => `${termItem(`• ${when ? `${when} ` : ''}[${what}]`)}\n  └─ ${detail}`).join('\n\n')}
+${built}
+<span style="color:#27c93f;font-weight:700;">• NEXT [YOUR TEAM?]</span>
+  └─ <em>Type 'sudo hire-me' or 'brew install talent' 🚀</em>
+${TERM_RULE}`);
+}
+
+function terminalNeofetch() {
+    const P = TERMINAL_OWNER;
+    const e = P.education;
+    const row = (k, v) => (v ? `<span style="color:#f6d365;font-weight:600;">${k}:</span> ${termEsc(v)}` : null);
+    const logo = [
+        ['#34c759', "                    'c.          "],
+        ['#34c759', "                 ,xNMM.          "],
+        ['#34c759', "               .OMMMMo           "],
+        ['#34c759', "               OMMM0,            "],
+        ['#ffcc00', "     .;loddo:' loolloddol;.      "],
+        ['#ffcc00', "   cKMMMMMMMMMMNWMMMMMMMMMM0:    "],
+        ['#ff9500', " .KMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
+        ['#ff9500', " XMMMMMMMMMMMMMMMMMMMMMMMX.      "],
+        ['#ff3b30', ";MMMMMMMMMMMMMMMMMMMMMMMM:       "],
+        ['#ff3b30', ":MMMMMMMMMMMMMMMMMMMMMMMM:       "],
+        ['#af52de', ".MMMMMMMMMMMMMMMMMMMMMMMMX.      "],
+        ['#af52de', " kMMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
+        ['#007aff', " .XMMMMMMMMMMMMMMMMMMMMMMMMMMk   "],
+        ['#007aff', "  .XMMMMMMMMMMMMMMMMMMMMMMMMK.   "],
+        ['#007aff', "    kMMMMMMMMMMMMMMMMMMMMMMd     "],
+        ['#007aff', "     ;KMMMMMMMWXXWMMMMMMMk.      "],
+        ['#007aff', "       .cooc,.    .,coo:.        "]
+    ];
+    const info = [
+        `<span style="color:#fff;font-weight:700;">${termEsc(TERMINAL_USER)}</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>`,
+        `<span style="color:#555;">-------------------------</span>`,
+        row('OS', 'macOS Portfolio Edition'),
+        row('Host', 'Vanilla HTML · CSS · JavaScript'),
+        row('Shell', 'zsh 5.9'),
+        row('Role', P.tagline),
+        row('Education', [e.degree, e.university].filter(Boolean).join(' @ ')),
+        row(e.gradeLabel, e.grade),
+        row('Experience', P.experience.map(x => termShortOrg(x.org)).join(' · ')),
+        row('Focus', P.focus),
+        row('Email', P.contact.email),
+        row('GitHub', P.github.url.replace(/^https?:\/\//, '')),
+        '',
+        ['#ff5f56', '#ffbd2e', '#27c93f', '#4facfe', '#00f2fe', '#af52de', '#ff758c', '#ffffff'].map(c => `<span style="color:${c};">███</span>`).join('')
+    ].filter(v => v !== null);
+    const lines = logo.map(([c, art], i) => `<span style="color:${c};">${termEsc(art)}</span>  ${info[i] || ''}`);
+    return `<pre style="font-family:inherit;line-height:1.3;margin:0;">${lines.join('\n')}</pre>`;
+}
+
+function terminalHire() {
+    const P = TERMINAL_OWNER;
+    const e = P.education;
+    const core = P.skills.flatMap(g => g.items.slice(0, 2)).slice(0, 5).join(', ');
+    const check = (label, value, verdict) => (value ? `  <span style="color:#27c93f;">✔</span> <strong>${label}:</strong> ${termEsc(value)} <span style="color:#27c93f;">[${verdict}]</span><br>` : '');
+    return `
+<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
+<span style="color:#888;">[sudo] password for ${termEsc(TERMINAL_USER)}: </span><span style="color:#fff;">••••••••••••</span><br>
+<span style="color:#27c93f;font-weight:700;">[AUTH] Authentication successful. Elevated permissions granted!</span><br><br>
+<div style="color:#4facfe;font-weight:700;">🚀 INITIATING CANDIDATE ONBOARDING PROTOCOL...</div>
+<div style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+${check('Education', [e.degree, e.university].filter(Boolean).join(' @ '), 'VERIFIED')}${check('Core Competencies', core, 'MATCH')}${check('Track Record', P.experience.map(x => termShortOrg(x.org)).join(', '), 'PROVEN')}${check('Shipped', P.projects.length ? `${P.projects.length} projects, ${P.projects.filter(x => x.live).length} live` : '', 'DEPLOYED')}<div style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+📦 Packaging candidate payload... <span style="color:#27c93f;">Done!</span><br>
+📨 Dispatching offer transmission to <span style="color:#4facfe;font-weight:600;">${termEsc(P.contact.email || P.name)}</span>...<br><br>
+<span style="color:#27c93f;font-weight:700;font-size:14px;">🎉 CONGRATULATIONS! You've just made the best hiring decision of the year! 🤝</span><br>
+<span style="color:#888;">Tip: Type <em>open mail</em> or <em>cat contact</em> to finalize the details.</span>
+</div>`;
+}
+
+function terminalBrew(pkg) {
+    const P = TERMINAL_OWNER;
+    const deps = ['grit (&gt;= 10.0)', 'curiosity (&gt;= 99.9)', ...P.skills.flatMap(g => g.items.slice(0, 1)).slice(0, 3).map(s => `${termEsc(s.toLowerCase().replace(/\s+/g, '-'))} (latest)`)];
+    return `
+<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
+<span style="color:#4facfe;font-weight:700;">==&gt; Downloading talent/releases/v${new Date().getFullYear()}.tar.gz</span><br>
+<span style="color:#27c93f;">######################################################################## 100.0%</span><br>
+<span style="color:#4facfe;font-weight:700;">==&gt; Fetching dependencies for ${termEsc(TERMINAL_USER)}/formulae/${termEsc(pkg || 'talent')}:</span><br>
+${deps.map(d => `  <span style="color:#888;">-&gt; ${d}</span> <span style="color:#27c93f;">[installed]</span><br>`).join('')}<span style="color:#4facfe;font-weight:700;">==&gt; Pouring talent.arm64_tahoe.bottle.tar.gz</span><br>
+🍺  <span style="color:#f6d365;">/opt/homebrew/Cellar/talent: 1,337 files, 42.0MB, built in 0.42s</span><br>
+<span style="color:#ffbd2e;font-weight:700;">==&gt; Caveats</span><br>
+${termEsc(P.name)} has been successfully symlinked to your organization!<br>
+To initiate collaboration:<br>
+  $ <span style="color:#43e97b;">open mail</span><br>
+${P.projects[0] ? `  $ <span style="color:#43e97b;">open ${termEsc(P.projects[0].id)}</span><br>` : ''}  $ <span style="color:#43e97b;">cat resume.txt</span>
+</div>`;
+}
+
+function terminalHelp() {
+    const P = TERMINAL_OWNER;
+    const cmd = (c, d, color = '#4facfe') => `• <span style="color:${color}">${c}</span> — ${d}<br>`;
+    const orgs = P.experience.map(x => termShortOrg(x.org).split(' ')[0]);
+    return `
+        <strong style="color:#fff;">Available CLI Commands:</strong><br>
+        <span style="color:#888;">── Core Information ──</span><br>
+        ${cmd('neofetch', 'System card')}
+        ${cmd('whoami', 'Display author identity')}
+        ${cmd('cat resume.txt', 'Rich text-formatted resume')}
+        ${cmd('history', 'Education & career timeline')}
+        ${cmd('about me', `${termEsc(P.first)}’s background`)}
+        ${cmd('experience', orgs.length ? `Experience at ${termEsc(orgs.join(', '))}` : 'Work experience')}
+        ${cmd('projects', 'List projects')}
+        ${cmd('skills', 'Technologies & frameworks')}
+        ${cmd('contact', 'Email, phone and profiles')}
+        <br>
+        <span style="color:#888;">── Filesystem & Navigation ──</span><br>
+        ${cmd('ls / ls projects/', 'Inspect directories and project repositories')}
+        ${cmd('pwd', 'Print current working directory path')}
+        ${cmd('cd &lt;dir&gt;', 'Navigate filesystem in Finder')}
+        ${cmd('cat &lt;file&gt;', 'Read file contents (e.g. <em>cat README.txt</em>)')}
+        ${cmd('open &lt;project-name&gt;', P.projects[0] ? `Open a project (e.g. <em>open ${termEsc(P.projects[0].id)}</em>)` : 'Open a project')}
+        ${cmd('open &lt;app&gt;', 'Launch macOS apps (e.g. <em>open safari</em>, <em>open mail</em>)')}
+        ${cmd('iris / hey iris', 'Launch Iris AI Assistant ✨', '#af52de')}
+        <br>
+        <span style="color:#888;">── Builtins & Easter Eggs ──</span><br>
+        ${cmd('sudo hire-me', 'Candidate hiring transmission protocol', '#27c93f')}
+        ${cmd('brew install talent', 'Homebrew talent package manager', '#27c93f')}
+        ${cmd(`curl ${termEsc(TERMINAL_DOMAIN)}`, 'The profile, as JSON')}
+        ${cmd('date / uname / echo / clear', 'Standard shell builtins')}
+        <span style="color:#666;">↑/↓ recalls history &nbsp;·&nbsp; Tab completes commands &nbsp;·&nbsp; ⌃L clears</span>`;
+}
+
+function terminalContact() {
+    const P = TERMINAL_OWNER;
+    return [
+        P.contact.email && `Email: <a href="mailto:${termEsc(P.contact.email)}" style="color:#4facfe;">${termEsc(P.contact.email)}</a>`,
+        P.contact.phone && `Phone: ${termEsc(P.contact.phone)}`,
+        ...P.links.map(l => `${termEsc(l.label)}: <a href="${termEsc(safeUrl(l.url))}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;">${termEsc(l.url.replace(/^https?:\/\/(www\.)?/, ''))}</a>`)
+    ].filter(Boolean).join('<br>') || 'No contact details in the info bank yet.';
+}
+
+function terminalLs(args) {
+    const P = TERMINAL_OWNER;
+    const isAll = args.includes('-a') || args.includes('-la') || args.includes('-al');
+    const u = TERMINAL_USER.padEnd(12).slice(0, Math.max(12, TERMINAL_USER.length));
+    const hidden = isAll ? [
+        ['drwxr-xr-x', '12', u, 'staff', '384B', '.'],
+        ['drwxr-xr-x', ' 4', 'root'.padEnd(u.length), 'admin', '128B', '..'],
+        ['-rw-r--r--', ' 1', u, 'staff', '6.0K', '.DS_Store'],
+        ['drwxr-xr-x', '14', u, 'staff', '448B', '.git'],
+        ['-rw-r--r--', ' 1', u, 'staff', '1.2K', '.zshrc']
+    ] : [];
+    const entries = [
+        ...hidden,
+        ['drwxr-xr-x', ' 8', u, 'staff', '256B', 'projects/'],
+        ['drwxr-xr-x', ' 3', u, 'staff', ' 96B', 'experience/'],
+        ['drwxr-xr-x', ' 7', u, 'staff', '224B', 'education/'],
+        ['drwxr-xr-x', ' 4', u, 'staff', '128B', 'skills/'],
+        ['drwxr-xr-x', ' 4', u, 'staff', '128B', 'documents/'],
+        ...(P.resume.file ? [['-rw-r--r--', ' 1', u, 'staff', ' PDF', P.resume.downloadName]] : []),
+        ['-rw-r--r--', ' 1', u, 'staff', '2.4K', 'README.txt'],
+        ['-rw-r--r--', ' 1', u, 'staff', '1.8K', 'resume.txt'],
+        ...(P.values.length ? [['-rw-r--r--', ' 1', u, 'staff', '1.2K', 'Philosophy.txt']] : [])
+    ];
+    const date = new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '');
+    return '<pre style="font-family:inherit;margin:0;line-height:1.45;">' + entries.map(([perm, links, owner, group, size, name]) =>
+        `<span style="color:#666;">${perm}</span> ${links} <span style="color:#888;">${termEsc(owner)} ${group}</span>  <span style="color:#888;">${size.padStart(5)}</span>  <span style="color:#666;">${termEsc(date)}</span>  <span style="color:${name.endsWith('/') ? '#4facfe;font-weight:600' : '#f1f1f1'};">${termEsc(name)}</span>`
+    ).join('\n') + '</pre><div style="color:#666;margin-top:6px;">Tip: Run <em>ls projects/</em> to inspect repositories, or <em>open finder</em> to browse visually.</div>';
+}
 
 function handleTerminalInput(e) {
     const inputEl = document.getElementById('terminal-input');
@@ -105,590 +339,217 @@ function handleTerminalInput(e) {
         return;
     }
 
-    if (e.key === 'Enter') {
-        const inputField = document.getElementById('terminal-input');
-        if (!inputField) return;
-        const rawCmd = inputField.value.trim();
-        const cmd = rawCmd.toLowerCase();
+    if (e.key !== 'Enter') return;
 
-        if (rawCmd && terminalHistory[terminalHistory.length - 1] !== rawCmd) {
-            terminalHistory.push(rawCmd);
-        }
-        terminalHistoryIndex = -1;
-        const outputDiv = document.getElementById('terminal-output');
-        if (!outputDiv) return;
-        
-        // Echo the typed line. escapeHtml is mandatory here: this is raw user input.
-        printTerminalLine(`<span style="color:#43e97b">muditagrawal@macbook</span> <span style="color:#4facfe">~ %</span> ${escapeHtml(inputField.value)}`);
-        inputField.value = '';
-        
-        let response = '';
-        
-        if (cmd.startsWith('open ')) {
-            const rawTarget = rawCmd.slice(5).trim();
-            const target = cmd.slice(5).trim();
-            const winMap = {
-                'finder': 'finder-window',
-                'safari': 'safari-window',
-                'mail': 'mail-window',
-                'notes': 'notes-window',
-                'app store': 'appstore-window',
-                'appstore': 'appstore-window',
-                'settings': 'settings-window',
-                'system settings': 'settings-window',
-                'trash': 'trash-window',
-                'resume': 'resume-window',
-                'terminal': 'terminal-window'
-            };
-            
-            // Check if opening an app
-            if (target === 'iris' || target === 'siri' || target === 'hey iris' || target === 'hey siri') {
-                if (typeof openIris === 'function') openIris();
-                response = '<span style="color:#af52de;font-weight:600;">Opening Iris AI Assistant... ✨</span>';
-            } else if (winMap[target]) {
-                openWindow(winMap[target]);
-                response = `Opening ${escapeHtml(rawTarget)}...`;
-            } else if (target === 'resume.pdf' || target === 'resume.txt' || target === 'muditagrawalresume.pdf' || target === 'cv') {
-                if (typeof openResumeWindow === 'function') openResumeWindow();
-                else openWindow('resume-window');
-                response = 'Opening MuditAgrawalResume.pdf... 📄';
-            } else {
-                // Check if opening a project repo
-                const cleanKey = target.replace(/^projects\//, '').replace(/^proj-/, '').replace(/\/$/, '').trim();
-                const proj = PROJECT_REPOS[cleanKey];
-                if (proj) {
-                    window.open(proj.url, '_blank', 'noopener,noreferrer');
-                    const where = typeof linkHostLabel === 'function' ? linkHostLabel(proj.url) : 'the web';
-                    response = `<span style="color:#27c93f;">→ Opened <strong>${escapeHtml(proj.name)}</strong> on ${escapeHtml(where)}:</span> <a href="${escapeHtml(proj.url)}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;text-decoration:underline;">${escapeHtml(proj.url)}</a>`;
-                } else if (target.startsWith('http://') || target.startsWith('https://')) {
-                    window.open(rawTarget, '_blank', 'noopener,noreferrer');
-                    response = `Opening external URL: ${escapeHtml(rawTarget)}...`;
-                } else {
-                    response = `open: Application or project '${escapeHtml(rawTarget)}' not found.<br><span style="color:#888;">Try apps: <em>finder, safari, mail, notes, appstore, settings, resume, iris</em><br>Or projects: <em>omnidoc, vlm, slam, sliver, sword, deepfake, veritas, helix, skyguard, multiva, artifex</em></span>`;
-                }
-            }
-        } else if (cmd.startsWith('cd ') || cmd === 'cd') {
-            const dest = cmd.replace(/^cd\s*/, '').replace(/\/$/, '').trim();
-            const folders = {
-                'projects': 'projects', 'projects/': 'projects',
-                'experience': 'experience', 'experience/': 'experience',
-                'education': 'education', 'education/': 'education',
-                'skills': 'skills', 'skills/': 'skills',
-                'documents': 'documents', 'documents/': 'documents',
-                '~': 'home', '': 'home', '..': 'home', '/': 'home'
-            };
-            if (folders[dest] !== undefined) {
-                if (typeof openFinderPane === 'function') openFinderPane(folders[dest]);
-                response = `<span style="color:#888;">→ opened <strong>${escapeHtml(dest || '~')}</strong> in Finder</span>`;
-            } else {
-                response = `cd: no such file or directory: ${escapeHtml(dest)}`;
-            }
-        } else if (cmd.startsWith('cat ') || cmd === 'cat') {
-            const file = cmd.replace(/^cat\s*/, '').trim();
-            const p = window.PROFILE_DATA || {};
-            const e = p.education || {};
-            const exp = p.experience || [];
-            
-            if (file === 'resume.txt' || file === 'resume' || file === 'cv' || file === 'muditagrawalresume.pdf') {
-                const expText = exp.map(x => `  • ${x.role} — ${x.org}\n    Dates: ${x.dates}`).join('\n\n');
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#e6edf3;">
-================================================================================
-                                MUDIT AGRAWAL
-                 AI/ML Engineer & Computer Science Undergraduate
-  Email: ${p.contact?.email || 'muditagrawal03@gmail.com'}  |  Phone: ${p.contact?.phone || '+91-7289887349'}
-  GitHub: github.com/muditagrawal-alt  |  LinkedIn: linkedin.com/in/mudit-agrawal-167610318
-================================================================================
+    const inputField = document.getElementById('terminal-input');
+    if (!inputField) return;
+    const rawCmd = inputField.value.trim();
+    const cmd = rawCmd.toLowerCase();
 
-[ SUMMARY ]
-${p.bio || 'Computer Science Undergraduate (AI/ML) at IILM University, building applied AI systems that work reliably outside sandboxes — agentic pipelines, RAG systems, and computer vision.'}
-
-[ EDUCATION ]
-  • ${e.degree || 'B.Tech in Computer Science (AI/ML)'}
-    ${e.university || 'IILM University'} (${e.years || '2023 – 2027'}) — CGPA: ${e.cgpa || '7.68'}
-  • Navy Children School, New Delhi (Class XII, CBSE — 2023) — 74%
-  • Navy Children School, Mumbai (Class X, CBSE — 2021) — 89%
-
-[ WORK EXPERIENCE ]
-${exp.map(x => {
-    let s = `  • ${x.role} — ${x.org}\n    Dates: ${x.dates}`;
-    if (x.bullets && x.bullets.length) {
-        s += '\n' + x.bullets.map(b => `    - ${b}`).join('\n');
+    if (rawCmd && terminalHistory[terminalHistory.length - 1] !== rawCmd) {
+        terminalHistory.push(rawCmd);
     }
-    return s;
-}).join('\n\n')}
+    terminalHistoryIndex = -1;
+    const outputDiv = document.getElementById('terminal-output');
+    if (!outputDiv) return;
 
-[ CORE PROJECTS ]
-  • OmniDoc          - Multimodal RAG Document Intelligence System (Mistral-7B, Nomic, BLIP)
-  • Sliver.Ai        - Automated Smart Video Clipping & Facial Emotion Highlights (YOLOv8/11)
-  • Project S.W.O.R.D- Real-time Weapon Surveillance System (90.1% mAP@0.5 on 7,500 images)
-  • Deepfake Detector- Machine Learning Media Forensics & Manipulation Detection
-  • Helix-Compiler   - C-based Lexical/AST Parser, Intermediate Representation & Machine Code
-  • Multiva.Ai       - Multilingual AI Voice Cloning & Speech Synthesis (Whisper, XTTS)
+    // Echo the typed line. escapeHtml is mandatory here: this is raw user input.
+    printTerminalLine(`<span style="color:#43e97b">${escapeHtml(TERMINAL_HOST)}</span> <span style="color:#4facfe">~ %</span> ${escapeHtml(inputField.value)}`);
+    inputField.value = '';
 
-[ TECHNICAL SKILLS ]
-  • Programming: Python, Java, C, SQL
-  • Frameworks: LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
-  • Models: YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings, BGE-M3 ReRanker, SentenceTransformers
-  • Databases: PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
-  • Evaluation: RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
-  • Tools: Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
+    const P = TERMINAL_OWNER;
+    let response = '';
 
-[ ACTIONS ]
-  • Type 'open resume' or double-click Resume.pdf on desktop to view/download full PDF!
-  • Type 'open <project-name>' (e.g. 'open omnidoc') to view its GitHub repository.
-================================================================================
-</pre>`;
-            } else if (file === 'readme.txt' || file === 'readme.md' || file === 'readme') {
-                if (window.TEXT_FILES && window.TEXT_FILES.readme) {
-                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">${escapeHtml(window.TEXT_FILES.readme.body)}</pre>`;
-                } else {
-                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">README.txt: Welcome to Mudit's Portfolio Desktop. Built with pure HTML, CSS, and JS.</pre>`;
-                }
-            } else if (file === 'philosophy.txt' || file === 'philosophy') {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-PHILOSOPHY & CORE PRINCIPLES
-----------------------------
-1. Context Awareness  — Technology is only as good as the practical problem it solves.
-2. Robustness         — AI systems must hold up outside clean sandbox environments.
-3. Speed of Iteration — Prototype quickly, evaluate rigorously, refactor thoughtfully.
-4. Craftsmanship      — Every detail matters, from inference latency to micro-interactions.
-</pre>`;
-            } else if (file === 'contact' || file === 'contact.txt') {
-                response = `Email: ${p.contact?.email || 'muditagrawal03@gmail.com'}<br>Phone: ${p.contact?.phone || '+91-7289887349'}<br>LinkedIn: ${p.contact?.linkedin || ''}<br>GitHub: ${p.contact?.github || ''}`;
-            } else if (file === 'experience' || file === 'experience.txt') {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-WORK EXPERIENCE (From Resume)
---------------------------------------------------------------------------------
-1. AI/ML Intern @ Carnot Research Pvt. Ltd. (IITD Incubated Startup)
-   Dates: June 2026 – Present
-   – Architected a hybrid RAG platform (pgvector, BM25, Text-to-SQL router), cutting query latency 60s to &lt;1s.
-   – Built a dataset-agnostic ETL pipeline (Spark, Airflow) with a 3-tier OCR fallback chain across 6 languages.
-   – Integrated a 9,000+ line email/scheduling agent into production, validated via CI/CD with RAGAS and TruLens.
-   – Engineered 3 Intel-optimized RAG modes (INT8-quantized), cutting latency 2-3x while reaching 92% Recall@10.
+    if (cmd.startsWith('open ')) {
+        const rawTarget = rawCmd.slice(5).trim();
+        const target = cmd.slice(5).trim();
+        const winMap = {
+            'finder': 'finder-window',
+            'safari': 'safari-window',
+            'mail': 'mail-window',
+            'notes': 'notes-window',
+            'app store': 'appstore-window',
+            'appstore': 'appstore-window',
+            'settings': 'settings-window',
+            'system settings': 'settings-window',
+            'trash': 'trash-window',
+            'resume': 'resume-window',
+            'terminal': 'terminal-window'
+        };
 
-2. Machine Learning Intern @ Zee Tech and Innovation Centre
-   Dates: December 2025 – January 2026
-   – Engineered OmniDoc, a local multimodal RAG engine with BLIP-captioned image retrieval and intent routing.
-   – Architected a context-aware scene selector, replacing naive top-k selection with budget-optimized ranking.
-   – Built a full-stack video prototype with user auth, async job processing, and live progress tracking.
-   – Authored 2 security design specs proposing ML architectures for anomaly detection and content fingerprinting.
-
-3. Summer Intern @ WESEE, Indian Navy (Defense R&D)
-   Dates: June 2025 – July 2025
-   – Assessed in-house LLMs for naval applications within a secure defense R&D environment.
-   – Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability.
-   – Validated Retrieval-Augmented Generation (RAG) pipelines and improved contextual retrieval accuracy.
-   – Built Artifex.AI, a text-to-image tool integrating Stability AI’s SDXL 1.0 API with sub-5s latency.
-</pre>`;
-            } else if (file === 'skills' || file === 'skills.txt') {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-TECHNICAL SKILLS (From Resume)
---------------------------------------------------------------------------------
-• Programming : Python, Java, C, SQL
-• Frameworks  : LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
-• Models      : YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3, SentenceTransformers
-• Databases   : PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
-• Evaluation  : RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
-• Tools       : Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
-</pre>`;
-            } else if (file === '' || file === 'cat') {
-                response = 'cat: specify a file name. Example: <em>cat resume.txt</em> or <em>cat README.txt</em>';
-            } else {
-                response = `cat: ${escapeHtml(file)}: No such file or directory. Try: <em>cat resume.txt</em> or <em>cat README.txt</em>`;
-            }
-        } else if (cmd.startsWith('echo ')) {
-            response = escapeHtml(rawCmd.slice(5));
-        } else if (cmd === 'iris' || cmd === 'hey iris' || cmd === 'siri' || cmd === 'hey siri') {
+        if (target === 'iris' || target === 'siri' || target === 'hey iris' || target === 'hey siri') {
             if (typeof openIris === 'function') openIris();
             response = '<span style="color:#af52de;font-weight:600;">Opening Iris AI Assistant... ✨</span>';
-        } else if (cmd.startsWith('ls') || cmd.startsWith('dir')) {
-            const args = cmd.replace(/^(ls|dir)\s*/, '').trim();
-            if (args === 'projects' || args === 'projects/' || args === './projects' || args === './projects/' || args.includes('projects')) {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;">
-total 10 projects
-drwxr-xr-x   9 muditagrawal  staff   288B  Jan 15 14:20  <span style="color:#4facfe;font-weight:600;">OmniDoc</span>/            <span style="color:#888;"># Multimodal RAG Document Intelligence System</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Feb 12 16:30  <span style="color:#4facfe;font-weight:600;">VLM-Leads</span>/          <span style="color:#10b981;"># Live Vercel Vision-Language Lead Extraction</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Jan 28 12:15  <span style="color:#4facfe;font-weight:600;">Monocular-SLAM</span>/     <span style="color:#888;"># Sparse 3D Point Cloud Reconstruction SLAM</span>
-drwxr-xr-x   8 muditagrawal  staff   256B  Jan 10 11:05  <span style="color:#4facfe;font-weight:600;">Sliver.Ai</span>/          <span style="color:#888;"># Smart Video Clipping & Facial Highlights</span>
-drwxr-xr-x  11 muditagrawal  staff   352B  Dec 28 18:40  <span style="color:#4facfe;font-weight:600;">Project-S.W.O.R.D</span>/  <span style="color:#888;"># Real-Time Weapon Surveillance System</span>
-drwxr-xr-x   7 muditagrawal  staff   224B  Nov 20 09:15  <span style="color:#4facfe;font-weight:600;">Deepfake-Detector</span>/  <span style="color:#888;"># Media Forensics & Fake News Detection (Live)</span>
-drwxr-xr-x  14 muditagrawal  staff   448B  Oct 30 16:50  <span style="color:#4facfe;font-weight:600;">Helix-Compiler</span>/     <span style="color:#888;"># C-Based Language Compiler (Live Space)</span>
-drwxr-xr-x   7 muditagrawal  staff   224B  Oct 22 15:40  <span style="color:#4facfe;font-weight:600;">Skyguard-AI</span>/        <span style="color:#888;"># Airspace Threat & Drone Detection (SIH 2026)</span>
-drwxr-xr-x   6 muditagrawal  staff   192B  Oct 12 13:30  <span style="color:#4facfe;font-weight:600;">Multiva.Ai</span>/         <span style="color:#888;"># Multilingual AI Voice Cloning (Whisper/XTTS)</span>
-drwxr-xr-x   5 muditagrawal  staff   160B  Sep 05 12:00  <span style="color:#4facfe;font-weight:600;">Artifex</span>/            <span style="color:#888;"># Generative AI Creative Design Platform</span>
-</pre>
-<div style="color:#888;margin-top:6px;">💡 Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <span style="color:#43e97b">open vlm</span>) to navigate to its live demo or GitHub!</div>
-`;
-            } else if (args === 'experience' || args === 'experience/' || args.includes('experience')) {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-<strong style="color:#4facfe;">[ WORK EXPERIENCE — FROM RESUME ]</strong>
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-<span style="color:#ffbd2e;font-weight:700;">1. AI/ML Intern @ Carnot Research Pvt. Ltd. (IITD Incubated Startup)</span>
-   <span style="color:#888;">Dates: June 2026 – Present</span>
-   – Architected a hybrid RAG platform (pgvector, BM25, Text-to-SQL router), cutting query latency 60s to &lt;1s.
-   – Built a dataset-agnostic ETL pipeline (Spark, Airflow) with a 3-tier OCR fallback chain across 6 languages.
-   – Integrated a 9,000+ line email/scheduling agent into production, validated via CI/CD with RAGAS and TruLens.
-   – Engineered 3 Intel-optimized RAG modes (INT8-quantized), cutting latency 2-3x while reaching 92% Recall@10.
-
-<span style="color:#ffbd2e;font-weight:700;">2. Machine Learning Intern @ Zee Tech and Innovation Centre</span>
-   <span style="color:#888;">Dates: December 2025 – January 2026</span>
-   – Engineered OmniDoc, a local multimodal RAG engine with BLIP-captioned image retrieval and intent routing.
-   – Architected a context-aware scene selector, replacing naive top-k selection with budget-optimized ranking.
-   – Built a full-stack video prototype with user auth, async job processing, and live progress tracking.
-   – Authored 2 security design specs proposing ML architectures for anomaly detection and content fingerprinting.
-
-<span style="color:#ffbd2e;font-weight:700;">3. Summer Intern @ WESEE, Indian Navy (Defense R&D)</span>
-   <span style="color:#888;">Dates: June 2025 – July 2025</span>
-   – Assessed in-house LLMs for naval applications within a secure defense R&D environment.
-   – Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability.
-   – Validated Retrieval-Augmented Generation (RAG) pipelines and improved contextual retrieval accuracy.
-   – Built Artifex.AI, a text-to-image tool integrating Stability AI’s SDXL 1.0 API with sub-5s latency.
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-</pre>
-`;
-            } else if (args === 'skills' || args === 'skills/' || args.includes('skills')) {
-                response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-<strong style="color:#4facfe;">[ TECHNICAL SKILLS — FROM RESUME ]</strong>
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-<span style="color:#ffbd2e;font-weight:700;">• Programming:</span>
-  Python, Java, C, SQL
-
-<span style="color:#ffbd2e;font-weight:700;">• Frameworks & ML:</span>
-  LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy
-
-<span style="color:#ffbd2e;font-weight:700;">• AI Models & Architectures:</span>
-  YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings, BGE-M3 ReRanker, SentenceTransformers
-
-<span style="color:#ffbd2e;font-weight:700;">• Databases & Vector Stores:</span>
-  PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB
-
-<span style="color:#ffbd2e;font-weight:700;">• Evaluation & Validation:</span>
-  RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA
-
-<span style="color:#ffbd2e;font-weight:700;">• Tools, DevOps & Cloud:</span>
-  Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-</pre>
-`;
-            } else {
-                const isAll = args.includes('-a') || args.includes('-la') || args.includes('-al');
-                const hidden = isAll ? [
-                    ['drwxr-xr-x', '12', 'muditagrawal', 'staff', '384B', 'Aug 23 01:15', '.'],
-                    ['drwxr-xr-x', ' 4', 'root        ', 'admin', '128B', 'Aug 23 01:15', '..'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', '6.0K', 'Aug 23 01:15', '.DS_Store'],
-                    ['drwxr-xr-x', '14', 'muditagrawal', 'staff', '448B', 'Aug 23 01:15', '.git'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', '1.2K', 'Aug 23 01:15', '.zshrc']
-                ] : [];
-                
-                const entries = [
-                    ...hidden,
-                    ['drwxr-xr-x', ' 8', 'muditagrawal', 'staff', '256B', 'Aug 23 01:15', 'projects/'],
-                    ['drwxr-xr-x', ' 3', 'muditagrawal', 'staff', ' 96B', 'Aug 23 01:15', 'experience/'],
-                    ['drwxr-xr-x', ' 7', 'muditagrawal', 'staff', '224B', 'Aug 23 01:15', 'education/'],
-                    ['drwxr-xr-x', ' 4', 'muditagrawal', 'staff', '128B', 'Aug 23 01:15', 'skills/'],
-                    ['drwxr-xr-x', ' 4', 'muditagrawal', 'staff', '128B', 'Aug 23 01:15', 'documents/'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', ' 58K', 'Aug 23 01:15', 'MuditAgrawalResume.pdf'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', '2.4K', 'Aug 23 01:15', 'README.txt'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', '1.8K', 'Aug 23 01:15', 'resume.txt'],
-                    ['-rw-r--r--', ' 1', 'muditagrawal', 'staff', '1.2K', 'Aug 23 01:15', 'Philosophy.txt']
-                ];
-                
-                response = '<pre style="font-family:inherit;margin:0;line-height:1.45;">' + entries.map(([perm, links, owner, group, size, date, name]) =>
-                    `<span style="color:#666;">${perm}</span> ${links} <span style="color:#888;">${owner} ${group}</span>  <span style="color:#888;">${size.padStart(5)}</span>  <span style="color:#666;">${date}</span>  <span style="color:${name.endsWith('/') ? '#4facfe;font-weight:600' : (name.startsWith('.') ? '#666' : '#f1f1f1')};">${name}</span>`
-                ).join('\n') + '</pre><div style="color:#666;margin-top:6px;">Tip: Run <em>ls projects/</em> to inspect repositories, or <em>open finder</em> to browse visually.</div>';
-            }
-        } else if (cmd.startsWith('brew install') || cmd === 'brew') {
-            const targetPkg = cmd.replace(/^brew\s*install\s*/, '').trim();
-            response = `
-<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
-<span style="color:#4facfe;font-weight:700;">==&gt; Downloading https://github.com/muditagrawal-alt/talent/releases/v2026.8.tar.gz</span><br>
-<span style="color:#27c93f;">######################################################################## 100.0%</span><br>
-<span style="color:#4facfe;font-weight:700;">==&gt; Fetching dependencies for mudit-agrawal/formulae/${escapeHtml(targetPkg || 'talent')}:</span><br>
-  <span style="color:#888;">-&gt; grit (&gt;= 10.0)</span> <span style="color:#27c93f;">[installed]</span><br>
-  <span style="color:#888;">-&gt; curiosity (&gt;= 99.9)</span> <span style="color:#27c93f;">[installed]</span><br>
-  <span style="color:#888;">-&gt; pytorch-gpu (&gt;= 2.4)</span> <span style="color:#27c93f;">[installed]</span><br>
-  <span style="color:#888;">-&gt; multimodal-rag-engine (&gt;= 1.0)</span> <span style="color:#27c93f;">[installed]</span><br>
-  <span style="color:#888;">-&gt; agentic-workflows (&gt;= 3.0)</span> <span style="color:#27c93f;">[installed]</span><br>
-<span style="color:#4facfe;font-weight:700;">==&gt; Pouring talent--2026.8.23.arm64_sequoia.bottle.tar.gz</span><br>
-🍺  <span style="color:#f6d365;">/opt/homebrew/Cellar/talent/2026.8.23: 1,337 files, 42.0MB, built in 0.42s</span><br>
-<span style="color:#4facfe;font-weight:700;">==&gt; Running post-install steps for talent...</span><br>
-<span style="color:#27c93f;">✔</span> Neural weights loaded into high-priority memory.<br>
-<span style="color:#27c93f;">✔</span> Ready to build and deploy high-impact AI/ML systems on Day 1.<br><br>
-<span style="color:#ffbd2e;font-weight:700;">==&gt; Caveats</span><br>
-Mudit Agrawal has been successfully symlinked to your engineering organization!<br>
-To initiate collaboration:<br>
-  $ <span style="color:#43e97b;">open mail</span><br>
-  $ <span style="color:#43e97b;">open omnidoc</span><br>
-  $ <span style="color:#43e97b;">cat resume.txt</span>
-</div>
-`;
+        } else if (winMap[target]) {
+            openWindow(winMap[target]);
+            response = `Opening ${escapeHtml(rawTarget)}...`;
+        } else if (['resume.pdf', 'resume.txt', 'cv', P.resume.downloadName.toLowerCase()].filter(Boolean).includes(target)) {
+            if (typeof openResumeWindow === 'function') openResumeWindow();
+            else openWindow('resume-window');
+            response = `Opening ${escapeHtml(P.resume.downloadName || 'résumé')}... 📄`;
         } else {
-            switch(cmd) {
-                case 'help':
-                case 'man':
-                    response = `
-                        <strong style="color:#fff;">Available CLI Commands:</strong><br>
-                        <span style="color:#888;">── Core Information ──</span><br>
-                        • <span style="color:#4facfe">neofetch</span> — System card<br>
-                        • <span style="color:#4facfe">whoami</span> — Display author identity<br>
-                        • <span style="color:#4facfe">cat resume.txt</span> — Rich text-formatted resume<br>
-                        • <span style="color:#4facfe">history</span> — Chronological career & project timeline<br>
-                        • <span style="color:#4facfe">about me</span> — Mudit's brief background bio<br>
-                        • <span style="color:#4facfe">experience</span> — Internship history at Carnot, Zee & WESEE<br>
-                        • <span style="color:#4facfe">projects</span> — List core AI/ML repositories<br>
-                        • <span style="color:#4facfe">skills</span> — Technologies & frameworks stack<br>
-                        • <span style="color:#4facfe">contact</span> — Email, phone, GitHub & LinkedIn<br>
-                        <br>
-                        <span style="color:#888;">── Filesystem & Navigation ──</span><br>
-                        • <span style="color:#4facfe">ls / ls projects/</span> — Inspect directories and project repositories<br>
-                        • <span style="color:#4facfe">pwd</span> — Print current working directory path<br>
-                        • <span style="color:#4facfe">cd &lt;dir&gt;</span> — Navigate filesystem in Finder<br>
-                        • <span style="color:#4facfe">cat &lt;file&gt;</span> — Read file contents (e.g. <em>cat README.txt</em>)<br>
-                        • <span style="color:#4facfe">open &lt;project-name&gt;</span> — Open project GitHub repo (e.g. <em>open omnidoc</em>)<br>
-                        • <span style="color:#4facfe">open &lt;app&gt;</span> — Launch macOS apps (e.g. <em>open safari</em>, <em>open mail</em>)<br>
-                        • <span style="color:#af52de">iris / hey iris</span> — Launch Iris AI Assistant ✨<br>
-                        <br>
-                        <span style="color:#888;">── Builtins & Easter Eggs ──</span><br>
-                        • <span style="color:#27c93f">sudo hire-me</span> — Candidate hiring transmission protocol<br>
-                        • <span style="color:#27c93f">brew install talent</span> — Homebrew talent package manager<br>
-                        • <span style="color:#4facfe">curl mudit.dev</span> — The profile, as JSON<br>
-                        • <span style="color:#4facfe">date / uname / echo / clear</span> — Standard shell builtins<br>
-                        <span style="color:#666;">↑/↓ recalls history &nbsp;·&nbsp; Tab completes commands &nbsp;·&nbsp; ⌃L clears</span>
-                    `;
-                    break;
-                case 'neofetch': {
-                    const p = window.PROFILE_DATA || {};
-                    const e = p.education || {};
-                    const orgs = (p.experience || []).map(x => x.org.split(' (')[0].replace(' Pvt. Ltd.', '')).join(' · ');
-                    const row = (k, v) => `<span style="color:#f6d365;font-weight:600;">${k}:</span> ${escapeHtml(v)}`;
-                    const logo = [
-                        ['#34c759', "                    'c.          "],
-                        ['#34c759', "                 ,xNMM.          "],
-                        ['#34c759', "               .OMMMMo           "],
-                        ['#34c759', "               OMMM0,            "],
-                        ['#ffcc00', "     .;loddo:' loolloddol;.      "],
-                        ['#ffcc00', "   cKMMMMMMMMMMNWMMMMMMMMMM0:    "],
-                        ['#ff9500', " .KMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
-                        ['#ff9500', " XMMMMMMMMMMMMMMMMMMMMMMMX.      "],
-                        ['#ff3b30', ";MMMMMMMMMMMMMMMMMMMMMMMM:       "],
-                        ['#ff3b30', ":MMMMMMMMMMMMMMMMMMMMMMMM:       "],
-                        ['#af52de', ".MMMMMMMMMMMMMMMMMMMMMMMMX.      "],
-                        ['#af52de', " kMMMMMMMMMMMMMMMMMMMMMMMMWd.    "],
-                        ['#007aff', " .XMMMMMMMMMMMMMMMMMMMMMMMMMMk   "],
-                        ['#007aff', "  .XMMMMMMMMMMMMMMMMMMMMMMMMK.   "],
-                        ['#007aff', "    kMMMMMMMMMMMMMMMMMMMMMMd     "],
-                        ['#007aff', "     ;KMMMMMMMWXXWMMMMMMMk.      "],
-                        ['#007aff', "       .cooc,.    .,coo:.        "]
-                    ];
-                    const info = [
-                        `<span style="color:#fff;font-weight:700;">muditagrawal</span><span style="color:#888;">@</span><span style="color:#4facfe;font-weight:700;">macbook-pro</span>`,
-                        `<span style="color:#555;">-------------------------</span>`,
-                        row('OS', 'macOS Portfolio Edition'),
-                        row('Host', 'Vanilla HTML · CSS · JavaScript'),
-                        row('Shell', 'zsh 5.9'),
-                        row('Role', p.tagline || 'AI/ML Engineer'),
-                        row('Education', `${e.degree || ''} @ ${e.university || ''}`),
-                        row('CGPA', e.cgpa || ''),
-                        row('Experience', orgs),
-                        row('Focus', 'Agentic & RAG systems, computer vision'),
-                        row('Email', (p.contact || {}).email || ''),
-                        row('GitHub', ((p.contact || {}).github || '').replace(/^https?:\/\//, '')),
-                        '',
-                        ['#ff5f56', '#ffbd2e', '#27c93f', '#4facfe', '#00f2fe', '#af52de', '#ff758c', '#ffffff'].map(c => `<span style="color:${c};">███</span>`).join('')
-                    ];
-                    const lines = logo.map(([c, art], i) => `<span style="color:${c};">${escapeHtml(art)}</span>  ${info[i] || ''}`);
-                    response = `<pre style="font-family:inherit;line-height:1.3;margin:0;">${lines.join('\n')}</pre>`;
-                    break;
-                }
-                case 'curl mudit.dev':
-                case 'curl -i mudit.dev':
-                case 'curl https://mudit.dev': {
-                    const p = window.PROFILE_DATA || {};
-                    const body = {
-                        name: p.name, role: p.tagline,
-                        now: (p.experience || [])[0] ? `${p.experience[0].role} @ ${p.experience[0].org}` : undefined,
-                        education: p.education ? `${p.education.degree}, ${p.education.university}` : undefined,
-                        contact: p.contact,
-                        hiring: 'open — try `sudo hire-me`'
-                    };
-                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;"><span style="color:#888;">HTTP/2 200
+            const found = findTerminalTarget(target);
+            if (found) {
+                window.open(found.url, '_blank', 'noopener,noreferrer');
+                const where = typeof linkHostLabel === 'function' ? linkHostLabel(found.url) : 'the web';
+                response = `<span style="color:#27c93f;">→ Opened <strong>${escapeHtml(found.name)}</strong> on ${escapeHtml(where)}:</span> <a href="${escapeHtml(safeUrl(found.url))}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;text-decoration:underline;">${escapeHtml(found.url)}</a>`;
+            } else if (target.startsWith('http://') || target.startsWith('https://')) {
+                window.open(rawTarget, '_blank', 'noopener,noreferrer');
+                response = `Opening external URL: ${escapeHtml(rawTarget)}...`;
+            } else {
+                response = `open: Application or project '${escapeHtml(rawTarget)}' not found.<br><span style="color:#888;">Try apps: <em>finder, safari, mail, notes, appstore, settings, resume, iris</em>${P.projects.length ? `<br>Or projects: <em>${escapeHtml(P.projects.map(x => x.id).join(', '))}</em>` : ''}</span>`;
+            }
+        }
+    } else if (cmd.startsWith('cd ') || cmd === 'cd') {
+        const dest = cmd.replace(/^cd\s*/, '').replace(/\/$/, '').trim();
+        const folders = {
+            'projects': 'projects', 'experience': 'experience', 'education': 'education',
+            'skills': 'skills', 'documents': 'documents',
+            '~': 'home', '': 'home', '..': 'home', '/': 'home'
+        };
+        if (folders[dest] !== undefined) {
+            if (typeof openFinderPane === 'function') openFinderPane(folders[dest]);
+            response = `<span style="color:#888;">→ opened <strong>${escapeHtml(dest || '~')}</strong> in Finder</span>`;
+        } else {
+            response = `cd: no such file or directory: ${escapeHtml(dest)}`;
+        }
+    } else if (cmd.startsWith('cat ') || cmd === 'cat') {
+        const file = cmd.replace(/^cat\s*/, '').trim();
+        if (['resume.txt', 'resume', 'cv', P.resume.downloadName.toLowerCase()].filter(Boolean).includes(file)) {
+            response = terminalResume();
+        } else if (file === 'readme.txt' || file === 'readme.md' || file === 'readme') {
+            response = termPre(escapeHtml(window.TEXT_FILES.readme.body));
+        } else if ((file === 'philosophy.txt' || file === 'philosophy' || file === 'values.txt') && P.values.length) {
+            response = termPre(`PHILOSOPHY & CORE PRINCIPLES\n----------------------------\n${P.values.map((v, i) => `${i + 1}. ${escapeHtml(v)}`).join('\n')}`);
+        } else if (file === 'contact' || file === 'contact.txt') {
+            response = terminalContact();
+        } else if (file === 'experience' || file === 'experience.txt') {
+            response = terminalExperience();
+        } else if (file === 'skills' || file === 'skills.txt') {
+            response = terminalSkills();
+        } else if (file === '' || file === 'cat') {
+            response = 'cat: specify a file name. Example: <em>cat resume.txt</em> or <em>cat README.txt</em>';
+        } else {
+            response = `cat: ${escapeHtml(file)}: No such file or directory. Try: <em>cat resume.txt</em> or <em>cat README.txt</em>`;
+        }
+    } else if (cmd.startsWith('echo ')) {
+        response = escapeHtml(rawCmd.slice(5));
+    } else if (cmd === 'iris' || cmd === 'hey iris' || cmd === 'siri' || cmd === 'hey siri') {
+        if (typeof openIris === 'function') openIris();
+        response = '<span style="color:#af52de;font-weight:600;">Opening Iris AI Assistant... ✨</span>';
+    } else if (cmd.startsWith('ls') || cmd.startsWith('dir')) {
+        const args = cmd.replace(/^(ls|dir)\s*/, '').trim();
+        if (args.includes('projects')) response = terminalProjectListing();
+        else if (args.includes('experience')) response = terminalExperience('WORK EXPERIENCE — FROM RESUME');
+        else if (args.includes('skills')) response = terminalSkills();
+        else response = terminalLs(args);
+    } else if (cmd.startsWith('brew install') || cmd === 'brew') {
+        response = terminalBrew(cmd.replace(/^brew\s*install\s*/, '').trim());
+    } else if (cmd === 'curl') {
+        response = `curl: try <em>curl ${escapeHtml(TERMINAL_DOMAIN)}</em>`;
+    } else if (cmd.startsWith('curl ') && /\b(me|profile|whoami)\b|\.dev\b/.test(cmd)) {
+        const body = {
+            name: P.name, role: P.tagline,
+            now: P.experience[0] ? `${P.experience[0].role} @ ${P.experience[0].org}` : undefined,
+            education: P.education.degree ? [P.education.degree, P.education.university].filter(Boolean).join(', ') : undefined,
+            contact: { email: P.contact.email || undefined, phone: P.contact.phone || undefined },
+            links: Object.fromEntries(P.links.map(l => [l.network, l.url])),
+            hiring: 'open — try `sudo hire-me`'
+        };
+        response = `<pre style="font-family:inherit;margin:0;line-height:1.45;"><span style="color:#888;">HTTP/2 200
 content-type: application/json; charset=utf-8
 x-powered-by: curiosity</span>
 
 ${escapeHtml(JSON.stringify(body, null, 2))}</pre>`;
-                    break;
-                }
-                case 'whoami':
-                    response = 'Mudit Agrawal';
-                    break;
-                case 'pwd':
-                    response = '/Users/muditagrawal/portfolio';
-                    break;
-                case 'date':
-                    response = new Date().toString();
-                    break;
-                case 'uname':
-                case 'uname -a':
-                    response = 'Darwin macbook-pro 25.0.0 macOS Mudit 1.0 (Portfolio Edition) arm64';
-                    break;
-                case 'history':
-                    response = `
-<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">
-<strong style="color:#4facfe;">[ MUDIT AGRAWAL — CAREER & PROJECT TIMELINE ]</strong>
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-<span style="color:#ffbd2e;font-weight:700;">• 2020 – 2023 [10TH & 12TH GRADE]</span>
-  └─ <strong>Navy Children School, Mumbai & New Delhi</strong> (Class X: 89%, Class XII: 74%)
-     Developed foundational knowledge of science and got inspired to pursue engineering in Computer Science.
-
-<span style="color:#ffbd2e;font-weight:700;">• 2023 – Present [B.TECH IN CSE (AI/ML)]</span>
-  └─ <strong>B.Tech in Computer Science (AI/ML) @ IILM University</strong> (CGPA: 7.68)
-     Pursuing engineering with deep focus on core systems, deep learning algorithms, applied math, and machine learning pipelines.
-
-<span style="color:#ffbd2e;font-weight:700;">• June 2025 – July 2025 [1ST INTERNSHIP: WESEE, INDIAN NAVY]</span>
-  └─ <strong>Summer Intern @ WESEE, Indian Navy (Defense R&D)</strong>
-     Assessed in-house LLMs for naval applications within a secure defense R&D environment.
-     Identified bugs, inconsistencies, and logic failures in model outputs for mission-critical reliability, and validated Retrieval-Augmented Generation (RAG) pipelines.
-     During this period, created <strong>Artifex.AI</strong> (SDXL 1.0 text-to-image API) and a Pokémon guessing game.
-
-<span style="color:#ffbd2e;font-weight:700;">• October 2025 [FIRST PROTOTYPE OF S.W.O.R.D]</span>
-  └─ Engineered the first prototype of <strong>Project S.W.O.R.D</strong> (Surveillance for Weapon Observation using Real-Time Deep Learning)
-     with baseline YOLOv8 real-time detection on security feeds.
-
-<span style="color:#ffbd2e;font-weight:700;">• December 2025 – January 2026 [2ND INTERNSHIP: ZEE TECH & INNOVATION CENTRE]</span>
-  └─ <strong>Machine Learning Intern @ Zee Tech and Innovation Centre</strong>
-     Engineered <strong>OmniDoc</strong> (local multimodal RAG engine with BLIP-captioned image retrieval and intent routing) and context-aware scene selector.
-     Also worked on <strong>Sliver.Ai</strong> smart video clipping with facial emotion recognition.
-
-<span style="color:#ffbd2e;font-weight:700;">• February 2026 [MULTIVA.AI VOICE CLONING PLATFORM]</span>
-  └─ Started working on <strong>Multiva.Ai</strong> — developing an async 11-stage voice cloning and dubbing pipeline
-     using Whisper, NLLB-200, OpenVoice, Wav2Lip, and custom ROI face compositing (5ms/frame).
-
-<span style="color:#ffbd2e;font-weight:700;">• April 2026 [SECOND PROTOTYPE OF S.W.O.R.D]</span>
-  └─ Built second prototype of <strong>Project S.W.O.R.D</strong> using YOLOv26m, achieving 90.1% mAP@0.5 and 82.4% recall,
-     7.4ms (135 FPS) inference speed, CCTV low-light augmentation, and Jetson Nano/Coral TPU edge deployment.
-
-<span style="color:#ffbd2e;font-weight:700;">• June 2026 – Present [3RD INTERNSHIP: CARNOT RESEARCH (IITD-INCUBATED STARTUP)]</span>
-  └─ <strong>AI/ML Intern @ Carnot Research Pvt. Ltd. (IIT Delhi Incubated Startup)</strong>
-     Worked on <strong>AgenticOS:HARNESS</strong> (9,000+ line email/scheduling agent validated with RAGAS and TruLens)
-     and production hybrid RAG systems (pgvector, BM25, Text-to-SQL router) cutting query latency 60s to &lt;1s.
-
-<span style="color:#27c93f;font-weight:700;">• FUTURE [YOUR TEAM?]</span>
-  └─ Ready to deploy production AI systems with high impact outside sandboxes!
-     <em>Type 'sudo hire-me' or 'brew install talent' to trigger candidate protocol 🚀</em>
-<span style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-</pre>
-`;
-                    break;
-                case 'sudo hire-me':
-                case 'sudo hire':
-                case 'hire-me':
-                case 'hire': {
-                    const p = window.PROFILE_DATA || {};
-                    response = `
-<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
-<span style="color:#888;">[sudo] password for muditagrawal: </span><span style="color:#fff;">••••••••••••</span><br>
-<span style="color:#27c93f;font-weight:700;">[AUTH] Authentication successful. Elevated permissions granted!</span><br><br>
-<div style="color:#4facfe;font-weight:700;">🚀 INITIATING CANDIDATE ONBOARDING PROTOCOL...</div>
-<div style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-  <span style="color:#27c93f;">✔</span> <strong>Education Verification:</strong> B.Tech CSE (AI/ML) @ IILM University <span style="color:#27c93f;">[VERIFIED]</span><br>
-  <span style="color:#27c93f;">✔</span> <strong>Core Competencies:</strong> Multimodal RAG, CV (YOLO), PyTorch, C, LLM Agents <span style="color:#27c93f;">[100% MATCH]</span><br>
-  <span style="color:#27c93f;">✔</span> <strong>Track Record:</strong> Carnot Research (IIT-D), Zee Tech, WESEE (Navy R&D) <span style="color:#27c93f;">[PROVEN]</span><br>
-  <span style="color:#27c93f;">✔</span> <strong>Culture Fit:</strong> High grit, rapid execution, ships outside sandboxes <span style="color:#27c93f;">[EXCEPTIONAL]</span><br>
-<div style="color:#555;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-📦 Packaging candidate payload... <span style="color:#27c93f;">Done!</span><br>
-📨 Dispatching offer transmission to <span style="color:#4facfe;font-weight:600;">${p.contact?.email || 'muditagrawal03@gmail.com'}</span>...<br><br>
-<span style="color:#27c93f;font-weight:700;font-size:14px;">🎉 CONGRATULATIONS! You've just made the best hiring decision of the year! 🤝</span><br>
-<span style="color:#888;">Tip: Type <em>open mail</em> or <em>cat contact</em> to finalize the details.</span>
-</div>
-`;
-                    break;
-                }
-                case 'about me':
-                case 'about': {
-                    const p = window.PROFILE_DATA || {};
-                    response = `${p.name || 'Mudit Agrawal'}. ${p.bio || ''}`;
-                    break;
-                }
-                case 'experience': {
-                    const p = window.PROFILE_DATA || {};
-                    response = (p.experience || []).map(e => {
-                        let text = `<div style="margin-bottom:8px;">• <strong style="color:#4facfe;">${escapeHtml(e.role)}</strong> @ ${escapeHtml(e.org)} <span style="color:#888;">(${escapeHtml(e.dates)})</span>`;
-                        if (e.bullets) {
-                            text += `<div style="padding-left:14px;color:#ccc;margin-top:2px;">` + e.bullets.map(b => `– ${escapeHtml(b)}`).join('<br>') + `</div>`;
-                        }
-                        text += `</div>`;
-                        return text;
-                    }).join('');
-                    break;
-                }
-                case 'education': {
-                    const p = window.PROFILE_DATA || {};
-                    response = `- <strong>${p.education?.degree || 'B.Tech in Computer Science (AI/ML)'}</strong>, ${p.education?.university || 'IILM University'} (${p.education?.years || '2023 - 2027'}) — CGPA ${p.education?.cgpa || '7.68'}<br>- Class 12, Navy Children School, New Delhi (2023) — 74%<br>- Class 10, Navy Children School, Mumbai (2021) — 89%`;
-                    break;
-                }
-                case 'projects':
-                    response = '• <strong style="color:#4facfe;">OmniDoc</strong> — Multimodal RAG Document Intelligence System<br>• <strong style="color:#10b981;">VLM Leads (Live)</strong> — Vision-Language Business Card Lead Extraction (Vercel)<br>• <strong style="color:#4facfe;">Monocular SLAM</strong> — Sparse 3D Point Cloud Reconstruction<br>• <strong style="color:#4facfe;">Sliver.Ai</strong> — Smart Video Clipping & Facial Highlights<br>• <strong style="color:#4facfe;">Project S.W.O.R.D</strong> — Real-Time Weapon Surveillance System<br>• <strong style="color:#4facfe;">Deepfake Detector (Live)</strong> — Media Forensics & Fake News Detection<br>• <strong style="color:#4facfe;">Helix-Compiler (Live)</strong> — C-Based Language Compiler & Playground<br>• <strong style="color:#4facfe;">Skyguard AI</strong> — Airspace Threat & Drone Detection (SIH 2026)<br>• <strong style="color:#4facfe;">Multiva.Ai</strong> — Multilingual AI Voice Cloning<br>• <strong style="color:#4facfe;">Artifex</strong> — Generative AI Creative Design Platform<br><span style="color:#888;">Tip: Type <em>open &lt;project-name&gt;</em> (e.g. <em>open vlm</em>) to launch demo or repo!</span>';
-                    break;
-                case 'skills':
-                    response = `
-<div style="font-family:inherit;line-height:1.45;color:#f1f1f1;">
-<strong style="color:#4facfe;">[ TECHNICAL SKILLS ]</strong><br>
-• <strong style="color:#ffbd2e;">Programming:</strong> Python, Java, C, SQL<br>
-• <strong style="color:#ffbd2e;">Frameworks & ML:</strong> LangChain, PyTorch, TensorFlow, Keras, Scikit-Learn, OpenCV, NumPy, Pandas, Matplotlib, Docling, PySpark, FAISS, Flask, FastAPI, SQLAlchemy<br>
-• <strong style="color:#ffbd2e;">AI Models:</strong> YOLOv8/11/26, Whisper (CTranslate2), Coqui XTTS, OpenVoice, BLIP, Mistral-7B, Gemma4, Qwen 2.5, Wav2Lip, FB-NLLB, BGE-M3 Embeddings/ReRanker, SentenceTransformers<br>
-• <strong style="color:#ffbd2e;">Databases:</strong> PostgreSQL, ChromaDB, SQLite, Elasticsearch, Qdrant, MongoDB<br>
-• <strong style="color:#ffbd2e;">Evaluation:</strong> RAGAS, TruLens, BIER, PyTest, CI/CD, InfoVQA<br>
-• <strong style="color:#ffbd2e;">Tools & Cloud:</strong> Git, Docker, OAuth2.0, Cloudflare R2, Ollama, Groq, Google Calendar API, Gradio, Streamlit, Firebase, Supabase, Apache Airflow, Apache Spark, MistralOCR, FFmpeg, Claude
-</div>`;
-                    break;
-                case 'contact': {
-                    const p = window.PROFILE_DATA || {};
-                    response = `Email: <a href="mailto:${p.contact?.email || 'muditagrawal03@gmail.com'}" style="color:#4facfe;">${p.contact?.email || 'muditagrawal03@gmail.com'}</a><br>Phone: ${p.contact?.phone || '+91-7289887349'}<br>LinkedIn: <a href="${p.contact?.linkedin || ''}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;">${p.contact?.linkedin || ''}</a><br>GitHub: <a href="${p.contact?.github || ''}" target="_blank" rel="noopener noreferrer" style="color:#4facfe;">${p.contact?.github || ''}</a>`;
-                    break;
-                }
-                case 'git status':
-                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;">On branch main\nYour branch is up to date with 'origin/main'.\n\nChanges not staged for commit:\n  (use "git add &lt;file&gt;..." to update what will be committed)\n\t<span style="color:#27c93f;">modified:   portfolio-v2.0 (macOS Tahoe Edition)</span>\n\nno changes added to commit (use "git commit -a")</pre>`;
-                    break;
-                case 'git log':
-                    response = `<pre style="font-family:inherit;margin:0;line-height:1.45;color:#f1f1f1;"><span style="color:#f6d365;">commit 8f2d91a</span> (HEAD -> main, origin/main)\nAuthor: Mudit Agrawal &lt;muditagrawal03@gmail.com&gt;\nDate:   Sun Aug 23 2026\n\n    feat: authentic macOS terminal CLI with easter eggs and RAG systems\n\n<span style="color:#f6d365;">commit 3c7e14b</span>\nAuthor: Mudit Agrawal &lt;muditagrawal03@gmail.com&gt;\nDate:   Fri Jan 15 2026\n\n    feat: release OmniDoc Multimodal RAG document intelligence</pre>`;
-                    break;
-                case 'matrix':
-                    response = `<div style="color:#27c93f;font-family:monospace;line-height:1.2;font-size:11px;">01001101 01110101 01100100 01101001 01110100<br>W A K E   U P ,   N E O . . .<br>T H E   M A T R I X   H A S   Y O U . . .<br>F O L L O W   T H E   W H I T E   R A B B I T 🐇</div>`;
-                    break;
-                case 'curl':
-                    response = `curl: try <em>curl mudit.dev</em>`;
-                    break;
-                case 'clear':
-                    outputDiv.innerHTML = '';
-                    return;
-                case 'exit':
-                case 'quit':
-                    if (typeof closeWindow === 'function') closeWindow('terminal-window');
-                    response = 'Session closed.';
-                    break;
-                case '':
-                    break;
-                default:
-                    response = `zsh: command not found: ${escapeHtml(rawCmd)}. Type 'help' for available commands.`;
+    } else {
+        switch (cmd) {
+            case 'help':
+            case 'man':
+                response = terminalHelp();
+                break;
+            case 'neofetch':
+                response = terminalNeofetch();
+                break;
+            case 'whoami':
+                response = escapeHtml(P.name);
+                break;
+            case 'pwd':
+                response = `/Users/${escapeHtml(TERMINAL_USER)}/portfolio`;
+                break;
+            case 'date':
+                response = new Date().toString();
+                break;
+            case 'uname':
+            case 'uname -a':
+                response = `Darwin macbook-pro 25.0.0 macOS ${escapeHtml(P.first)} 1.0 (Portfolio Edition) arm64`;
+                break;
+            case 'history':
+                response = terminalTimeline();
+                break;
+            case 'sudo hire-me':
+            case 'sudo hire':
+            case 'hire-me':
+            case 'hire':
+                response = terminalHire();
+                break;
+            case 'about me':
+            case 'about':
+                response = `${escapeHtml(P.name)}. ${escapeHtml(P.bio)}`;
+                break;
+            case 'experience':
+                response = P.experience.map(x => `<div style="margin-bottom:8px;">• <strong style="color:#4facfe;">${escapeHtml(x.role)}</strong> @ ${escapeHtml(x.org)} <span style="color:#888;">(${escapeHtml(x.dates)})</span>${x.bullets.length ? `<div style="padding-left:14px;color:#ccc;margin-top:2px;">${x.bullets.map(b => `– ${escapeHtml(b)}`).join('<br>')}</div>` : ''}</div>`).join('') || 'No experience listed yet.';
+                break;
+            case 'education': {
+                const ed = P.education;
+                response = [
+                    ed.degree && `- <strong>${escapeHtml(ed.degree)}</strong>${ed.university ? `, ${escapeHtml(ed.university)}` : ''}${ed.years ? ` (${escapeHtml(ed.years)})` : ''}${ed.grade ? ` — ${escapeHtml(ed.gradeLabel)} ${escapeHtml(ed.grade)}` : ''}`,
+                    ...ed.schooling.map(s => `- ${escapeHtml(s.title)}, ${escapeHtml(s.school)}${s.year ? ` (${escapeHtml(s.year)})` : ''}${s.score ? ` — ${escapeHtml(s.score)}` : ''}`)
+                ].filter(Boolean).join('<br>') || 'No education listed yet.';
+                break;
             }
+            case 'projects':
+                response = P.projects.map(x => `• <strong style="color:${x.live ? '#10b981' : '#4facfe'};">${escapeHtml(x.name)}${x.live ? ' (Live)' : ''}</strong> — ${escapeHtml(x.subtitle)}`).join('<br>') || 'No projects listed yet.';
+                break;
+            case 'skills':
+                response = terminalSkills();
+                break;
+            case 'contact':
+                response = terminalContact();
+                break;
+            case 'git status':
+                response = termPre(`On branch main\nYour branch is up to date with 'origin/main'.\n\nChanges not staged for commit:\n  (use "git add &lt;file&gt;..." to update what will be committed)\n\t<span style="color:#27c93f;">modified:   portfolio (macOS Tahoe Edition)</span>\n\nno changes added to commit (use "git commit -a")`);
+                break;
+            case 'git log': {
+                const author = `${escapeHtml(P.name)}${P.contact.email ? ` &lt;${escapeHtml(P.contact.email)}&gt;` : ''}`;
+                const latest = P.projects[0];
+                response = termPre(`<span style="color:#f6d365;">commit 8f2d91a</span> (HEAD -> main, origin/main)\nAuthor: ${author}\nDate:   ${new Date().toDateString()}\n\n    feat: macOS terminal with easter eggs${latest ? `\n\n<span style="color:#f6d365;">commit 3c7e14b</span>\nAuthor: ${author}\nDate:   ${escapeHtml(latest.date || 'Earlier')}\n\n    feat: release ${escapeHtml(latest.name)} — ${escapeHtml(latest.subtitle)}` : ''}`);
+                break;
+            }
+            case 'matrix':
+                response = `<div style="color:#27c93f;font-family:monospace;line-height:1.2;font-size:11px;">${escapeHtml(P.first.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' '))}<br>W A K E   U P ,   N E O . . .<br>T H E   M A T R I X   H A S   Y O U . . .<br>F O L L O W   T H E   W H I T E   R A B B I T 🐇</div>`;
+                break;
+            case 'clear':
+                outputDiv.innerHTML = '';
+                return;
+            case 'exit':
+            case 'quit':
+                if (typeof closeWindow === 'function') closeWindow('terminal-window');
+                response = 'Session closed.';
+                break;
+            case '':
+                break;
+            default:
+                response = `zsh: command not found: ${escapeHtml(rawCmd)}. Type 'help' for available commands.`;
         }
-        
-        if (response) {
-            printTerminalLine(response, 'margin-bottom: 10px;');
-        }
-        
-        const contentDiv = document.getElementById('terminal-content');
-        if (contentDiv) contentDiv.scrollTop = contentDiv.scrollHeight;
     }
-}
 
+    if (response) {
+        printTerminalLine(response, 'margin-bottom: 10px;');
+    }
+
+    const contentDiv = document.getElementById('terminal-content');
+    if (contentDiv) contentDiv.scrollTop = contentDiv.scrollHeight;
+}
 
 /** Runs a command as if typed (used by the Terminal ▸ Shell menu). */
 function runTerminalCommand(cmd) {

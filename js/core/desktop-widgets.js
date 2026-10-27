@@ -150,9 +150,10 @@
                     <span class="widget-github-meta">${escapeHtml([r.language, relativeTime(r.time)].filter(Boolean).join(' · '))}</span>
                 </a>`).join('');
         } catch (e) {
-            list.innerHTML = `<a class="widget-github-row" href="https://github.com/muditagrawal-alt" target="_blank" rel="noopener noreferrer">
-                <span class="widget-github-name">@muditagrawal-alt</span>
-                <span class="widget-github-meta">Open profile ↗</span></a>`;
+            const gh = window.PROFILE_DATA.github;
+            list.innerHTML = gh.url ? `<a class="widget-github-row" href="${escapeHtml(safeUrl(gh.url))}" target="_blank" rel="noopener noreferrer">
+                <span class="widget-github-name">@${escapeHtml(gh.user)}</span>
+                <span class="widget-github-meta">Open profile ↗</span></a>` : '<span class="widget-github-meta">No GitHub profile in the info bank</span>';
         }
     }
 

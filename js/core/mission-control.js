@@ -7,7 +7,7 @@
     let savedWindowStates = [];
 
     const APP_ICONS = {
-        'welcome-window': 'assets/Professionalimage.jpeg',
+        'welcome-window': window.PROFILE_DATA.photo,
         'finder-window': 'assets/icons/finder.png',
         'safari-window': 'assets/icons/safari.png',
         'mail-window': 'assets/icons/mail.png',

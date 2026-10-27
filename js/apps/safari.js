@@ -3,110 +3,77 @@
    Tabs Engine, Multi-Engine Web Search (Portfolio + Wiki), YouTube Embed Player & Favorites
    ========================================================================== */
 
-const safariShortcuts = {
-    'github': {
-        title: 'GitHub — @muditagrawal-alt',
-        url: 'https://github.com/muditagrawal-alt',
-        icon: 'fab fa-github',
-        domain: 'github.com/muditagrawal-alt',
-        category: 'Code & Open Source',
-        desc: 'Explore 8+ production & research AI/ML repositories authored by Mudit Agrawal including OmniDoc, Sliver.Ai, and Project S.W.O.R.D.',
-        pinnedRepos: [
-            { name: 'OmniDoc', desc: 'Multimodal RAG Document Intelligence System with Mistral-7B & BLIP.', stars: 'Featured', lang: 'Python' },
-            { name: 'Sliver-Smart-Video-Clipping-Tool', desc: 'AI highlight clipping pipeline using YOLOv8 & YOLO11.', stars: 'Featured', lang: 'Python' },
-            { name: 'Project-S.W.O.R.D', desc: 'Surveillance for Weapon Observation with Real-Time Deep Learning.', stars: 'Defense', lang: 'Python' },
-            { name: 'Helix-Compiler', desc: 'C-based parsing, AST generation and systems compiler.', stars: 'Systems', lang: 'C' }
-        ]
-    },
-    'huggingface': {
-        title: 'Hugging Face — @muditagrawal03',
-        url: 'https://huggingface.co/muditagrawal03',
-        icon: 'fas fa-robot',
-        domain: 'huggingface.co/muditagrawal03',
-        category: 'AI Models & Spaces',
-        desc: 'Model checkpoints, pipelines, and interactive spaces for Speech Synthesis, Multimodal VQA, and LLM fine-tunes.',
-        pinnedRepos: [
-            { name: 'Speech-Synthesis-Hub', desc: 'Coqui XTTS-v2 and Whisper pipeline experiments.', stars: 'Models', lang: 'PyTorch' },
-            { name: 'Multimodal-VQA-Space', desc: 'Visual document reasoning with BLIP & Mistral.', stars: 'Spaces', lang: 'Gradio' }
-        ]
-    },
-    'linkedin': {
-        title: `LinkedIn — ${window.PROFILE_DATA?.name || 'Mudit Agrawal'}`,
-        url: window.PROFILE_DATA?.contact?.linkedin || 'https://www.linkedin.com/in/mudit-agrawal-167610318',
-        icon: 'fab fa-linkedin',
-        domain: (window.PROFILE_DATA?.contact?.linkedin || 'linkedin.com/in/mudit-agrawal-167610318').replace(/^https?:\/\//, ''),
-        category: 'Professional Network',
-        desc: `${window.PROFILE_DATA?.bio || 'Computer Science (AI/ML) Undergraduate at IILM University.'}`,
-        pinnedRepos: (window.PROFILE_DATA?.experience || []).map(e => ({
-            name: e.role,
-            desc: `${e.org} (${e.dates})`,
-            stars: 'Experience',
-            lang: 'AI/ML'
-        }))
-    },
-    'substack': {
-        title: 'Substack — @standardissuemudit',
-        url: 'https://substack.com/@standardissuemudit',
-        icon: 'fas fa-bookmark',
-        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>',
-        domain: 'substack.com/@standardissuemudit',
-        category: 'Tech & AI Newsletter',
-        desc: 'Deep dives on multimodal RAG architectures, computer vision benchmarks, and AI engineering notes.',
-        pinnedRepos: [
-            { name: 'Building Multimodal RAG with Mistral-7B & BLIP', desc: 'Full architecture walkthrough from PDF chunking to grounded synthesis.', stars: 'Article', lang: 'RAG' },
-            { name: 'Real-Time Video Analytics with YOLOv8 & YOLO11', desc: 'Sub-second highlight generation with multi-cue tracking.', stars: 'Article', lang: 'Vision' }
-        ]
-    },
-    'medium': {
-        title: 'Medium — @muditagrawal03',
-        url: 'https://medium.com/@muditagrawal03',
-        icon: 'fab fa-medium',
-        domain: 'medium.com/@muditagrawal03',
-        category: 'Articles & Tutorials',
-        desc: 'Thought leadership articles on practical AI engineering, avoiding hallucination traps, and real-world system resilience.',
-        pinnedRepos: [
-            { name: 'Evaluating LLMs for Mission-Critical Defense Systems', desc: 'Naval R&D insights and reliability testing.', stars: 'Article', lang: 'Safety' },
-            { name: 'Beyond Theory: What College Doesn’t Teach About Machine Learning', desc: 'Practical lessons from deployment bottlenecks.', stars: 'Guide', lang: 'Career' }
-        ]
-    },
-    'instagram': {
-        title: 'Instagram — @muditagrawal_',
-        url: 'https://www.instagram.com/muditagrawal_/',
-        icon: 'fab fa-instagram',
-        domain: 'instagram.com/muditagrawal_',
-        category: 'Social & Behind the Scenes',
-        desc: 'Campus life at IILM University, hackathon sprints, photography, robotics lab snapshots, and tech journey moments.',
-        pinnedRepos: [
-            { name: 'Hackathon Highlights', desc: 'Late night debugging, caffeine fuel, and demo pitches.', stars: 'Posts', lang: 'Photos' },
-            { name: 'Campus & Navy Life', desc: 'Naval base memories and university campus perspectives.', stars: 'Stories', lang: 'Highlights' }
-        ]
-    },
-    'x': {
-        title: 'X (Twitter) — @muditag52751860',
-        url: 'https://x.com/muditag52751860',
-        icon: 'fab fa-x-twitter',
-        domain: 'x.com/muditag52751860',
-        category: 'Tech Discussions & Updates',
-        desc: 'Sharing daily thoughts on open-source AI weights, research papers from arXiv, and builder updates.',
-        pinnedRepos: [
-            { name: 'Paper Takeaways', desc: 'Bite-sized threads breaking down new CV and LLM releases.', stars: 'Threads', lang: 'AI' },
-            { name: 'Build In Public', desc: 'Weekly progress snapshots on OmniDoc and Sliver.Ai.', stars: 'Updates', lang: 'Dev' }
-        ]
-    },
-    'leetcode': {
-        title: 'LeetCode — @muditagrawal03',
-        url: 'https://leetcode.com/u/muditagrawal03/',
-        icon: 'fas fa-code',
-        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .666-1.795l3.86-4.133 5.304-5.694a1.376 1.376 0 0 0-.96-2.352zm3.896 9.615c-.76 0-1.378.618-1.378 1.378v4.973c0 .76.618 1.378 1.378 1.378h5.243c.76 0 1.378-.618 1.378-1.378v-4.973c0-.76-.618-1.378-1.378-1.378h-5.243z"/></svg>',
-        domain: 'leetcode.com/u/muditagrawal03',
-        category: 'Algorithms & Data Structures',
-        desc: 'Problem solving across Trees, Dynamic Programming, Graphs, and Systems Optimization in C and Python.',
-        pinnedRepos: [
-            { name: 'Data Structures & Algorithms', desc: '200+ problems solved across arrays, DP, and graphs.', stars: 'Profile', lang: 'Algorithms' },
-            { name: 'Contest Rankings', desc: 'Consistent competitive programming participant.', stars: 'Contests', lang: 'Problem Solving' }
-        ]
-    }
+// Brand marks Font Awesome doesn't have.
+const SAFARI_BRAND_SVGS = {
+    substack: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>',
+    leetcode: '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .666-1.795l3.86-4.133 5.304-5.694a1.376 1.376 0 0 0-.96-2.352zm3.896 9.615c-.76 0-1.378.618-1.378 1.378v4.973c0 .76.618 1.378 1.378 1.378h5.243c.76 0 1.378-.618 1.378-1.378v-4.973c0-.76-.618-1.378-1.378-1.378h-5.243z"/></svg>'
 };
+const SAFARI_SITE_CATEGORIES = {
+    github: 'Code & Open Source', linkedin: 'Professional Network', huggingface: 'AI Models & Spaces', medium: 'Articles & Tutorials',
+    substack: 'Newsletter', x: 'Updates & Threads', instagram: 'Photos & Stories', leetcode: 'Algorithms & Data Structures',
+    youtube: 'Videos', kaggle: 'Data Science', stackoverflow: 'Q&A', dribbble: 'Design', behance: 'Design', website: 'Website'
+};
+
+/**
+ * One in-browser page per profile in the info bank (GitHub, LinkedIn, and
+ * every other link), with what's relevant pinned: repositories on GitHub,
+ * roles on LinkedIn, articles on writing platforms.
+ */
+const safariShortcuts = (() => {
+    const P = window.PROFILE_DATA;
+    const hostOf = (u) => { try { return new URL(u).host.replace(/^www\./, ''); } catch (e) { return ''; } };
+    const pretty = (t) => (typeof prettyTag === 'function' ? prettyTag(t) : t);
+    const pinned = (l) => {
+        if (l.network === 'github') {
+            return P.projects.filter(x => x.repo && /github\.com/.test(x.repo)).slice(0, 4).map(x => ({
+                name: x.repo.replace(/\/$/, '').split('/').pop(), desc: x.summary, stars: x.featured ? 'Featured' : (x.live ? 'Live' : 'Repo'), lang: pretty(x.tags[0] || 'Code')
+            }));
+        }
+        if (l.network === 'linkedin') return P.experience.map(e => ({ name: e.role, desc: `${e.org} (${e.dates})`, stars: 'Experience', lang: P.role }));
+        const host = hostOf(l.url);
+        return P.writing.filter(w => w.url && hostOf(w.url) === host).map(w => ({ name: w.title, desc: w.summary, stars: 'Article', lang: w.topic || 'Writing' }));
+    };
+    return Object.fromEntries(P.links.map(l => [l.network, {
+        title: `${l.label} — ${l.handle || P.name}`,
+        url: l.url,
+        icon: l.fa,
+        iconSvg: SAFARI_BRAND_SVGS[l.network],
+        domain: l.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''),
+        category: SAFARI_SITE_CATEGORIES[l.network] || 'Profile',
+        desc: l.network === 'linkedin' ? P.bio : l.blurb,
+        pinnedRepos: pinned(l)
+    }]));
+})();
+
+/** Start page: a favourite per profile, and the owner's writing as the reading list. */
+function renderSafariStartPage() {
+    const P = window.PROFILE_DATA;
+    const grid = document.getElementById('safari-favorites');
+    if (grid) {
+        grid.innerHTML = Object.entries(safariShortcuts).map(([key, sc]) => {
+            const link = P.link(key);
+            return `<div class="favorite-item" onclick="openSafariShortcut('${escapeAttr(key)}')">
+                <div class="fav-icon-box" style="background:${escapeHtml(link.color)}">${sc.iconSvg || `<i class="${escapeHtml(sc.icon)}"></i>`}</div>
+                <span class="fav-title">${escapeHtml(link.label)}</span>
+                <span class="fav-domain">${escapeHtml(link.handle || sc.domain)}</span>
+            </div>`;
+        }).join('');
+    }
+    const reading = document.getElementById('safari-reading');
+    if (reading) {
+        reading.hidden = !P.writing.length;
+        reading.querySelector('.reading-grid').innerHTML = P.writing.map(w => {
+            let host = '';
+            try { host = new URL(w.url).host.replace(/^www\./, ''); } catch (e) { host = ''; }
+            return `<div class="reading-card" onclick="openExternal('${escapeAttr(w.url)}')">
+                ${w.topic ? `<div class="reading-badge">${escapeHtml(w.topic)}</div>` : ''}
+                <h4>${escapeHtml(w.title)}</h4>
+                <p>${escapeHtml(w.summary)}</p>
+                <span class="reading-meta"><i class="far fa-clock"></i> ${w.minutes ? `${w.minutes} min read • ` : ''}${escapeHtml(host)}</span>
+            </div>`;
+        }).join('');
+    }
+}
 
 function stopSafariMedia() {
     const renderArea = document.getElementById('safari-page-render-area');
@@ -543,7 +510,7 @@ function buildSearchResultsHtml(q, searchArticles, summaryData, portfolioMatches
             <div class="safari-noresults-card">
                 <i class="fas fa-info-circle" style="color:#8e8e93;font-size:28px;margin-bottom:8px;"></i>
                 <div class="safari-noresults-title">No matches in this portfolio or Wikipedia for “${qh}”</div>
-                <p class="safari-noresults-sub">This search covers Mudit’s portfolio and Wikipedia — not the whole web.</p>
+                <p class="safari-noresults-sub">This search covers ${escapeHtml(window.PROFILE_DATA.first)}’s portfolio and Wikipedia — not the whole web.</p>
                 <a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank" rel="noopener noreferrer" class="app-pill-btn primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-top:4px;">
                     <i class="fas fa-external-link-alt"></i> Search the web ↗
                 </a>
@@ -977,11 +944,12 @@ function safariReload() {
  * opening or copying that gave people a domain that doesn't resolve.
  */
 function externalSafariUrl(tab) {
-    if (!tab) return 'https://github.com/muditagrawal-alt';
+    const home = portfolioUrl();
+    if (!tab) return home;
     if (tab.type === 'ddg_search' && tab.searchQuery) {
         return `https://duckduckgo.com/?q=${encodeURIComponent(tab.searchQuery)}`;
     }
-    if (tab.type === 'start' || !tab.url) return 'https://github.com/muditagrawal-alt';
+    if (tab.type === 'start' || !tab.url) return home;
     return tab.url;
 }
 
@@ -1000,8 +968,10 @@ function shareCurrentSafariUrl() {
     const currentTab = safariTabs.find(t => t.id === activeSafariTabId);
     const url = externalSafariUrl(currentTab);
     if (navigator.share) {
-        navigator.share({ title: currentTab ? currentTab.title : 'Mudit Agrawal', url: url });
+        navigator.share({ title: currentTab ? currentTab.title : window.PROFILE_DATA.site.title, url: url });
     } else {
         copyCurrentSafariUrl();
     }
 }
+
+document.addEventListener('DOMContentLoaded', renderSafariStartPage);

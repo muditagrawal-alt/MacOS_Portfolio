@@ -7,16 +7,21 @@
    ========================================================================== */
 
 (function () {
-    const P = window.PROFILE_DATA || {};
+    const P = window.PROFILE_DATA;
     const pdfUrl = () => new URL(RESUME_FILE, location.href).href;
 
     function render(content) {
-        const e = P.education || {};
-        const S = P.skills || {};
+        const e = P.education;
+        if (!P.resume.file) {
+            content.innerHTML = IOS.emptyState('fas fa-file-circle-xmark', 'No résumé yet', '');
+            return;
+        }
         content.innerHTML = `
-            <button type="button" class="resume-preview" data-action="open" aria-label="Open the résumé PDF">
-                <img src="assets/MuditAgrawalResumePreview.png" alt="First page of Mudit Agrawal's résumé">
-                <span class="resume-preview-badge"><i class="fas fa-file-pdf"></i> PDF · Aug 2026</span>
+            <button type="button" class="resume-preview ${P.resume.preview ? '' : 'no-preview'}" data-action="open" aria-label="Open the résumé PDF">
+                ${P.resume.preview
+                    ? `<img src="${escapeHtml(P.resume.preview)}" alt="First page of ${escapeHtml(P.name)}’s résumé">`
+                    : `<span class="resume-doc"><i class="fas fa-file-pdf"></i><strong>${escapeHtml(P.resume.downloadName)}</strong><small>Tap to open</small></span>`}
+                <span class="resume-preview-badge"><i class="fas fa-file-pdf"></i> PDF${P.resume.updated ? ` · ${escapeHtml(P.resume.updated)}` : ''}</span>
             </button>
             <div class="resume-actions">
                 <button type="button" class="ios-btn" data-action="open"><i class="fas fa-up-right-from-square"></i> Open</button>
@@ -26,21 +31,21 @@
 
             <div class="ios-section-header">At a glance</div>
             <div class="ios-group resume-glance">
-                ${(P.experience || []).map(x => `
+                ${P.experience.map(x => `
                 <div class="resume-line">
                     <span class="resume-dot"></span>
                     <span><strong>${escapeHtml(x.role)}</strong> · ${escapeHtml(IOS.shortOrg(x.org))}<small>${escapeHtml(x.dates)}</small></span>
                 </div>`).join('')}
-                <div class="resume-line">
+                ${e.degree ? `<div class="resume-line">
                     <span class="resume-dot edu"></span>
-                    <span><strong>${escapeHtml(e.degree || '')}</strong> · ${escapeHtml(e.university || '')}<small>${escapeHtml(e.years || '')} · CGPA ${escapeHtml(e.cgpa || '')}</small></span>
-                </div>
+                    <span><strong>${escapeHtml(e.degree)}</strong>${e.university ? ` · ${escapeHtml(e.university)}` : ''}<small>${escapeHtml([e.years, e.grade && `${e.gradeLabel} ${e.grade}`].filter(Boolean).join(' · '))}</small></span>
+                </div>` : ''}
             </div>
 
-            <div class="ios-section-header">Core stack</div>
+            ${P.skills.length ? `<div class="ios-section-header">Core stack</div>
             <div class="ios-group resume-stack">
-                ${[...(S.programming || []).slice(0, 3), ...(S.frameworks || []).slice(0, 5), ...(S.databases || []).slice(0, 2)].map(s => `<span>${escapeHtml(s)}</span>`).join('')}
-            </div>
+                ${P.skills.flatMap(g => g.items.slice(0, 3)).slice(0, 10).map(s => `<span>${escapeHtml(s)}</span>`).join('')}
+            </div>` : ''}
             <p class="ios-section-footer">The same file the Mac version serves — always the current one.</p>`;
 
         IOS.bind(content, {

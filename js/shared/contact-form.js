@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Contact form — the one path a visitor's message takes to Mudit's inbox
+   Contact form — the one path a visitor's message takes to the owner's inbox
    --------------------------------------------------------------------------
    Used by Mail on both Mac and iPhone. Posts to Web3Forms (the access key is
    a public form token, see js/config/config.js). If the form plan rejects
@@ -36,7 +36,22 @@ async function sendContactMessage(fields, attachments = []) {
     return { sent: false, droppedAttachments: false };
 }
 
-/* ── Contact card & sharing ─────────────────────────────────────────── */
+/* ── Contact details, card & sharing ───────────────────────────────── */
+
+/** Copies the owner's email, phone or a profile link (by network) to the clipboard. */
+function copyContactDetail(kind) {
+    const P = window.PROFILE_DATA;
+    const known = { email: [P.contact.email, 'Email address copied'], phone: [P.contact.phone, 'Phone number copied'] };
+    const link = P.link(kind);
+    const [value, message] = known[kind] || (link ? [link.url, `${link.label} URL copied`] : ['', '']);
+    if (value) copyTextToClipboard(value, message);
+}
+
+/** Opens one of the owner's profiles (github, linkedin, medium…) in a new tab. */
+function openProfileLink(network) {
+    const link = window.PROFILE_DATA.link(network);
+    if (link) openExternal(link.url);
+}
 
 /** The portfolio's root link — the device router picks Mac or iPhone for whoever opens it. */
 function portfolioUrl() {
@@ -45,14 +60,14 @@ function portfolioUrl() {
 
 function sharePortfolio() {
     const p = window.PROFILE_DATA || {};
-    navigator.share({ title: `${p.name || 'Mudit Agrawal'} — Portfolio`, text: p.tagline || '', url: portfolioUrl() }).catch(() => {});
+    navigator.share({ title: p.site.title, text: p.tagline, url: portfolioUrl() }).catch(() => {});
 }
 
 /** Builds and downloads a vCard from PROFILE_DATA (the single source). */
 function downloadContactCard() {
     const p = window.PROFILE_DATA || {};
     const c = p.contact || {};
-    const [first, ...rest] = String(p.name || 'Mudit Agrawal').split(' ');
+    const [first, ...rest] = p.name.split(' ');
     const vcf = [
         'BEGIN:VCARD', 'VERSION:3.0',
         `N:${rest.join(' ')};${first};;;`,

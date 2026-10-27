@@ -183,8 +183,19 @@ function deleteActiveNote() {
     }
 }
 
+/** One sidebar row per folder the info bank's notes use. */
+function renderNotesSidebar() {
+    const sidebar = document.querySelector('.notes-sidebar');
+    if (!sidebar) return;
+    const icons = { philosophy: 'fa-lightbulb', 'current-learning': 'fa-brain', learning: 'fa-brain', 'tech-notes': 'fa-layer-group', personal: 'fa-user', ideas: 'fa-lightbulb', work: 'fa-briefcase' };
+    sidebar.querySelectorAll('.sidebar-item:not([data-category="all"])').forEach(r => r.remove());
+    sidebar.insertAdjacentHTML('beforeend', notesFolders().map(f =>
+        `<div class="sidebar-item" data-category="${escapeHtml(f.id)}" onclick="switchNotesCategory('${escapeAttr(f.id)}', this)"><i class="fas ${icons[f.id] || 'fa-folder'} icon-color-yellow"></i> ${escapeHtml(f.label)} <span class="notes-count" data-count="${escapeHtml(f.id)}"></span></div>`).join(''));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadUserNotes();
+    renderNotesSidebar();
     renderNotesList();
     selectNote(activeNoteId);
     ['note-title-display', 'note-body-content'].forEach(id => {
