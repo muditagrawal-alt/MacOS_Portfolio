@@ -1,0 +1,250 @@
+/* About — contact card */
+
+.about-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 6px 4px 4px;
+}
+
+.about-photo {
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.35);
+}
+
+.about-hero h1 {
+    margin: 14px 0 2px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+.about-tagline { margin: 0; color: var(--ios-label-2); font-size: 15px; }
+
+.about-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 10px 0 0;
+    padding: 5px 12px 5px 10px;
+    border-radius: 999px;
+    background: var(--ios-card);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.about-now i { width: 8px; height: 8px; border-radius: 50%; background: var(--ios-green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ios-green) 25%, transparent); }
+
+.about-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin-top: 18px;
+}
+
+.about-actions > * {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px 8px;
+    border: none;
+    border-radius: 12px;
+    background: var(--ios-card);
+    color: var(--ios-tint);
+    font-size: 11.5px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.about-actions i { font-size: 19px; height: 22px; }
+.about-actions > *:active { opacity: 0.6; }
+
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 12px;
+    border-radius: 12px;
+    background: var(--ios-card);
+    overflow: hidden;
+}
+
+.about-stats button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 12px 4px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.about-stats button + button { box-shadow: inset 0.5px 0 0 var(--ios-sep); }
+.about-stats strong { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.about-stats span { color: var(--ios-label-2); font-size: 12px; }
+.about-stats button:active { background: var(--ios-pressed); }
+
+.about-bio {
+    margin: 14px 2px 0;
+    color: var(--ios-label);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+/* Experience timeline */
+.about-timeline { list-style: none; margin: 0; padding: 0; }
+
+.about-timeline li { position: relative; padding-left: 22px; }
+
+.about-timeline li::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 26px;
+    bottom: -12px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--ios-fill);
+}
+
+.about-timeline li:last-child::before { display: none; }
+
+.about-timeline li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ios-tint);
+    box-shadow: 0 0 0 4px var(--ios-bg);
+}
+
+.about-timeline li:first-child::after { background: var(--ios-green); }
+
+.about-timeline button {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 14px;
+    background: var(--ios-card);
+    text-align: left;
+    cursor: pointer;
+}
+
+.about-timeline button:active { background: var(--ios-pressed); }
+.about-tl-dates { color: var(--ios-label-2); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.about-timeline strong { font-size: 17px; }
+.about-tl-org { color: var(--ios-tint); font-size: 14px; }
+.about-tl-first { margin-top: 4px; color: var(--ios-label-2); font-size: 14px; line-height: 1.35; }
+
+/* Role detail */
+.about-role {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 18px 16px 20px;
+    border-radius: 16px;
+    background: var(--ios-card);
+    text-align: center;
+}
+
+.about-role-badge {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #5e5ce6, #af52de);
+    color: #fff;
+    font-size: 22px;
+}
+
+.about-role h2 { margin: 0; font-size: 22px; }
+.about-role p { margin: 0; color: var(--ios-label-2); font-size: 15px; }
+.about-role-dates { margin-top: 6px; padding: 4px 10px; border-radius: 999px; background: var(--ios-fill-2); font-size: 13px; font-weight: 600; }
+
+.about-bullets {
+    margin: 0;
+    padding: 4px 16px;
+    border-radius: 12px;
+    background: var(--ios-card);
+    list-style: none;
+}
+
+.about-bullets li {
+    position: relative;
+    padding: 12px 0 12px 26px;
+    font-size: 15.5px;
+    line-height: 1.4;
+}
+
+.about-bullets li + li { border-top: 0.5px solid var(--ios-sep); }
+
+.about-bullets li::before {
+    content: "\f00c";
+    position: absolute;
+    left: 0;
+    top: 13px;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 13px;
+    color: var(--ios-green);
+}
+
+.about-ask { margin-top: 20px; }
+
+/* Education */
+.about-degree {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0a84ff, #5e5ce6);
+    color: #fff;
+}
+
+.about-degree h2 { margin: 4px 0 2px; font-size: 19px; line-height: 1.25; }
+.about-degree p { margin: 0; opacity: 0.85; font-size: 14px; }
+.about-degree-kicker { font-size: 12px; font-weight: 700; opacity: 0.8; letter-spacing: 0.4px; }
+
+.about-cgpa {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.about-cgpa strong { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.about-cgpa span { font-size: 11px; font-weight: 700; opacity: 0.85; }
+
+/* Skills */
+.about-skill-card { display: flex; gap: 12px; padding: 14px 14px 14px 16px; }
+.about-skill-card .ios-row-icon { margin-top: 2px; }
+
+.about-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.about-chips span {
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--ios-fill-2);
+    font-size: 14px;
+}
