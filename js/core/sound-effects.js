@@ -35,6 +35,7 @@
      */
     function playSystemSound(type = 'click') {
         if (isSoundMuted || masterVolume <= 0) return;
+        if (typeof window.getPreference === 'function' && window.getPreference('sounds') === false) return;
         const ctx = getAudioContext();
         if (!ctx) return;
 
@@ -222,10 +223,19 @@
         }
     }
 
+    // Music (and anything else that plays audio) listens for this, so the
+    // system volume and mute apply everywhere, as on a Mac.
+    function broadcastVolume() {
+        window.dispatchEvent(new CustomEvent('master-volume-changed', {
+            detail: { volume: masterVolume, muted: isSoundMuted }
+        }));
+    }
+
     function toggleSystemMute() {
         isSoundMuted = !isSoundMuted;
         try { localStorage.setItem('macos_sound_muted', isSoundMuted); } catch (e) {}
         updateSoundUI();
+        broadcastVolume();
         if (!isSoundMuted) playSystemSound('pop');
         return isSoundMuted;
     }
@@ -238,11 +248,15 @@
             try { localStorage.setItem('macos_sound_muted', false); } catch (e) {}
         }
         updateSoundUI();
+        broadcastVolume();
     }
 
     function updateSoundUI() {
         const soundIcons = document.querySelectorAll('.sound-status-icon');
         soundIcons.forEach(icon => {
+            const label = isSoundMuted ? 'Sound: muted — click to unmute' : `Sound: ${Math.round(masterVolume * 100)}% — click to mute`;
+            icon.setAttribute('data-tooltip', label);
+            icon.title = label;
             if (isSoundMuted || masterVolume === 0) {
                 icon.className = 'fas fa-volume-xmark menu-icon sound-status-icon';
             } else if (masterVolume < 0.4) {
