@@ -1,0 +1,177 @@
+/* ==========================================================================
+   System UI — notification banners, display dimmer, window motion
+   ========================================================================== */
+
+/* ── Notification banners (replace native alert/prompt) ─────────────────── */
+.mac-toast-stack {
+    position: fixed;
+    top: 38px;
+    right: 14px;
+    z-index: 100002;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    width: min(356px, calc(100vw - 28px));
+}
+
+.mac-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(40, 40, 46, 0.72);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.38), inset 0 0.5px 0 rgba(255, 255, 255, 0.22);
+    color: #fff;
+    cursor: default;
+    animation: mac-toast-in 0.42s var(--ease-macos) both;
+}
+
+.mac-toast.leaving { animation: mac-toast-out 0.26s ease-in both; }
+
+@keyframes mac-toast-in {
+    from { opacity: 0; transform: translateX(28px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes mac-toast-out {
+    to { opacity: 0; transform: translateX(24px); }
+}
+
+.mac-toast-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #000));
+    font-size: 16px;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.35);
+}
+
+.mac-toast-text { flex: 1; min-width: 0; }
+.mac-toast-title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+.mac-toast-body {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mac-toast-action {
+    flex-shrink: 0;
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.mac-toast-action:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ── Display brightness veil ─────────────────────────────────────────────
+   Dims the whole screen — menu bar and Dock included — without putting a
+   CSS filter on .desktop (a filter there turned it into the containing block
+   for every position:fixed descendant). */
+#display-dimmer {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2147483000;
+    transition: opacity 0.12s linear;
+}
+
+/* ── Window motion ───────────────────────────────────────────────────────
+   Opening zooms up from 96%; minimising "genies" toward the app's own Dock
+   icon (--genie-x / --genie-y are set by the window manager). */
+.window.window-opening {
+    animation: window-open 0.24s var(--ease-macos) both;
+}
+
+@keyframes window-open {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: none; }
+}
+
+.window.minimized {
+    transform: translate(var(--genie-x, 0px), var(--genie-y, 60vh)) scale(0.06);
+    transform-origin: center bottom;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.46s cubic-bezier(0.55, 0, 0.75, 0.05), opacity 0.38s ease-in;
+}
+
+/* Restore plays the same path in reverse. */
+.window.restoring {
+    transition: transform 0.38s var(--ease-macos), opacity 0.22s ease-out;
+}
+
+/* Edge resize affordance — set while the pointer hovers a resizable edge. */
+.window[data-resize-cursor="ew"]   { cursor: ew-resize; }
+.window[data-resize-cursor="ns"]   { cursor: ns-resize; }
+.window[data-resize-cursor="nwse"] { cursor: nwse-resize; }
+.window[data-resize-cursor="nesw"] { cursor: nesw-resize; }
+body.is-resizing, body.is-resizing * { user-select: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    .window.window-opening,
+    .mac-toast,
+    .mac-toast.leaving { animation: none; }
+    .window.minimized,
+    .window.restoring { transition: opacity 0.12s linear; }
+}
+
+/* ── Keyboard shortcut sheet (Help ▸ Keyboard Shortcuts) ─────────────────── */
+.kbd-sheet { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; font-size: 13px; }
+.kbd-sheet dt { color: rgba(255, 255, 255, 0.86); }
+.kbd-sheet dd { text-align: right; }
+.kbd-sheet kbd {
+    display: inline-block;
+    min-width: 22px;
+    padding: 2px 7px;
+    margin-left: 3px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    border-bottom-width: 1.5px;
+    font: 500 12px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    color: #fff;
+    text-align: center;
+}
+.kbd-sheet-group {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 10px;
+}
+
+/* ── Frosted Glass theme (System Settings ▸ Appearance, Control Centre) ───
+   Applies to every window, including apps that set their own background. */
+body[data-theme="glass"] .window,
+body[data-theme="glass"] #finder-window {
+    background: rgba(28, 28, 32, 0.42) !important;
+    backdrop-filter: blur(34px) saturate(185%) !important;
+    -webkit-backdrop-filter: blur(34px) saturate(185%) !important;
+}
+body[data-theme="glass"] .title-bar { background: rgba(40, 40, 44, 0.35); }
+body[data-theme="glass"] .finder-sidebar-v2,
+body[data-theme="glass"] .sidebar,
+body[data-theme="glass"] .settings-sidebar,
+body[data-theme="glass"] .notes-sidebar,
+body[data-theme="glass"] .mail-sidebar,
+body[data-theme="glass"] .appstore-sidebar,
+body[data-theme="glass"] .music-sidebar { background: rgba(20, 20, 24, 0.28) !important; }
