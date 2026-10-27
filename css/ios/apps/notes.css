@@ -1,0 +1,98 @@
+/* Notes — yellow tint, paper-like note pages */
+
+.ios-app-window[data-app="notes"] { --ios-tint: #e8a600; }
+:root[data-appearance="dark"] .ios-app-window[data-app="notes"] { --ios-tint: #ffd60a; }
+@media (prefers-color-scheme: dark) { :root[data-appearance="auto"] .ios-app-window[data-app="notes"] { --ios-tint: #ffd60a; } }
+
+.notes-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    margin-bottom: 14px;
+    padding: 0 10px;
+    border-radius: 11px;
+    background: var(--ios-fill-2);
+    color: var(--ios-label-2);
+}
+
+.notes-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--ios-label);
+    font: inherit;
+    font-size: 17px;
+}
+
+.notes-row .ios-row-title { font-weight: 600; }
+.notes-row .ios-row-sub b { color: var(--ios-label); font-weight: 400; margin-right: 4px; }
+
+.notes-count { margin-top: 14px; text-align: center; color: var(--ios-label-2); font-size: 13px; }
+
+.notes-fab {
+    position: absolute;
+    right: 18px;
+    bottom: calc(var(--safe-bottom) + 26px);
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 50%;
+    background: var(--ios-card);
+    color: var(--ios-tint);
+    font-size: 21px;
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.35), 0 0 0 0.5px var(--ios-sep);
+    cursor: pointer;
+}
+
+.notes-fab:active { transform: scale(0.94); }
+
+.ios-page.notes-note,
+.ios-page.notes-note .ios-page-body { background: var(--ios-bg-plain); }
+
+.notes-doc { padding: 0 4px 40px; }
+.notes-date { text-align: center; color: var(--ios-label-2); font-size: 13px; margin: 4px 0 14px; }
+.notes-doc h1 { margin: 0 0 12px; font-size: 26px; line-height: 1.2; letter-spacing: -0.3px; }
+.notes-body { font-size: 17px; line-height: 1.5; }
+.notes-body p { margin: 0 0 12px; }
+.notes-body .note-checklist { display: flex; flex-direction: column; gap: 10px; margin: 6px 0 14px; }
+.notes-body .checklist-item { display: flex; gap: 10px; align-items: baseline; }
+.notes-body .checklist-item i { flex-shrink: 0; width: 16px; text-align: center; }
+.notes-body img { max-width: 100%; height: auto; border-radius: 10px; }
+.notes-body a { color: var(--ios-tint); }
+/* Curated notes carry colours picked for the Mac's dark window. */
+.notes-body p[style*="color"] { color: var(--ios-label-2) !important; }
+
+.notes-title-input,
+.notes-text {
+    display: block;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--ios-label);
+    font: inherit;
+    resize: none;
+}
+
+.notes-title-input { margin-bottom: 8px; font-size: 26px; font-weight: 700; letter-spacing: -0.3px; }
+.notes-text { min-height: 240px; font-size: 17px; line-height: 1.5; overflow: hidden; }
+
+.notes-deleted-intro { margin: -2px 2px 14px; color: var(--ios-label-2); font-size: 15px; line-height: 1.4; }
+
+.notes-cut {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--ios-fill-2);
+    color: var(--ios-label-2);
+    font-size: 14px;
+}
