@@ -188,6 +188,7 @@ function hideDesktop() {
 }
 
 function showDesktop() {
+    if (typeof maybeShowWelcome === 'function') maybeShowWelcome();
     bootChrome().forEach((el, i) => {
         el.style.transition = `opacity 0.5s ease ${i === 2 ? 0.15 : 0}s`;
         el.style.opacity = '1';
@@ -295,3 +296,51 @@ function finishBoot(skipped) {
 
 // Initialize boot on DOM ready
 document.addEventListener('DOMContentLoaded', initBootAnimation);
+
+/* ── Restart / Shut Down (Apple menu) ────────────────────────────────────
+   Both replay the real boot sequence in place — no page reload, so nothing
+   the visitor set up is lost — and both go back through the lock screen. */
+function resetBootOverlay() {
+    const overlay = document.getElementById('boot-overlay');
+    if (!overlay) return null;
+    bootTimers.forEach(clearTimeout);
+    bootTimers = [];
+    bootFinished = false;
+    bootChimePlayed = false;
+
+    overlay.classList.remove('hidden', 'fade-out');
+    overlay.removeAttribute('title');
+    const bar = document.getElementById('boot-progress-bar');
+    if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
+    const nameContainer = document.querySelector('.boot-name-container');
+    if (nameContainer) { nameContainer.style.transition = 'none'; nameContainer.style.opacity = ''; }
+    const nameEl = document.getElementById('boot-name');
+    if (nameEl) nameEl.classList.remove('glowing', 'chime-beat');
+    const hello = document.querySelector('.boot-hello-container');
+    if (hello) hello.classList.remove('active', 'writing', 'settled');
+    return overlay;
+}
+
+function powerDownDesktop() {
+    if (typeof closeAllMenus === 'function') closeAllMenus();
+    if (typeof forceQuitAll === 'function') forceQuitAll();
+    try { sessionStorage.removeItem('mac-unlocked'); } catch (e) { /* private mode */ }
+    hideDesktop();
+}
+
+function restartMac() {
+    powerDownDesktop();
+    if (!resetBootOverlay()) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finishBoot(true);
+        return;
+    }
+    // This runs inside the menu click — a real gesture — so the chime may play.
+    setTimeout(() => { playBootChime(); beginBootSequence(); }, 650);
+}
+
+function shutDownMac() {
+    powerDownDesktop();
+    if (!resetBootOverlay()) return;
+    showPowerGate(beginBootSequence);
+}

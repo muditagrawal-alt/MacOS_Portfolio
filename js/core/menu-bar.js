@@ -2,21 +2,24 @@
    Menu Bar: Clock, Dynamic Menus (Finder, Go, Window, View, Help) & Dropdowns
    ========================================================================== */
 
+// Formatted per the visitor's own locale (12h vs 24h, day/month order), the
+// way the macOS menu bar follows the Mac's region — and consistent with the
+// lock screen, which already did this.
+const MENU_CLOCK_FMT = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
 function updateClock() {
-    const now = new Date();
-    let hours = now.getHours();
-    let minutes = now.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    hours = hours % 12;
-    hours = hours ? hours : 12; 
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    
-    const timeString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + hours + ':' + minutes + ' ' + ampm;
     const clockEl = document.getElementById('clock');
-    if (clockEl) {
-        clockEl.textContent = timeString;
-    }
+    if (!clockEl) return;
+    const parts = MENU_CLOCK_FMT.formatToParts(new Date());
+    const get = t => (parts.find(p => p.type === t) || {}).value || '';
+    const date = parts.findIndex(p => p.type === 'day') < parts.findIndex(p => p.type === 'month')
+        ? `${get('weekday')} ${get('day')} ${get('month')}`
+        : `${get('weekday')} ${get('month')} ${get('day')}`;
+    const ampm = get('dayPeriod');
+    const time = `${get('hour')}:${get('minute')}${ampm ? ' ' + ampm : ''}`;
+    // A phone-width menu bar only has room for the time, as on iOS.
+    const text = window.innerWidth <= 600 ? time : `${date}  ${time}`;
+    if (clockEl.textContent !== text) clockEl.textContent = text;
 }
 
 setInterval(updateClock, 1000);
@@ -41,118 +44,129 @@ document.addEventListener('DOMContentLoaded', () => {
    bar whenever focus changes.
    ══════════════════════════════════════════════════════════════════════════ */
 
-const CMD = '\u2318';
+const CMD = '⌘';
+const OPT = '⌥';
+
+/* Shortcut labels are honest: every one shown here is bound in keyboard.js
+   AND reaches the page. ⌘W ⌘Q ⌘N ⌘T ⌘M and ⌘Tab are swallowed by the browser
+   or the OS before a web page ever sees them (⌘W would close the visitor's
+   tab), so window-level commands use ⌥ instead. */
 
 const SHARED_MENUS = {
     'Window': [
-        { label: 'Minimize', shortcut: CMD + 'M', run: 'minimizeActiveWindow()' },
-        // No shortcut annotation here — the label previously claimed ⌘F, but
-        // ⌘F is bound to "focus search field" (below), not Zoom. A menu that
-        // advertises a shortcut which does something else is worse than one
-        // that advertises nothing.
+        { label: 'Minimize', shortcut: OPT + 'M', run: 'minimizeActiveWindow()' },
         { label: 'Zoom', run: 'maximizeActiveWindow()' },
+        { label: 'Mission Control', shortcut: 'F3', run: 'toggleMissionControl()' },
         { sep: true },
-        { label: 'Bring All to Front', run: 'openWindow("finder-window")' }
+        { label: 'Bring All to Front', run: 'bringAllToFront()' }
     ],
     'Help': [
-        { label: 'Ask Siri / Iris', run: 'openIris()' },
-        { label: 'Open Launchpad', shortcut: '⌥L', run: 'toggleLaunchpad()' },
+        { label: 'Keyboard Shortcuts…', shortcut: '?', run: 'showKeyboardShortcuts()' },
+        { label: 'Ask Iris…', run: 'openIris()' },
+        { sep: true },
         { label: 'Spotlight Search', shortcut: CMD + 'K', run: 'toggleSpotlight()' },
-        { label: 'Quick Look a File', shortcut: 'Space', run: '' },
-        { label: 'Switch Apps', shortcut: CMD + 'Tab', run: '' }
+        { label: 'Launchpad', shortcut: OPT + 'L', run: 'toggleLaunchpad()' },
+        { label: 'Switch Apps', shortcut: OPT + 'Tab', run: 'showKeyboardShortcuts()' }
     ]
 };
+
+const FINDER_FILE_MENU = [
+    { label: 'New Finder Window', shortcut: OPT + 'N', run: "openWindow('finder-window')" },
+    { label: 'New Message to Mudit', run: "openWindow('mail-window'); openMailCompose();" },
+    { sep: true },
+    { label: 'Download Résumé', run: 'downloadResume()' },
+    { label: 'Save Contact Card', run: 'downloadContactCard()' },
+    { sep: true },
+    { label: 'Close Window', shortcut: OPT + 'W', run: 'closeActiveWindow()' }
+];
+const FINDER_EDIT_MENU = [
+    { label: 'Copy Email Address', run: "copyTextToClipboard('muditagrawal03@gmail.com', 'Email address copied')" },
+    { label: 'Copy Phone Number', run: "copyTextToClipboard('+91-7289887349', 'Phone number copied')" },
+    { label: 'Copy LinkedIn URL', run: "copyTextToClipboard('https://www.linkedin.com/in/mudit-agrawal-167610318', 'LinkedIn URL copied')" }
+];
+const FINDER_GO_MENU = [
+    { label: 'Recents',      run: "openFinderPane('recents')" },
+    { label: 'Applications', run: "openFinderPane('applications')" },
+    { label: 'Desktop',      run: "openFinderPane('desktop')" },
+    { label: 'Documents',    run: "openFinderPane('documents')" },
+    { sep: true },
+    { label: 'Projects',     run: "openFinderPane('projects')" },
+    { label: 'Experience',   run: "openFinderPane('experience')" },
+    { label: 'Education',    run: "openFinderPane('education')" },
+    { label: 'Skills',       run: "openFinderPane('skills')" },
+    { label: 'AirDrop',      run: "openFinderPane('airdrop')" },
+    { sep: true },
+    { label: 'Back',    shortcut: CMD + '[', run: 'finderGoBack()' },
+    { label: 'Forward', shortcut: CMD + ']', run: 'finderGoForward()' }
+];
 
 const DEFAULT_APP = {
     name: 'Finder',
     menus: {
-        'File': [
-            { label: 'New Contact Request', shortcut: CMD + 'N', run: "openWindow('mail-window'); if(typeof openMailCompose==='function') openMailCompose();" },
-            { label: 'Export Resume as PDF', shortcut: CMD + 'E', run: 'downloadResume()' },
-            { label: 'Download Resume', shortcut: CMD + 'D', run: 'downloadResume()' }
-        ],
-        'Edit': [
-            { label: 'Copy Email Address', shortcut: CMD + 'C', run: "copyTextToClipboard('muditagrawal03@gmail.com', 'Copied email to clipboard!')" },
-            { label: 'Copy Phone Number', run: "copyTextToClipboard('+91-7289887349', 'Copied phone number to clipboard!')" },
-            { label: 'Copy LinkedIn URL', run: "copyTextToClipboard('https://www.linkedin.com/in/mudit-agrawal-167610318', 'Copied LinkedIn URL to clipboard!')" }
-        ],
+        'File': FINDER_FILE_MENU,
+        'Edit': FINDER_EDIT_MENU,
         'View': [
-            { label: 'Grid View (Projects)', shortcut: CMD + '1', run: "openWindow('finder-window'); finderSidebarNav('projects'); setFinderViewMode('icons')" },
-            { label: 'List View (Projects)', shortcut: CMD + '2', run: "openWindow('finder-window'); finderSidebarNav('projects'); setFinderViewMode('list')" },
-            { label: 'Icon View (Projects)', run: "openWindow('finder-window'); finderSidebarNav('projects'); setFinderViewMode('icons')" },
-            { label: 'Last Viewed View (Recents)', shortcut: CMD + '4', run: "openWindow('finder-window'); finderSidebarNav('recents')" }
+            { label: 'as Icons',   shortcut: OPT + '1', run: "openWindow('finder-window'); setFinderViewMode('icons')" },
+            { label: 'as List',    shortcut: OPT + '2', run: "openWindow('finder-window'); setFinderViewMode('list')" },
+            { label: 'as Columns', shortcut: OPT + '3', run: "openWindow('finder-window'); setFinderViewMode('columns')" }
         ],
-        'Go': [
-            { label: 'Recents',    run: "openWindow('finder-window'); finderSidebarNav('recents')" },
-            { label: 'Documents',  run: "openWindow('finder-window'); finderSidebarNav('documents')" },
-            { label: 'Projects',   run: "openWindow('finder-window'); finderSidebarNav('projects')" },
-            { label: 'Experience', run: "openWindow('finder-window'); finderSidebarNav('experience')" },
-            { label: 'Education',  run: "openWindow('finder-window'); finderSidebarNav('education')" },
-            { label: 'Skills',     run: "openWindow('finder-window'); finderSidebarNav('skills')" },
-            { sep: true },
-            { label: 'Back',    shortcut: CMD + '[', run: 'finderGoBack()' },
-            { label: 'Forward', shortcut: CMD + ']', run: 'finderGoForward()' }
-        ]
+        'Go': FINDER_GO_MENU
     }
 };
+
+const CLOSE_ITEM = { label: 'Close Window', shortcut: OPT + 'W', run: 'closeActiveWindow()' };
 
 const APP_MENUS = {
     'finder-window': {
         name: 'Finder',
         menus: {
-            'File': [
-                { label: 'New Contact Request', shortcut: CMD + 'N', run: "openWindow('mail-window'); if(typeof openMailCompose==='function') openMailCompose();" },
-                { label: 'Export Resume as PDF', shortcut: CMD + 'E', run: 'downloadResume()' },
-                { label: 'Download Resume', shortcut: CMD + 'D', run: 'downloadResume()' },
-                { sep: true },
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Copy Email Address', shortcut: CMD + 'C', run: "copyTextToClipboard('muditagrawal03@gmail.com', 'Copied email to clipboard!')" },
-                { label: 'Copy Phone Number', run: "copyTextToClipboard('+91-7289887349', 'Copied phone number to clipboard!')" },
-                { label: 'Copy LinkedIn URL', run: "copyTextToClipboard('https://www.linkedin.com/in/mudit-agrawal-167610318', 'Copied LinkedIn URL to clipboard!')" }
-            ],
+            'File': FINDER_FILE_MENU,
+            'Edit': FINDER_EDIT_MENU,
             'View': [
-                { label: 'Grid View (Projects)', shortcut: CMD + '1', run: "finderSidebarNav('projects'); setFinderViewMode('icons')" },
-                { label: 'List View (Projects)', shortcut: CMD + '2', run: "finderSidebarNav('projects'); setFinderViewMode('list')" },
-                { label: 'Icon View (Projects)', run: "finderSidebarNav('projects'); setFinderViewMode('icons')" },
-                { label: 'Last Viewed View (Recents)', shortcut: CMD + '4', run: "finderSidebarNav('recents')" }
+                { label: 'as Icons',   shortcut: OPT + '1', run: "setFinderViewMode('icons')" },
+                { label: 'as List',    shortcut: OPT + '2', run: "setFinderViewMode('list')" },
+                { label: 'as Columns', shortcut: OPT + '3', run: "setFinderViewMode('columns')" }
             ],
-            'Go': [
-                { label: 'Recents',    run: "finderSidebarNav('recents')" },
-                { label: 'Documents',  run: "finderSidebarNav('documents')" },
-                { label: 'Projects',   run: "finderSidebarNav('projects')" },
-                { label: 'Experience', run: "finderSidebarNav('experience')" },
-                { label: 'Education',  run: "finderSidebarNav('education')" },
-                { label: 'Skills',     run: "finderSidebarNav('skills')" },
+            'Go': FINDER_GO_MENU
+        }
+    },
+    'welcome-window': {
+        name: 'About Mudit',
+        menus: {
+            'File': [
+                { label: 'Download Résumé', run: 'downloadResume()' },
+                { label: 'Save Contact Card', run: 'downloadContactCard()' },
                 { sep: true },
-                { label: 'Back',    shortcut: CMD + '[', run: 'finderGoBack()' },
-                { label: 'Forward', shortcut: CMD + ']', run: 'finderGoForward()' }
-            ]
+                CLOSE_ITEM
+            ],
+            'Go': FINDER_GO_MENU
         }
     },
     'safari-window': {
         name: 'Safari',
         menus: {
             'File': [
-                { label: 'New Tab',   shortcut: CMD + 'T', run: "createSafariTab('', 'Start Page', 'start')" },
-                { label: 'Close Tab', shortcut: CMD + 'W', run: "closeSafariTab(typeof activeSafariTabId !== 'undefined' ? activeSafariTabId : null)" },
+                { label: 'New Tab',   shortcut: OPT + 'T', run: "createSafariTab('', 'Start Page', 'start')" },
+                { label: 'Close Tab', run: "closeSafariTab(typeof activeSafariTabId !== 'undefined' ? activeSafariTabId : null)" },
                 { sep: true },
-                { label: 'Open in Live Browser', run: 'openCurrentSafariLink()' }
+                { label: 'Open in Your Browser', run: 'openCurrentSafariLink()' }
             ],
             'Edit': [
-                { label: 'Undo', shortcut: CMD + 'Z', disabled: true },
-                { label: 'Copy Address', shortcut: CMD + 'L', run: 'copyCurrentSafariUrl()' },
-                { label: 'Find in Page', shortcut: CMD + 'F', disabled: true }
+                { label: 'Copy Page Address', run: 'copyCurrentSafariUrl()' }
             ],
             'View': [
                 { label: 'Start Page', run: 'openSafariStartPage()' },
-                { label: 'Reload Page', shortcut: CMD + 'R', run: 'safariReload()' },
-                { label: 'Full Screen', shortcut: CMD + 'F', run: 'maximizeActiveWindow()' }
+                { label: 'Reload Page', shortcut: CMD + 'R', run: 'safariReload()' }
             ],
             'History': [
                 { label: 'Back',    shortcut: CMD + '[', run: 'safariHistoryBack()' },
                 { label: 'Forward', shortcut: CMD + ']', run: 'safariHistoryForward()' }
+            ],
+            'Bookmarks': [
+                { label: 'GitHub',       run: "openSafariShortcut('github')" },
+                { label: 'LinkedIn',     run: "openSafariShortcut('linkedin')" },
+                { label: 'Hugging Face', run: "openSafariShortcut('huggingface')" },
+                { label: 'Substack',     run: "openSafariShortcut('substack')" }
             ]
         }
     },
@@ -160,23 +174,16 @@ const APP_MENUS = {
         name: 'Mail',
         menus: {
             'File': [
-                { label: 'New Message', shortcut: CMD + 'N', run: 'openMailCompose()' },
+                { label: 'New Message', shortcut: OPT + 'N', run: 'openMailCompose()' },
                 { sep: true },
                 { label: 'Move to Trash', run: 'trashActiveEmail()' },
-                { label: 'Close Window',  shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Undo', shortcut: CMD + 'Z', disabled: true },
-                { label: 'Select All', shortcut: CMD + 'A', disabled: true }
-            ],
-            'View': [
-                { label: 'Show Inbox', run: "switchMailbox('inbox', document.querySelector('[data-mailbox=\\'inbox\\']'))" },
-                { label: 'Show VIPs', run: "switchMailbox('vip', document.querySelector('[data-mailbox=\\'vip\\']'))" }
+                CLOSE_ITEM
             ],
             'Mailbox': [
                 { label: 'Inbox',  run: "switchMailbox('inbox', document.querySelector('[data-mailbox=\\'inbox\\']'))" },
                 { label: 'VIPs',   run: "switchMailbox('vip', document.querySelector('[data-mailbox=\\'vip\\']'))" },
                 { label: 'Sent',   run: "switchMailbox('sent', document.querySelector('[data-mailbox=\\'sent\\']'))" },
+                { label: 'Drafts', run: "switchMailbox('drafts', document.querySelector('[data-mailbox=\\'drafts\\']'))" },
                 { label: 'Trash',  run: "switchMailbox('trash', document.querySelector('[data-mailbox=\\'trash\\']'))" }
             ]
         }
@@ -185,19 +192,16 @@ const APP_MENUS = {
         name: 'Notes',
         menus: {
             'File': [
-                { label: 'New Note', shortcut: CMD + 'N', run: 'addNewNotePrompt()' },
+                { label: 'New Note', shortcut: OPT + 'N', run: 'addNewNotePrompt()' },
+                { label: 'Delete Note', run: 'deleteActiveNote()' },
                 { sep: true },
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Undo', shortcut: CMD + 'Z', disabled: true },
-                { label: 'Cut', shortcut: CMD + 'X', disabled: true },
-                { label: 'Copy', shortcut: CMD + 'C', disabled: true },
-                { label: 'Paste', shortcut: CMD + 'V', disabled: true },
-                { label: 'Select All', shortcut: CMD + 'A', disabled: true }
+                CLOSE_ITEM
             ],
             'View': [
-                { label: 'All Notes', run: '' }
+                { label: 'All iCloud',       run: "switchNotesCategory('all')" },
+                { label: 'Philosophy',       run: "switchNotesCategory('philosophy')" },
+                { label: 'Current Learning', run: "switchNotesCategory('learning')" },
+                { label: 'Tech Notes',       run: "switchNotesCategory('stack')" }
             ]
         }
     },
@@ -205,13 +209,11 @@ const APP_MENUS = {
         name: 'Terminal',
         menus: {
             'Shell': [
-                { label: 'Clear Buffer', shortcut: CMD + 'K', run: "document.getElementById('terminal-output').innerHTML = ''" },
+                { label: 'Clear Screen', shortcut: '⌃L', run: "document.getElementById('terminal-output').innerHTML = ''" },
+                { label: 'neofetch', run: "runTerminalCommand('neofetch')" },
+                { label: 'help', run: "runTerminalCommand('help')" },
                 { sep: true },
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Clear Scrollback', shortcut: CMD + 'K', run: "document.getElementById('terminal-output').innerHTML = ''" },
-                { label: 'Select All', shortcut: CMD + 'A', disabled: true }
+                CLOSE_ITEM
             ],
             'View': [
                 { label: 'Zoom Window', run: 'maximizeActiveWindow()' }
@@ -221,42 +223,31 @@ const APP_MENUS = {
     'appstore-window': {
         name: 'App Store',
         menus: {
-            'Discover': [
-                { label: 'All Projects',   run: "filterAppStoreCategory('all', null)" },
-                { label: 'Open on GitHub', run: "openExternal('https://github.com/muditagrawal-alt')" }
-            ],
-            'Edit': [
-                { label: 'Select All', disabled: true }
-            ],
-            'View': [
-                { label: 'All Categories', run: "filterAppStoreCategory('all', null)" }
+            'Store': [
+                { label: 'Discover',       run: "filterAppStoreCategory('all', document.querySelector('.appstore-sidebar .sidebar-item'))" },
+                { label: 'All on GitHub ↗', run: "openExternal('https://github.com/muditagrawal-alt')" }
             ]
         }
     },
     'settings-window': {
         name: 'System Settings',
         menus: {
-            'Edit': [
-                { label: 'Select All', disabled: true }
-            ],
             'View': [
-                { label: 'Appearance', run: "switchSettingsTab('appearance', null)" },
-                { label: 'Wallpaper',  run: "switchSettingsTab('wallpaper', null)" },
-                { label: 'About',      run: "switchSettingsTab('about', null)" }
+                { label: 'Appearance',      run: "openSettingsPane('appearance')" },
+                { label: 'Wallpaper',       run: "openSettingsPane('wallpaper')" },
+                { label: 'Desktop & Dock',  run: "openSettingsPane('desktop-dock')" },
+                { label: 'Siri & Iris',     run: "openSettingsPane('siri')" },
+                { label: 'Privacy',         run: "openSettingsPane('privacy')" },
+                { label: 'About This Mac',  run: "openSettingsPane('about-mac')" }
             ]
         }
     },
     'photos-window': {
         name: 'Photos',
         menus: {
-            'File': [
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Select All', disabled: true }
-            ],
+            'File': [CLOSE_ITEM],
             'View': [
-                { label: 'Certificates & Artifacts', run: '' }
+                { label: 'Certificates', run: "switchPhotoAlbum('certificates')" }
             ]
         }
     },
@@ -264,14 +255,8 @@ const APP_MENUS = {
         name: 'TextEdit',
         menus: {
             'File': [
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Undo', shortcut: CMD + 'Z', disabled: true },
-                { label: 'Select All', shortcut: CMD + 'A', disabled: true }
-            ],
-            'View': [
-                { label: 'Wrap to Page', disabled: true }
+                { label: 'Open README.txt', run: "openTextFile('readme')" },
+                CLOSE_ITEM
             ]
         }
     },
@@ -282,13 +267,7 @@ const APP_MENUS = {
                 { label: 'Empty Trash', run: 'emptyTrash()' },
                 { label: 'Put Back', run: 'restoreTrash()' },
                 { sep: true },
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Select All', disabled: true }
-            ],
-            'View': [
-                { label: 'as Icons', disabled: true }
+                CLOSE_ITEM
             ]
         }
     },
@@ -296,22 +275,71 @@ const APP_MENUS = {
         name: 'Preview',
         menus: {
             'File': [
-                { label: 'Download Resume', shortcut: CMD + 'S', run: 'downloadResume()' },
+                { label: 'Download Résumé', run: 'downloadResume()' },
                 { sep: true },
-                { label: 'Close Window', shortcut: CMD + 'W', run: 'closeActiveWindow()' }
-            ],
-            'Edit': [
-                { label: 'Copy', disabled: true }
+                CLOSE_ITEM
+            ]
+        }
+    },
+    'dmg-window': {
+        name: 'Finder',
+        menus: {
+            'File': [
+                { label: 'Eject', run: 'ejectDiskImage()' },
+                CLOSE_ITEM
+            ]
+        }
+    },
+    'music-window': {
+        name: 'Music',
+        menus: {
+            'Controls': [
+                { label: 'Play / Pause', shortcut: 'Space', run: 'toggleMusicPlay()' },
+                { label: 'Next', run: 'nextMusicTrack()' },
+                { label: 'Previous', run: 'prevMusicTrack()' }
             ],
             'View': [
-                { label: 'Zoom In', disabled: true },
-                { label: 'Zoom Out', disabled: true }
+                { label: 'Library', run: "switchMusicNav('listen', 'listen')" },
+                { label: 'Radio',   run: "switchMusicNav('radio', 'radio')" }
+            ]
+        }
+    },
+    'photobooth-window': {
+        name: 'Photo Booth',
+        menus: {
+            'File': [
+                { label: 'Take Photo', run: 'takePhotoBoothPicture()' },
+                CLOSE_ITEM
+            ],
+            'View': [
+                { label: 'Show Effects', run: 'togglePhotoBoothEffects()' }
+            ]
+        }
+    },
+    'breakout-window': {
+        name: 'Breakout',
+        menus: {
+            'Game': [
+                { label: 'New Game', run: 'startBreakoutGame()' },
+                { label: 'Pause / Resume', shortcut: 'Space', run: 'toggleBreakoutPause()' },
+                CLOSE_ITEM
+            ]
+        }
+    },
+    'snake-window': {
+        name: 'Snake',
+        menus: {
+            'Game': [
+                { label: 'New Game', run: 'startSnakeGame()' },
+                { label: 'Pause / Resume', shortcut: 'Space', run: 'toggleSnakePause()' },
+                CLOSE_ITEM
             ]
         }
     }
 };
 
-let currentMenuAppId = null;
+// undefined (not null) so the very first sync — with no window open — still renders
+let currentMenuAppId;
 
 function renderMenuItems(items) {
     return items.map(item => {

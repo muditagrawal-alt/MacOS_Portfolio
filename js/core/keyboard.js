@@ -21,26 +21,35 @@ function isTypingTarget() {
     return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable;
 }
 
-/* ── Cmd+Tab application switcher ───────────────────────────────────────── */
+/* ── App switcher ───────────────────────────────────────────────────────
+   ⌥Tab (and ⌥` on platforms where Alt+Tab belongs to the OS). ⌘Tab is still
+   handled for the rare environment that delivers it, but on a Mac it never
+   reaches a web page — the OS switcher takes it first. */
 
 const APP_ORDER = [
+    { id: 'welcome-window',    name: 'About Mudit',     icon: 'assets/Professionalimage.jpeg' },
     { id: 'finder-window',     name: 'Finder',          icon: 'assets/icons/finder.png' },
     { id: 'safari-window',     name: 'Safari',          icon: 'assets/icons/safari.png' },
-    { id: 'music-window',      name: 'Apple Music',     icon: 'assets/icons/app-store.png' },
+    { id: 'music-window',      name: 'Music',           icon: 'assets/icons/music.png' },
     { id: 'photobooth-window', name: 'Photo Booth',     icon: 'assets/icons/photobooth.svg' },
     { id: 'breakout-window',   name: 'Breakout',        icon: 'assets/icons/breakout.svg' },
     { id: 'snake-window',      name: 'Snake',           icon: 'assets/icons/snake.svg' },
     { id: 'mail-window',       name: 'Mail',            icon: 'assets/icons/mail.png' },
     { id: 'notes-window',      name: 'Notes',           icon: 'assets/icons/notes.png' },
+    { id: 'photos-window',     name: 'Photos',          icon: 'assets/icons/photos.png' },
     { id: 'appstore-window',   name: 'App Store',       icon: 'assets/icons/app-store.png' },
     { id: 'terminal-window',   name: 'Terminal',        icon: 'assets/icons/terminal.png' },
     { id: 'settings-window',   name: 'System Settings', icon: 'assets/icons/settings.png' },
+    { id: 'textedit-window',   name: 'TextEdit',        icon: 'assets/icons/filetype-txt.svg' },
+    { id: 'resume-window',     name: 'Preview',         icon: 'assets/icons/filetype-pdf.svg' },
+    { id: 'dmg-window',        name: 'OmniDoc',         icon: 'assets/icons/filetype-dmg.svg' },
     { id: 'trash-window',      name: 'Trash',           icon: 'assets/icons/trash-full.png' }
 ];
 
 let switcherOpen = false;
 let switcherIndex = 0;
 let switcherApps = [];
+let switcherModifier = null;   // 'Alt' | 'Meta' | 'Control' — released to commit
 
 function openAppSwitcher() {
     // Only apps that are actually running, most-recently-used first — same
@@ -67,10 +76,14 @@ function renderAppSwitcher() {
         document.body.appendChild(overlay);
     }
     overlay.innerHTML = switcherApps.map((app, i) => `
-        <div class="app-switcher-item ${i === switcherIndex ? 'selected' : ''}">
-            <img src="${app.icon}" alt="${escapeHtml(app.name)}">
+        <div class="app-switcher-item ${i === switcherIndex ? 'selected' : ''}" data-index="${i}">
+            <img src="${escapeHtml(app.icon)}" alt="${escapeHtml(app.name)}">
         </div>
     `).join('') + `<div class="app-switcher-label">${escapeHtml(switcherApps[switcherIndex].name)}</div>`;
+    overlay.querySelectorAll('.app-switcher-item').forEach(item => {
+        item.addEventListener('mouseenter', () => { switcherIndex = Number(item.dataset.index); renderAppSwitcher(); });
+        item.addEventListener('mousedown', (e) => { e.preventDefault(); switcherIndex = Number(item.dataset.index); commitAppSwitcher(); });
+    });
     overlay.classList.add('visible');
 }
 
@@ -81,16 +94,74 @@ function commitAppSwitcher() {
         openWindow(switcherApps[switcherIndex].id);
     }
     switcherOpen = false;
+    switcherModifier = null;
+}
+
+/* ── Keyboard Shortcuts sheet (Help ▸ Keyboard Shortcuts, or "?") ─────── */
+function showKeyboardShortcuts() {
+    const rows = [
+        ['Everywhere'],
+        ['Spotlight — search everything', ['⌘', 'K']],
+        ['Launchpad', ['⌥', 'L']],
+        ['Mission Control', ['F3']],
+        ['Switch apps', ['⌥', 'Tab']],
+        ['This list', ['?']],
+        ['Windows'],
+        ['Close window', ['⌥', 'W']],
+        ['Minimise window', ['⌥', 'M']],
+        ['New Finder window / note / message', ['⌥', 'N']],
+        ['System Settings', ['⌥', ',']],
+        ['In apps'],
+        ['Quick Look the selection', ['Space']],
+        ['Finder views: icons · list · columns', ['⌥', '1–3']],
+        ['Back · Forward (Finder, Safari)', ['⌘', '[  ]']],
+        ['New Safari tab', ['⌥', 'T']],
+        ['Focus the search field', ['⌘', 'F']],
+        ['Clear the Terminal', ['⌃', 'L']]
+    ];
+    const html = '<dl class="kbd-sheet">' + rows.map(r => r.length === 1
+        ? `<div class="kbd-sheet-group">${escapeHtml(r[0])}</div>`
+        : `<dt>${escapeHtml(r[0])}</dt><dd>${r[1].map(k => `<kbd>${escapeHtml(k)}</kbd>`).join('')}</dd>`
+    ).join('') + '</dl>';
+    if (typeof openQuickLookData === 'function') {
+        openQuickLookData({ title: 'Keyboard Shortcuts', icon: 'fas fa-keyboard', meta: 'Every shortcut here works in the browser', html: `<div class="ql-text-preview">${html}</div>` });
+    }
 }
 
 /* ── Binding table ──────────────────────────────────────────────────────── */
 
+// ⌥ + letter produces a special character on macOS (⌥W → ∑), so these are
+// matched on the physical key code, not e.key.
+const OPTION_COMMANDS = {
+    KeyW: () => closeActiveWindow(),
+    KeyM: () => minimizeActiveWindow(),
+    KeyN: () => newInActiveApp(),
+    KeyT: () => { if (isWindowActive('safari-window')) createSafariTab('', 'Start Page', 'start'); else return false; },
+    Comma: () => openWindow('settings-window'),
+    Digit1: () => finderView('icons'),
+    Digit2: () => finderView('list'),
+    Digit3: () => finderView('columns')
+};
+
+function newInActiveApp() {
+    if (isWindowActive('notes-window')) addNewNotePrompt();
+    else if (isWindowActive('mail-window')) openMailCompose();
+    else if (isWindowActive('safari-window')) createSafariTab('', 'Start Page', 'start');
+    else openWindow('finder-window');
+}
+
+function finderView(mode) {
+    if (!isWindowActive('finder-window')) return false;
+    setFinderViewMode(mode);
+}
+
 document.addEventListener('keydown', (e) => {
-    // Cmd+Tab cycles while Cmd is held
-    if (isCmd(e) && e.key === 'Tab') {
+    const switcherCombo = (e.key === 'Tab' && (e.altKey || isCmd(e))) || (e.altKey && e.code === 'Backquote');
+    if (switcherCombo) {
         e.preventDefault();
         if (!switcherOpen) {
             if (!openAppSwitcher()) return;
+            switcherModifier = e.altKey ? 'Alt' : (IS_APPLE ? 'Meta' : 'Control');
         } else {
             switcherIndex = e.shiftKey
                 ? (switcherIndex - 1 + switcherApps.length) % switcherApps.length
@@ -116,22 +187,9 @@ document.addEventListener('keydown', (e) => {
     }
 
     // Launchpad: ⌥L / Alt+L (primary), ⌘⇧L / Ctrl+Shift+L (alternate), F4 (bonus).
-    //
-    // F4 is NOT reliable and is intentionally not the advertised shortcut: on
-    // real Mac hardware with the default F-row (media-key) setting, F4 opens
-    // the OS's own Launchpad and is consumed by WindowServer before the
-    // keydown ever reaches the browser tab — no web page can intercept that.
-    // We still bind it for the cases where it *does* arrive (external
-    // keyboards, "use F1-F12 as standard function keys" enabled, non-Mac).
-    //
-    // None of these combos type a visible character worth protecting (⌥L
-    // alone only inserts "¬", which nobody is relying on), so — unlike a
-    // shortcut such as ⌘F — this one must NOT be gated by isTypingTarget().
-    // It used to be, which meant ⌥L and F4 silently did nothing the instant
-    // focus sat in the Terminal input, the Safari address bar, Mail compose,
-    // or the Notes editor — i.e. most of the time a visitor had touched
-    // anything. Only ⌘⇧L bypassed the gate, which is why that one "worked"
-    // and the others appeared broken.
+    // F4 is unreliable on Mac hardware (the OS takes it), so it isn't the
+    // advertised one. Not gated by isTypingTarget(): ⌥L types nothing anyone
+    // relies on, and gating it made it dead whenever an input had focus.
     const isKeyL = e.code === 'KeyL' || (e.key && e.key.toLowerCase() === 'l') || e.key === '¬';
     const isLaunchpadShortcut =
         (e.altKey && !e.metaKey && !e.ctrlKey && isKeyL) ||
@@ -144,20 +202,16 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    // Lock Screen: ⌃⌘Q on Mac (the real macOS binding). On other platforms
-    // plain Ctrl+Q already means "close window" below, so this uses
-    // Ctrl+Alt+Q there instead to avoid stealing that binding.
-    const isLockShortcut = IS_APPLE
-        ? (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'q')
-        : (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'q');
-    if (isLockShortcut) {
+    // Lock Screen: ⌃⌥Q. (⌃⌘Q is the real macOS binding — and it locks the
+    // visitor's actual Mac before the page ever sees it.)
+    if (e.ctrlKey && e.altKey && e.code === 'KeyQ') {
         e.preventDefault();
         if (typeof lockScreenNow === 'function') lockScreenNow();
         return;
     }
 
-    // Spotlight / Command Palette: Cmd+K, Ctrl+K, or Alt+K (avoids macOS/Windows Cmd+Space OS collisions)
-    if ((isCmd(e) && e.key.toLowerCase() === 'k') || (e.altKey && e.code === 'Space') || (e.ctrlKey && e.key === '/')) {
+    // Spotlight / Command Palette: ⌘K / Ctrl+K, plus ⌥Space and Ctrl+/
+    if ((isCmd(e) && e.key && e.key.toLowerCase() === 'k') || (e.altKey && e.code === 'Space') || (e.ctrlKey && e.key === '/')) {
         if (!isTypingTarget() || (isCmd(e) && e.key.toLowerCase() === 'k')) {
             e.preventDefault();
             toggleSpotlight();
@@ -165,31 +219,53 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    if (!isCmd(e)) return;
+    // ⌥-commands (see OPTION_COMMANDS)
+    if (e.altKey && !e.metaKey && !e.ctrlKey && OPTION_COMMANDS[e.code]) {
+        if (OPTION_COMMANDS[e.code]() !== false) e.preventDefault();
+        return;
+    }
+
+    // ⌃L clears the Terminal, as in a real shell.
+    if (e.ctrlKey && !e.metaKey && e.code === 'KeyL' && isWindowActive('terminal-window')) {
+        e.preventDefault();
+        const out = document.getElementById('terminal-output');
+        if (out) out.innerHTML = '';
+        return;
+    }
+
+    // "?" opens the shortcut sheet when nobody is typing.
+    if (e.key === '?' && !isTypingTarget() && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        showKeyboardShortcuts();
+        return;
+    }
+
+    if (!isCmd(e) || !e.key) return;
 
     switch (e.key.toLowerCase()) {
-        case 'w':                       // Close window
+        // ⌘W/⌘M/⌘Q/⌘N/⌘T are bound for environments that deliver them (an
+        // installed PWA, some browsers on Windows/Linux); menus advertise ⌥.
+        case 'w':
             e.preventDefault();
             closeActiveWindow();
             break;
-        case 'm':                       // Minimise window
+        case 'm':
             e.preventDefault();
             minimizeActiveWindow();
             break;
-        case 'q':                       // Quit app — closes its window
+        case 'q':
             e.preventDefault();
             closeActiveWindow();
             break;
-        case 't':                       // New Safari tab
+        case 't':
             if (isWindowActive('safari-window')) {
                 e.preventDefault();
                 createSafariTab('', 'Start Page', 'start');
             }
             break;
-        case 'n':                       // New Finder window / new Note
+        case 'n':
             e.preventDefault();
-            if (isWindowActive('notes-window')) addNewNotePrompt();
-            else openWindow('finder-window');
+            newInActiveApp();
             break;
         case 'f':                       // Focus the active app's search field
             if (!isTypingTarget()) {
@@ -197,7 +273,7 @@ document.addEventListener('keydown', (e) => {
                 if (field) { e.preventDefault(); field.focus(); field.select(); }
             }
             break;
-        case ',':                       // System Settings
+        case ',':
             e.preventDefault();
             openWindow('settings-window');
             break;
@@ -207,15 +283,29 @@ document.addEventListener('keydown', (e) => {
                 if (url) { e.preventDefault(); url.focus(); url.select(); }
             }
             break;
+        case 'r':                       // Reload the Safari page, not the portfolio
+            if (isWindowActive('safari-window')) { e.preventDefault(); safariReload(); }
+            break;
+        case '[':
+            if (isWindowActive('finder-window')) { e.preventDefault(); finderGoBack(); }
+            else if (isWindowActive('safari-window')) { e.preventDefault(); safariHistoryBack(); }
+            break;
+        case ']':
+            if (isWindowActive('finder-window')) { e.preventDefault(); finderGoForward(); }
+            else if (isWindowActive('safari-window')) { e.preventDefault(); safariHistoryForward(); }
+            break;
     }
 });
 
 document.addEventListener('keyup', (e) => {
-    // The switcher commits when Cmd is released, exactly like macOS.
-    if (switcherOpen && (e.key === 'Meta' || e.key === 'Control')) {
+    // The switcher commits when its modifier is released, exactly like macOS.
+    if (switcherOpen && e.key === switcherModifier) {
         commitAppSwitcher();
     }
 });
+
+// A switcher left open by a lost keyup (focus moved to another window) closes.
+window.addEventListener('blur', () => { if (switcherOpen) commitAppSwitcher(); });
 
 function isWindowActive(windowId) {
     const active = getActiveWindow();
