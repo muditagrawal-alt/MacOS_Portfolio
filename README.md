@@ -8,21 +8,13 @@ A fully interactive, MacOS-themed portfolio website built with vanilla HTML, CSS
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 
-## 📸 Screenshots
+## 📸 Screenshot
 
 <div align="center">
 
-### Clean Desktop Interface
-![About Me Window](assets/home.png)
-*MacOS-style window with sidebar navigation and desktop icons*
+![The desktop, with the About Mudit window](assets/og-image.jpg)
 
-### Multi-Window Desktop Experience
-![Multiple Windows](assets/tabs.png)
-*About Me, Experience, Contact windows and functional Terminal running simultaneously*
-
-### Resume PDF Viewer & Menu Bar
-![Resume PDF Viewer](assets/resume.png)
-*Interactive resume viewer with PDF preview and quick access menu*
+*First run: the About Mudit window, live widgets and the desktop files*
 
 </div>
 
@@ -127,55 +119,27 @@ python -m http.server 8000
 
 ## 📂 Project Structure
 
-```
-MacOS_Portfolio/
-├── index.html              # Main HTML file
-├── style.css               # CSS styling
-├── script.js               # Main JavaScript logic
-├── battery-status.js       # Battery indicator functionality
-├── resume-data.js          # Resume data and terminal commands
-├── assets/                 # Images and resources
-│   ├── Professionalimage.jpeg
-│   ├── MuditAgrawalResumeJanuary2026.pdf
-│   ├── MuditAgrawalResumePreview.png
-│   ├── FINDER.jpeg
-│   ├── experience.jpeg
-│   ├── education.png
-│   ├── PROJECTS.jpeg
-│   ├── SKILLS.jpeg
-│   ├── CONTACT.jpeg
-│   ├── home.png           # About Me window screenshot
-│   ├── tabs.png           # Multi-window desktop screenshot
-│   └── resume.png         # Resume PDF viewer screenshot
-├── .gitignore
-├── LICENSE
-└── README.md
-```
+See [Architecture](#architecture) below for a file-by-file map.
 
 ## 🎨 Customization
 
 ### Updating Content
 
-1. **Personal Information**: Edit `index.html` sections in each window div
-2. **Projects**: Modify the project cards in the `projects-window` div
-3. **Skills**: Update skill tags in the `skills-window` div
-4. **Contact Info**: Change links in the `contact-window` div
-5. **Resume**: Replace PDF and preview image in `assets/`
+Everything visitors read comes from a few data files, so one edit updates every app (Finder, Spotlight, Iris, Terminal, the About window):
+
+1. **Profile, experience, education, contact, skills**: `js/data/profile.js`
+2. **Projects**: the `proj-*` entries in `js/data/filesystem.js` and `js/data/corpus.js` (the App Store and Iris are built from these)
+3. **Desktop files, Photos certificates, Trash post-mortems**: `js/data/desktop-files.js`
+4. **Résumé**: replace `assets/MuditAgrawalResumeAugust2026.pdf` and its preview PNG
 
 ### Styling
 
-- **Colors**: Modify CSS variables in `style.css`
-- **Fonts**: Update Google Fonts link in `index.html`
-- **Layout**: Adjust grid and flexbox properties in `style.css`
+- **Colours & motion tokens**: `css/variables.css` (the accent colour is `--accent`; System Settings can change it live)
+- **Fonts**: the system font (San Francisco on Apple devices) is first in `--font-ui` in `css/base.css`; Inter is the fallback elsewhere
 
 ### Terminal Commands
 
-Add custom commands in `resume-data.js`:
-```javascript
-// Add your command
-case 'yourcommand':
-    return 'Your output here';
-```
+Add a `case` to the `switch (cmd)` in `js/apps/terminal.js`, and list it in `TERMINAL_COMMANDS` for Tab completion.
 
 ## 🌐 Deployment
 
@@ -219,11 +183,11 @@ Upload all files to any static hosting service (AWS S3, Firebase Hosting, etc.)
 
 ## 📱 Mobile Responsiveness
 
-The portfolio adapts to mobile devices with:
-- Collapsible menu bar
-- Touch-friendly window controls
-- Responsive dock positioning
-- Optimized layouts for small screens
+At phone width (`css/responsive.css`):
+- Windows become full-width sheets between the menu bar and the Dock
+- Finder, Settings, Music and App Store sidebars become swipeable pill strips
+- Mail and Notes push from the list to the detail, with a Back button
+- The Dock keeps the essential apps; everything else is one tap away in Launchpad
 
 ## 🤝 Contributing
 
@@ -272,26 +236,38 @@ css/
   menu-bar.css          menu bar + dynamic per-app menus
   dock.css              dock, magnification, running indicators
   window.css            window chrome, focus states, traffic lights
-  context-menu.css      right-click menus + Cmd+Tab switcher
-  spotlight.css         Cmd+Space search panel
+  context-menu.css      right-click menus + ⌥Tab switcher
+  spotlight.css         ⌘K search panel
   quick-look.css        Space-bar preview overlay
   boot.css              startup animation
+  system-ui.css         notification banners, brightness veil, window motion, Frosted Glass
   responsive.css        must load LAST — its media queries override the rest
   apps/*.css            one file per application
 js/
   data/profile.js       single source of truth for name, education, contact
   data/corpus.js        ONE search index, shared by Safari, Spotlight and Iris
+  data/filesystem.js    Finder's folders and files (projects, skills, education, socials)
+  data/desktop-files.js desktop files, Photos certificates, Trash post-mortems
+  data/notes.js         Notes content
+  data/music.js         music catalogue + radio fallbacks
+  shared/live-data.js   live weather and GitHub activity, cached
+  shared/contact-form.js  the one contact-form send path, vCard + share helpers
   config/config.js      runtime config — contains no secrets
   core/utils.js         escapeHtml / safeUrl / openExternal, math parser
   core/window-manager.js  open, close, focus, drag, clamp, cascade, maximize
-  core/keyboard.js      global Cmd shortcuts + Cmd+Tab app switcher
-  core/spotlight.js     Cmd+Space search
+  core/keyboard.js      global shortcuts (⌘K, ⌥-window commands) + ⌥Tab app switcher
+  core/spotlight.js     ⌘K search + quick actions
   core/context-menu.js  right-click menus per surface
   core/menu-bar.js      clock + per-application menu definitions
   core/boot-animation.js  startup sequence (skippable, honours reduced-motion)
   core/quick-look.js    Space-bar previews
   core/system-status.js Wi-Fi + battery indicators
+  core/control-center.js  Control Centre (brightness veil, volume, Now Playing)
+  core/desktop-widgets.js live clock, weather and GitHub widgets
+  apps/welcome.js       "About Mudit" first-run window
+  apps/iris-brain.js    Iris's in-browser RAG: BM25 retrieval + cited answers
   apps/*.js             one controller per application
+scripts/                CI gates 1–4 (see Testing)
 api/iris.js             serverless model proxy — keeps the API key server-side
 ```
 
@@ -314,16 +290,42 @@ Model access goes through `api/iris.js`; see `api/README.md`.
 
 ### Keyboard shortcuts
 
+Every shortcut below reaches the page. Browsers and macOS reserve ⌘W, ⌘Q, ⌘N, ⌘T, ⌘M, ⌘Space and ⌘Tab
+before a website ever sees them (⌘W would close your tab), so window commands use ⌥ instead. Press `?` on the desktop for this list.
+
 | Shortcut | Action |
 | --- | --- |
-| `⌘Space` | Spotlight search |
-| `⌘Tab` | Switch between running apps |
-| `⌘W` / `⌘Q` | Close the frontmost window |
-| `⌘M` | Minimise |
-| `⌘N` | New Finder window (or new Note in Notes) |
-| `⌘T` | New Safari tab |
-| `⌘L` | Focus the Safari address bar |
+| `⌘K` | Spotlight — search everything |
+| `⌥L` | Launchpad |
+| `F3` | Mission Control |
+| `⌥Tab` | Switch between running apps |
+| `⌥W` | Close the frontmost window |
+| `⌥M` | Minimise |
+| `⌥N` | New Finder window / Note / Message (depending on the app) |
+| `⌥T` | New Safari tab |
+| `⌥,` | System Settings |
+| `⌥1` `⌥2` `⌥3` | Finder: icons / list / columns |
+| `⌘[` `⌘]` | Back / Forward in Finder and Safari |
 | `⌘F` | Focus the frontmost app's search field |
-| `⌘,` | System Settings |
-| `Space` | Quick Look the selected item |
+| `⌘L` / `⌘R` | Safari: address bar / reload the page |
+| `⌃L` | Clear the Terminal |
+| `⌃⌥Q` | Lock Screen |
+| `Space` | Quick Look the selection (arrow keys step through desktop files) |
 | `↑` `↓` / `Tab` | Terminal history / completion |
+
+## Testing
+
+```bash
+npm install
+npx playwright install chromium   # once, for the browser suite
+npm run test:all
+```
+
+| Gate | Command | What it checks |
+| --- | --- | --- |
+| 1 | `npm run test:syntax` | Every JS file parses |
+| 2 | `npm run test:assets` | Every asset referenced from HTML **and** JS exists |
+| 3 | `npm run test:components` | Behaviour in jsdom, plus wiring integrity: every inline handler and menu command calls a real function, every linked Settings pane / Finder location exists |
+| 4 | `npm run test:e2e` | Real Chromium: every Dock app, traffic lights, lock screen, Quick Look, Spotlight, Mail/Safari XSS, camera release, keyboard shortcuts, Iris grounding, phone layout (231 checks) |
+
+The E2E suite answers GitHub, weather, Wikipedia and radio requests from fixtures and intercepts the contact form, so it is deterministic and never sends real email. `npm run test:e2e -- safari` runs only matching sections.
