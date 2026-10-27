@@ -1,0 +1,118 @@
+/* Safari — start page with a bottom address bar */
+
+.ios-page.safari-page .ios-page-body {
+    padding-top: calc(var(--safe-top) + 10px);
+    padding-bottom: calc(var(--safe-bottom) + var(--kb, 0px) + 150px);
+    background:
+        radial-gradient(90% 40% at 50% 0%, color-mix(in srgb, var(--ios-tint) 14%, transparent), transparent 70%),
+        var(--ios-bg);
+}
+
+.safari-h { margin: 18px 4px 12px; font-size: 21px; font-weight: 700; letter-spacing: -0.3px; }
+.safari-h:first-child { margin-top: 8px; }
+
+.safari-favs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 10px;
+}
+
+.safari-fav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.safari-fav span {
+    display: grid;
+    place-items: center;
+    width: 66px;
+    height: 66px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 0 0.5px var(--ios-sep), 0 6px 14px -8px rgba(0, 0, 0, 0.3);
+}
+
+.safari-fav-tile { color: #fff; font-size: 34px; }
+.safari-fav small { max-width: 100%; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.safari-fav:active span { transform: scale(0.94); }
+
+.safari-privacy {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--ios-card);
+}
+
+.safari-privacy i { font-size: 30px; color: var(--ios-label-2); }
+.safari-privacy p { margin: 0; font-size: 14.5px; line-height: 1.4; color: var(--ios-label-2); }
+.safari-privacy strong { color: var(--ios-label); }
+
+.safari-none { color: var(--ios-label-2); font-size: 15px; margin: 4px 4px 0; }
+.safari-web { margin-top: 18px; }
+
+.safari-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding: 10px 14px calc(var(--safe-bottom) + var(--kb, 0px) + 22px);
+    background: var(--ios-nav-bg);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-top: 0.5px solid var(--ios-sep);
+}
+
+.safari-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 14px;
+    border-radius: 14px;
+    background: var(--ios-card);
+    color: var(--ios-label-2);
+    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.2), 0 0 0 0.5px var(--ios-sep);
+}
+
+.safari-field input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--ios-label);
+    font: inherit;
+    font-size: 17px;
+    text-align: center;
+}
+
+.safari-field input:focus { text-align: left; }
+
+.safari-tools { display: flex; justify-content: space-between; padding: 8px 10px 0; }
+
+.safari-tools button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 36px;
+    border: none;
+    background: none;
+    color: var(--ios-tint);
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.safari-tools button:disabled { color: var(--ios-label-3); cursor: default; }
+
+.ios-device[data-form="tablet"] .safari-favs { grid-template-columns: repeat(6, 1fr); }
+.ios-device[data-form="tablet"] .safari-bar > * { max-width: 760px; margin-left: auto; margin-right: auto; }
