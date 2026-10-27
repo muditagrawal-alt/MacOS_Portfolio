@@ -53,6 +53,7 @@
     <link rel="stylesheet" href="css/apps/snake.css">
     <link rel="stylesheet" href="css/apps/music.css">
     <link rel="stylesheet" href="css/apps/control-center.css">
+    <link rel="stylesheet" href="css/apps/welcome.css">
     <link rel="stylesheet" href="css/mission-control.css">
     <link rel="stylesheet" href="css/desktop-widgets.css">
     <link rel="stylesheet" href="css/system-ui.css">
@@ -193,8 +194,21 @@ C 890,381 908,392 928,394"/>
              is what the old desktop did. -->
         <div class="desktop-files" id="desktop-files"></div>
 
+        <!-- About Mudit — first-run window (js/apps/welcome.js) -->
+        <div class="window hidden" id="welcome-window" style="width: 640px; height: 560px;" role="dialog" aria-labelledby="welcome-window-title">
+            <div class="title-bar" onmousedown="dragMouseDown(event, 'welcome-window')">
+                <div class="window-controls">
+                    <button type="button" class="control close" aria-label="Close About Mudit" title="Close" onclick="closeWindow('welcome-window')"></button>
+                    <button type="button" class="control minimize" aria-label="Minimize About Mudit" title="Minimize" onclick="minimizeWindow('welcome-window')"></button>
+                    <button type="button" class="control maximize" aria-label="Zoom About Mudit" title="Zoom" onclick="maximizeWindow('welcome-window')"></button>
+                </div>
+                <div class="window-title" id="welcome-window-title">About Mudit</div>
+            </div>
+            <div class="window-content welcome-content" id="welcome-content"></div>
+        </div>
+
         <!-- Authentic macOS Finder Window (Aakash Portfolio Style) -->
-        <div class="window" id="finder-window" style="top: 10%; left: 10%; width: 800px; height: 500px; z-index: 10;">
+        <div class="window hidden" id="finder-window" style="top: 10%; left: 10%; width: 800px; height: 500px; z-index: 10;">
             <div class="title-bar" onmousedown="dragMouseDown(event, 'finder-window')">
                 <div class="window-controls">
                     <button type="button" class="control close" aria-label="Close Finder" title="Close" onclick="closeWindow('finder-window')"></button>
@@ -1320,7 +1334,7 @@ C 890,381 908,392 928,394"/>
     <div class="dock-container">
         <div class="dock">
             <!-- Finder.app -->
-            <div class="dock-item is-running" id="dock-finder" role="button" tabindex="0" aria-label="Open Finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
+            <div class="dock-item" id="dock-finder" role="button" tabindex="0" aria-label="Open Finder" onclick="openWindow('finder-window')" data-tooltip="Finder">
                 <img src="assets/icons/finder.png" alt="Finder">
             </div>
             <!-- Launchpad.app -->
@@ -1434,6 +1448,7 @@ C 890,381 908,392 928,394"/>
     <script src="js/apps/breakout.js?v=2.3"></script>
     <script src="js/apps/snake.js?v=2.3"></script>
     <script src="js/apps/music.js?v=2.3"></script>
+    <script src="js/apps/welcome.js?v=2.3"></script>
 
     <!-- Core Systems & Awwwards Enhancements -->
     <script src="js/core/sound-effects.js"></script>
