@@ -15,7 +15,22 @@
     const actionLabel = (p) => (p.live ? 'OPEN' : 'VIEW');
 
     function getButton(p, extra = '') {
+        // A live app that runs inside the phone opens there, like an installed app.
+        if (p.appId && IOS.apps[p.appId]) {
+            return `<button type="button" class="proj-get live ${extra}" data-open-app="${escapeHtml(p.appId)}" aria-label="${escapeHtml(`OPEN ${p.name}`)}">OPEN</button>`;
+        }
         return `<a class="proj-get ${p.live ? 'live' : ''} ${extra}" href="${escapeHtml(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(`${actionLabel(p)} ${p.name}`)}">${actionLabel(p)}</a>`;
+    }
+
+    const githubButton = (p, extra = '') => (p.repo
+        ? `<a class="proj-gh ${extra}" href="${escapeHtml(safeUrl(p.repo))}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(`${p.name} on GitHub`)}"><i class="fab fa-github"></i></a>` : '');
+
+    /** A YouTube link plays inline (privacy-enhanced); a video file uses the native player. */
+    function demoVideo(url) {
+        const yt = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
+        if (yt) return `<div class="proj-video"><iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(yt[1])}?playsinline=1&rel=0" title="Demo video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+        if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return `<div class="proj-video"><video src="${escapeHtml(safeUrl(url))}" controls playsinline preload="metadata"></video></div>`;
+        return `<a class="ios-btn block secondary" href="${escapeHtml(safeUrl(url))}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play"></i> Watch the demo</a>`;
     }
 
     function list(content) {
@@ -44,13 +59,16 @@
                         <strong>${escapeHtml(p.name)}</strong>
                         <small>${escapeHtml(p.subtitle)}</small>
                     </span>
+                    ${p.live ? githubButton(p) : ''}
                     ${getButton(p)}
                 </div>`).join('') || IOS.emptyState('fas fa-cube', 'No projects here', 'Try another category.')}
             </div>
             <p class="proj-footnote">${projects.filter(p => p.live).length} live apps · ${projects.length - projects.filter(p => p.live).length} open-source repositories</p>`;
 
         content.onclick = (e) => {
-            if (e.target.closest('.proj-get')) return;
+            const app = e.target.closest('[data-open-app]');
+            if (app) { IOS.go(app.dataset.openApp); return; }
+            if (e.target.closest('.proj-get, .proj-gh')) return;
             const f = e.target.closest('[data-filter]');
             if (f) { filter = f.dataset.filter; list(content); return; }
             const item = e.target.closest('[data-project]');
@@ -77,6 +95,7 @@
                     <p>${escapeHtml(p.subtitle)}</p>
                     <div class="proj-header-actions">
                         ${getButton(p, 'big')}
+                        ${githubButton(p, 'big')}
                         <button type="button" class="proj-share" data-action="share" aria-label="Share link"><i class="fas fa-arrow-up-from-bracket"></i></button>
                     </div>
                 </div>
@@ -86,16 +105,19 @@
                 <div><span>HOSTED ON</span><strong><i class="fa${/github/.test(host) ? 'b fa-github' : 's fa-globe'}"></i></strong><small>${escapeHtml(host || '—')}</small></div>
                 <div><span>UPDATED</span><strong>${escapeHtml(p.date || '—')}</strong><small>&nbsp;</small></div>
             </div>
+            ${p.video ? `<section class="proj-section"><h3>Demo</h3>${demoVideo(p.video)}</section>` : ''}
             <section class="proj-section">
                 <h3>About this project</h3>
                 ${prose.map(s => `<p>${escapeHtml(s)}</p>`).join('')}
                 ${bullets.length ? `<ul>${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : ''}
             </section>
             ${p.stack.length ? `<section class="proj-section"><h3>Built with</h3><div class="proj-tags">${p.stack.map(t => `<span>${escapeHtml(t)}</span>`).join('')}</div></section>` : ''}
+            ${p.repo ? `<section class="proj-section"><h3>Source code</h3><a class="ios-btn block secondary" href="${escapeHtml(safeUrl(p.repo))}" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> View on GitHub · ${escapeHtml(p.repo.replace(/^https?:\/\/(www\.)?github\.com\//, ''))}</a></section>` : ''}
             <section class="proj-section">
                 <h3>Questions?</h3>
                 <button type="button" class="ios-btn block secondary" data-action="ask"><i class="fas fa-wand-magic-sparkles"></i> Ask Iris about ${escapeHtml(p.name)}</button>
             </section>`;
+        content.querySelectorAll('[data-open-app]').forEach(b => b.addEventListener('click', () => IOS.go(b.dataset.openApp)));
         IOS.bind(content, {
             share: () => {
                 if (navigator.share) navigator.share({ title: p.title, text: p.blurb, url: p.link }).catch(() => {});

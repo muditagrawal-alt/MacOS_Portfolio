@@ -47,6 +47,7 @@
     <link rel="stylesheet" href="css/ios/apps/weather.css?v=2.5">
     <link rel="stylesheet" href="css/ios/apps/calculator.css?v=2.5">
     <link rel="stylesheet" href="css/ios/apps/settings.css?v=2.5">
+    <link rel="stylesheet" href="css/ios/apps/live-apps.css?v=2.5">
 </head>
 <body>
     <!-- The whole phone. On a real phone it IS the screen; opened on a desktop
@@ -86,8 +87,10 @@
 
         <!-- Home Screen -->
         <main class="ios-home" id="ios-home" aria-label="Home Screen">
-            <div class="ios-home-grid" id="ios-home-grid"></div>
-            <button type="button" class="ios-search-pill" id="ios-search-pill"><i class="fas fa-magnifying-glass"></i> Search</button>
+            <div class="ios-home-pages" id="ios-home-pages">
+                <section class="ios-home-grid" id="ios-home-grid" aria-label="Home Screen, page 1"></section>
+            </div>
+            <button type="button" class="ios-search-pill" id="ios-search-pill"><span class="ios-pill-search"><i class="fas fa-magnifying-glass"></i> Search</span><span class="ios-page-dots" id="ios-page-dots" aria-hidden="true"></span></button>
             <nav class="ios-dock" id="ios-dock" aria-label="Dock"></nav>
         </main>
 
@@ -134,6 +137,7 @@
     <script src="js/ios/system.js?v=2.5"></script>
     <script src="js/ios/apps/about.js?v=2.5"></script>
     <script src="js/ios/apps/projects.js?v=2.5"></script>
+    <script src="js/ios/apps/live-apps.js?v=2.5"></script>
     <script src="js/ios/apps/resume.js?v=2.5"></script>
     <script src="js/ios/apps/photos.js?v=2.5"></script>
     <script src="js/ios/apps/notes.js?v=2.5"></script>

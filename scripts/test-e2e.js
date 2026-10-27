@@ -1247,11 +1247,17 @@ const section = (name) => !only || only.test(name);
       await page.waitForTimeout(300);
       const r = await page.evaluate(() => ({
         icons: [...document.querySelectorAll('#ios-home [data-app-icon]')].map(i => i.dataset.appIcon),
+        pages: document.querySelectorAll('#ios-home-pages > .ios-home-grid').length,
+        hackathons: Boolean(document.querySelector('.ios-widget-hack')),
         weather: document.querySelector('.ios-ww-temp').textContent,
         github: document.querySelector('#ios-widget-github').textContent
       }));
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
-      expect(r.icons.length === 12 && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify(r));
+      // Every live project is an app of its own.
+      const live = P.projects.filter(x => x.live && x.link).map(x => `live-${x.id}`);
+      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music'];
+      const missing = [...core, ...live].filter(id => !r.icons.includes(id));
+      expect(!missing.length && r.pages === 2 && (r.hackathons || !P.hackathons.length) && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify({ ...r, missing }));
     });
     await test('tapping an icon opens the app', async () => {
       await page.click('#ios-home [data-app-icon="about"]');
@@ -1436,7 +1442,7 @@ const section = (name) => !only || only.test(name);
       await page.waitForTimeout(700);
       const r = await page.evaluate(() => ({ mode: document.documentElement.dataset.appearance, wp: document.getElementById('ios-wallpaper').style.backgroundImage }));
       await page.screenshot({ path: SHOTS + 'ios-dark.png' });
-      expect(r.mode === 'dark' && /Golden-Gate/.test(r.wp), JSON.stringify(r));
+      expect(r.mode === 'dark' && /daybreak/.test(r.wp), JSON.stringify(r));
     });
     await test('Lock Screen in Settings locks the phone', async () => {
       await iosGo(page, 'settings');

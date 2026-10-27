@@ -1240,3 +1240,58 @@ body:not(.ios-in-app) .ios-home-bar { opacity: 0.6; }
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ── Home Screen pages ───────────────────────────────────────────────── */
+/* The pager runs edge to edge so a page slides in from the screen's edge, like iOS. */
+.ios-home { padding-left: 0; padding-right: 0; }
+.ios-home-pages {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+.ios-home-pages::-webkit-scrollbar { display: none; }
+.ios-home-pages > .ios-home-grid {
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    padding-left: min(5.6cqw, 26px);
+    padding-right: min(5.6cqw, 26px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+.ios-device[data-form="tablet"] .ios-home-pages > .ios-home-grid { padding-left: 7cqw; padding-right: 7cqw; }
+
+/* Page dots take the Search pill's place while swiping. */
+.ios-page-dots { display: none; align-items: center; gap: 7px; }
+.ios-page-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transition: background 0.2s; }
+.ios-page-dots i.on { background: #fff; }
+.ios-search-pill.paging .ios-pill-search { display: none; }
+.ios-search-pill.paging .ios-page-dots { display: inline-flex; }
+
+/* Icon labels stay readable on light wallpapers. */
+.ios-icon-label { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+
+/* Hackathons widget */
+.ios-widget-hack {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "head head" "count list" "foot foot";
+    gap: 6px 16px;
+    background: linear-gradient(150deg, #f59e0b, #d9480f 55%, #9c2c6b);
+}
+.ios-wh-head { grid-area: head; font-size: 13px; font-weight: 700; opacity: 0.95; }
+.ios-wh-head i { margin-right: 4px; }
+.ios-wh-count { grid-area: count; display: flex; flex-direction: column; justify-content: center; }
+.ios-wh-count strong { font-size: 46px; line-height: 1; font-weight: 700; letter-spacing: -1px; }
+.ios-wh-count small { font-size: 12px; font-weight: 600; opacity: 0.85; }
+.ios-wh-list { grid-area: list; display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
+.ios-wh-list span { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ios-wh-list b { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.22); font-size: 11px; }
+.ios-wh-foot { grid-area: foot; font-size: 12px; font-weight: 600; opacity: 0.85; }
+.ios-wh-foot i { font-size: 9px; margin-left: 2px; }
+.ios-device[data-form="tablet"] .ios-home { padding-left: 0; padding-right: 0; }

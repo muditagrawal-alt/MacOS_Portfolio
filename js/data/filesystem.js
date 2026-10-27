@@ -316,7 +316,8 @@ function getPortfolioProjects() {
         const stack = p.tags.filter(t => norm(t).length < 4 || !ownName.includes(norm(t))).slice(0, 8).map(prettyTag);
         const own = [].concat(p.category || []).map(c => String(c).toLowerCase());
         return {
-            id: p.fsId, name: p.name, icon: p.icon, link: p.link, repo: p.repo, live: p.live,
+            id: p.fsId, name: p.name, icon: p.icon, link: p.link, repo: p.repo, live: p.live, video: p.video,
+            appId: p.live && p.embed ? `live-${p.id}` : null,   // the iPhone version's in-phone app
             subtitle: p.subtitle, title: p.title,
             desc: [p.description, ...p.highlights.map(h => `• ${h}`)].filter(Boolean).join('\n'),
             blurb: p.summary, stack, date: p.date, featured: p.featured,

@@ -43,6 +43,8 @@ const IOS = (() => {
 
     /** Open an app (or a page inside one). Pushes history unless replace. */
     function go(app, path = [], { replace = false } = {}) {
+        // A live app that can't be shown inside the phone opens in the browser instead.
+        if (apps[app] && apps[app].external) { openExternal(apps[app].external); return; }
         const target = hashFor(app, path);
         if (location.hash === target) { apply(); return; }
         if (replace) history.replaceState({ iosDepth: depth() }, '', target);
@@ -360,8 +362,12 @@ const IOS = (() => {
     }
 
     /* ── Home Screen ──────────────────────────────────────────────────── */
+    // Page 1: who they are. Page 2: what they've shipped (every live project is an app) and play.
     const HOME = {
-        grid: ['about', 'projects', 'resume', 'photos', 'notes', 'weather', 'calculator', 'settings'],
+        pages: [
+            ['about', 'projects', 'resume', 'maps', 'photos', 'camera', 'notes', 'settings'],
+            () => [...Object.keys(apps).filter(id => id.startsWith('live-')), 'game-2048', 'snake', 'weather', 'calculator']
+        ],
         dock: ['messages', 'mail', 'safari', 'music']
     };
 
@@ -377,8 +383,10 @@ const IOS = (() => {
     function renderHome() {
         const P = window.PROFILE_DATA;
         const now = P.experience[0];
-        const grid = $('ios-home-grid');
-        grid.innerHTML = `
+        const pager = $('ios-home-pages');
+        const first = $('ios-home-grid');
+        pager.querySelectorAll('.ios-home-grid:not(#ios-home-grid)').forEach(el => el.remove());
+        first.innerHTML = `
             <button type="button" class="ios-widget ios-widget-profile" data-open="about" aria-label="About ${escapeHtml(P.name)}">
                 <img src="${escapeHtml(P.photo)}" alt="">
                 <span class="ios-wp-text">
@@ -397,9 +405,29 @@ const IOS = (() => {
                 <span class="ios-wg-head"><img src="assets/icons/social-github.svg" alt=""> GitHub</span>
                 <span class="ios-wg-list"><span class="ios-wg-skel"></span><span class="ios-wg-skel"></span></span>
             </button>
-            ${HOME.grid.map(id => iconHtml(id)).join('')}`;
+            ${HOME.pages[0].map(id => iconHtml(id)).join('')}`;
+        const second = document.createElement('section');
+        second.className = 'ios-home-grid';
+        second.setAttribute('aria-label', 'Home Screen, page 2');
+        second.innerHTML = `${hackathonWidget(P)}${HOME.pages[1]().map(id => iconHtml(id)).join('')}`;
+        pager.appendChild(second);
+        $('ios-page-dots').innerHTML = [...pager.children].map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('');
         $('ios-dock').innerHTML = HOME.dock.map(id => iconHtml(id, { label: false })).join('');
         hydrateWidgets();
+    }
+
+    /** Achievements at a glance: hackathon finals, best results first; opens them on the map. */
+    function hackathonWidget(P) {
+        const list = P.hackathons || [];
+        if (!list.length) return '';
+        const rank = (h) => { const m = String(h.result).match(/top\s*(\d+)/i); return /win|first|1st/i.test(h.result) ? 0 : m ? Number(m[1]) : 999; };
+        const best = list.slice().sort((a, b) => rank(a) - rank(b)).slice(0, 3);
+        return `<button type="button" class="ios-widget ios-widget-hack" data-open="maps" data-path="hackathon" aria-label="${list.length} hackathon finals — show them on the map">
+                <span class="ios-wh-head"><i class="fas fa-trophy"></i> Hackathons</span>
+                <span class="ios-wh-count"><strong>${list.length}</strong><small>finals${P.events.length ? ` · ${P.events.length} events` : ''}</small></span>
+                <span class="ios-wh-list">${best.map(h => `<span><b>${escapeHtml(h.result || 'Finalist')}</b>${escapeHtml(h.name)}</span>`).join('')}</span>
+                <span class="ios-wh-foot">Show on map <i class="fas fa-chevron-right"></i></span>
+            </button>`;
     }
 
     async function hydrateWidgets() {
@@ -432,8 +460,19 @@ const IOS = (() => {
         $('ios-home').addEventListener('click', (e) => {
             const target = e.target.closest('[data-app-icon], [data-open]');
             if (!target) return;
-            go(target.dataset.appIcon || target.dataset.open);
+            go(target.dataset.appIcon || target.dataset.open, target.dataset.path ? [target.dataset.path] : []);
         });
+        // Swiping between pages: the Search pill shows page dots, like iOS.
+        const pager = $('ios-home-pages');
+        const pill = $('ios-search-pill');
+        let idle = null;
+        pager.addEventListener('scroll', () => {
+            const i = Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth));
+            [...$('ios-page-dots').children].forEach((dot, k) => dot.classList.toggle('on', k === i));
+            pill.classList.add('paging');
+            clearTimeout(idle);
+            idle = setTimeout(() => pill.classList.remove('paging'), 900);
+        }, { passive: true });
         $('ios-search-pill').addEventListener('click', openSearch);
         // Swipe down on the Home Screen opens Search, like iOS.
         let sy = null;

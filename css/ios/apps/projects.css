@@ -150,3 +150,25 @@
 
 .ios-device[data-form="tablet"] .proj-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
 .ios-device[data-form="tablet"] .proj-item + .proj-item::before { display: none; }
+
+/* GitHub beside OPEN/VIEW, on every project that has a repository */
+button.proj-get { border: none; font-family: inherit; cursor: pointer; }
+.proj-gh {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--ios-fill-2);
+    color: var(--ios-label);
+    font-size: 16px;
+    text-decoration: none;
+}
+.proj-gh.big { width: 34px; height: 34px; margin: 0 auto 0 8px; font-size: 18px; }
+.proj-gh:active { opacity: 0.6; }
+
+/* Demo video: 16:9, rounded like the App Store's previews */
+.proj-video { position: relative; overflow: hidden; border-radius: 16px; background: #000; aspect-ratio: 16 / 9; }
+.proj-video iframe, .proj-video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }

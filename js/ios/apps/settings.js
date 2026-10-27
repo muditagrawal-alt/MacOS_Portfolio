@@ -5,6 +5,12 @@
 (function () {
     const P = window.PROFILE_DATA;
     const WALLPAPERS = [
+        ['assets/Wallpapers/ios/aurora.webp', 'Aurora'],
+        ['assets/Wallpapers/ios/daybreak.webp', 'Daybreak'],
+        ['assets/Wallpapers/ios/lagoon.webp', 'Lagoon'],
+        ['assets/Wallpapers/ios/dusk.webp', 'Dusk'],
+        ['assets/Wallpapers/ios/graphite.webp', 'Graphite'],
+        ['assets/Wallpapers/ios/mist.webp', 'Mist'],
         ['assets/Wallpapers/26-Tahoe-Beach-Day.jpg', 'Tahoe Beach'],
         ['assets/Wallpapers/27-Golden-Gate-Bridge.jpg', 'Golden Gate'],
         ['assets/Wallpapers/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg', 'Lake'],

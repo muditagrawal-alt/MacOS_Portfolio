@@ -8,7 +8,7 @@
     document.documentElement.dataset.appearance = ['light', 'dark', 'auto'].includes(appearance) ? appearance : 'auto';
 
     // Wallpaper (shared choice with nothing else — the iPhone has its own).
-    const wp = IOS.readPref('wallpaper', 'assets/Wallpapers/26-Tahoe-Beach-Day.jpg');
+    const wp = IOS.readPref('wallpaper', 'assets/Wallpapers/ios/aurora.webp');
     document.getElementById('ios-wallpaper').style.backgroundImage = `url('${wp}')`;
 
     const ready = () => IOS.start();
