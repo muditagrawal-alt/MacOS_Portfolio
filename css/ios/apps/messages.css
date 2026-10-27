@@ -1,0 +1,174 @@
+/* Messages — iMessage with Iris */
+
+.ios-page.msg-page,
+.ios-page.msg-page .ios-page-body { background: var(--ios-bg-plain); }
+
+.ios-page.msg-page .ios-page-body { padding-bottom: calc(var(--safe-bottom) + var(--kb, 0px) + 150px); }
+.ios-page.msg-page .ios-page-content { padding: 0 12px; }
+
+.msg-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 20px 4px;
+    text-align: center;
+}
+
+.msg-intro img { width: 64px; height: 64px; border-radius: 50%; margin-bottom: 6px; box-shadow: 0 8px 20px -8px rgba(94, 92, 230, 0.7); }
+.msg-intro strong { font-size: 17px; }
+.msg-intro span { color: var(--ios-label-2); font-size: 13px; }
+
+.msg-stamp { margin: 18px 0 8px; text-align: center; color: var(--ios-label-2); font-size: 12px; font-weight: 600; }
+
+.msg-row { display: flex; flex-direction: column; align-items: flex-start; margin: 3px 0; }
+.msg-row.me { align-items: flex-end; }
+.msg-row + .msg-row.me, .msg-row.me + .msg-row.iris { margin-top: 10px; }
+
+.msg-bubble {
+    position: relative;
+    max-width: 78%;
+    padding: 8px 13px;
+    border-radius: 19px;
+    background: var(--ios-bubble);
+    color: var(--ios-label);
+    font-size: 16.5px;
+    line-height: 1.32;
+    overflow-wrap: anywhere;
+    animation: msg-in 0.32s var(--ios-spring) both;
+}
+
+.msg-row.me .msg-bubble { background: linear-gradient(180deg, #2e9bff, #0a7cff); color: #fff; }
+.msg-bubble a { color: inherit; text-decoration: underline; }
+.msg-bubble strong { font-weight: 600; }
+
+@keyframes msg-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+.msg-typing { display: inline-flex; gap: 4px; padding: 13px 15px; }
+.msg-typing i { width: 8px; height: 8px; border-radius: 50%; background: var(--ios-label-3); animation: msg-dot 1.2s ease-in-out infinite; }
+.msg-typing i:nth-child(2) { animation-delay: 0.15s; }
+.msg-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes msg-dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+.msg-sources {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-width: 88%;
+    margin: 6px 0 2px 4px;
+}
+
+.msg-sources span { color: var(--ios-label-2); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+
+.msg-sources button {
+    padding: 5px 10px;
+    border: 0.5px solid var(--ios-sep);
+    border-radius: 999px;
+    background: var(--ios-card);
+    color: var(--ios-tint);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.msg-sources button:disabled { color: var(--ios-label-2); cursor: default; }
+.msg-sources button:active:not(:disabled) { background: var(--ios-pressed); }
+
+.msg-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: min(78%, 320px);
+    margin-top: 6px;
+    padding: 11px 13px;
+    border: 0.5px solid var(--ios-sep);
+    border-radius: 16px;
+    background: var(--ios-card);
+    text-align: left;
+    cursor: pointer;
+}
+
+.msg-card > i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: var(--ios-tint); color: #fff; font-size: 15px; flex-shrink: 0; }
+.msg-card span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.msg-card strong { font-size: 15px; }
+.msg-card small { color: var(--ios-label-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-card em { font-style: normal; color: var(--ios-tint); font-weight: 600; font-size: 15px; }
+
+/* Composer: pinned to the page, above the keyboard */
+.msg-composer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding: 8px 10px calc(var(--safe-bottom) + var(--kb, 0px) + 22px);
+    background: var(--ios-nav-bg);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-top: 0.5px solid var(--ios-sep);
+}
+
+.msg-suggest {
+    display: flex;
+    gap: 8px;
+    margin: 0 -10px 8px;
+    padding: 0 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.msg-suggest::-webkit-scrollbar { display: none; }
+.msg-suggest[hidden] { display: none; }
+
+.msg-suggest button {
+    flex-shrink: 0;
+    padding: 7px 13px;
+    border: 0.5px solid var(--ios-sep);
+    border-radius: 999px;
+    background: var(--ios-card);
+    color: var(--ios-tint);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.msg-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 3px 3px 14px;
+    border: 1px solid var(--ios-sep);
+    border-radius: 20px;
+    background: var(--ios-bg-plain);
+}
+
+.msg-bar input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--ios-label);
+    font: inherit;
+    font-size: 17px;
+}
+
+.msg-send {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: var(--ios-tint);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+}
+
+.msg-send:disabled { opacity: 0.35; cursor: default; }
+.msg-send:not(:disabled):active { transform: scale(0.9); }
+
+.ios-device[data-form="tablet"] .msg-composer { padding-left: max(10px, calc((100% - 760px) / 2)); padding-right: max(10px, calc((100% - 760px) / 2)); }
