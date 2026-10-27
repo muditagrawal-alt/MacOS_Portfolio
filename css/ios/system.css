@@ -1295,3 +1295,6 @@ body:not(.ios-in-app) .ios-home-bar { opacity: 0.6; }
 .ios-wh-foot { grid-area: foot; font-size: 12px; font-weight: 600; opacity: 0.85; }
 .ios-wh-foot i { font-size: 9px; margin-left: 2px; }
 .ios-device[data-form="tablet"] .ios-home { padding-left: 0; padding-right: 0; }
+
+/* `hidden` always hides, whatever display a component sets (this was patched element by element). */
+.ios-device [hidden] { display: none !important; }
