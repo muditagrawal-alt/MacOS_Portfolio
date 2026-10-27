@@ -1,0 +1,1124 @@
+/* ==========================================================================
+   CI Quality Gate 4: Real-Browser End-to-End Suite (Playwright + Chromium)
+   --------------------------------------------------------------------------
+   Drives the actual site in Chromium and checks behaviour a visitor would
+   notice: every Dock app opens, traffic lights work, the lock screen
+   unlocks on click, the camera is released, no XSS from typed input, the
+   phone layout fits, Iris cites sources and never touches the mic unasked…
+
+   Deterministic by design: live APIs (GitHub, weather, Wikipedia, radio
+   directory) are answered from fixtures, and the contact form is
+   intercepted so a test can never send real email.
+
+   Run:  npm run test:e2e            (all sections)
+         npm run test:e2e -- safari  (sections matching a regex)
+   Needs: npx playwright install chromium
+   ========================================================================== */
+
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const http = require('http');
+const { chromium } = require('playwright');
+
+const ROOT = path.resolve(__dirname, '..');
+const SHOTS = path.join(ROOT, 'test-results') + path.sep;
+fs.mkdirSync(SHOTS, { recursive: true });
+let BASE = '';
+
+/* ── Static server ─────────────────────────────────────────────────────── */
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg', '.pdf': 'application/pdf', '.json': 'application/json' };
+function startServer() {
+    return new Promise(resolve => {
+        const server = http.createServer((req, res) => {
+            let p = decodeURIComponent(req.url.split('?')[0]);
+            if (p.endsWith('/')) p += 'index.html';
+            const file = path.join(ROOT, p);
+            if (!file.startsWith(ROOT) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404); return res.end(); }
+            res.writeHead(200, { 'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+            fs.createReadStream(file).pipe(res);
+        });
+        server.listen(0, '127.0.0.1', () => { BASE = `http://127.0.0.1:${server.address().port}/`; resolve(server); });
+    });
+}
+
+/* ── Fixtures for live APIs ────────────────────────────────────────────── */
+const GITHUB_FIXTURE = JSON.stringify([
+    { name: 'OmniDoc', description: 'Multimodal RAG', language: 'Python', stargazers_count: 3, pushed_at: new Date(Date.now() - 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/OmniDoc', fork: false, archived: false },
+    { name: 'Sliver-Smart-Video-Clipping-Tool', description: 'Video', language: 'Python', stargazers_count: 1, pushed_at: new Date(Date.now() - 3 * 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', fork: false, archived: false }
+]);
+async function routeLiveApis(ctx, page) {
+    await ctx.route('https://api.github.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: GITHUB_FIXTURE }));
+    await ctx.route('https://ipwho.is/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true,"latitude":28.61,"longitude":77.21,"city":"New Delhi","country_code":"IN"}' }));
+    await ctx.route('https://api.open-meteo.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"current":{"temperature_2m":23.4,"weather_code":0,"is_day":0},"daily":{"temperature_2m_max":[29],"temperature_2m_min":[18]}}' }));
+    await ctx.route(/radio-browser\.info/, r => r.abort());
+    await ctx.route(/i\.ytimg\.com|google\.com\/s2\/favicons/, r => r.fulfill({ status: 204 }));
+    // Never let a test send a real email.
+    await ctx.route('https://api.web3forms.com/**', r => { page.__web3++; r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' }); });
+}
+
+/* ── Harness ───────────────────────────────────────────────────────────── */
+const results = [];
+async function launch() {
+    return chromium.launch({
+        executablePath: process.env.PW_CHROMIUM_PATH || undefined,
+        args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required']
+    });
+}
+
+async function freshPage(browser, { unlocked = true, viewport = { width: 1440, height: 900 }, reducedMotion = 'reduce', init, welcome = false } = {}) {
+    const ctx = await browser.newContext({ viewport, reducedMotion, permissions: ['camera'], acceptDownloads: true });
+    const page = await ctx.newPage();
+    page.__web3 = 0;
+    page.__errors = [];
+    await routeLiveApis(ctx, page);
+    page.on('pageerror', e => page.__errors.push(e.message));
+    page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|ERR_|net::/.test(m.text())) page.__errors.push('console: ' + m.text()); });
+    if (unlocked) await page.addInitScript(() => { try { sessionStorage.setItem('mac-unlocked', 'true'); } catch (e) {} });
+    if (!welcome) await page.addInitScript(() => { try { sessionStorage.setItem('mac-welcome-shown', '1'); } catch (e) {} });
+    if (init) await page.addInitScript(init);
+    await page.goto(BASE);
+    await page.waitForTimeout(unlocked ? 900 : 300);
+    return page;
+}
+
+async function test(name, fn) {
+    try {
+        await fn();
+        results.push({ name, ok: true });
+        console.log(`  ✅ ${name}`);
+    } catch (e) {
+        results.push({ name, ok: false, err: e.message });
+        console.log(`  ❌ ${name}\n      ${String(e.message).split('\n')[0]}`);
+    }
+}
+
+function expect(cond, msg) { if (!cond) throw new Error(msg || 'expectation failed'); }
+
+function summary() {
+    const pass = results.filter(r => r.ok).length;
+    console.log(`\n==================================================`);
+    console.log(`E2E Suite Summary: ${pass} Passed, ${results.length - pass} Failed out of ${results.length} tests`);
+    console.log(`==================================================\n`);
+    return results.length - pass;
+}
+
+
+const only = process.argv[2] ? new RegExp(process.argv[2], 'i') : null;
+const section = (name) => !only || only.test(name);
+
+(async () => {
+  const server = await startServer();
+  const browser = await launch();
+
+  /* ───────────── Boot & lock ───────────── */
+  if (section('boot')) {
+    console.log('\nBoot & Lock');
+    const page = await freshPage(browser, { unlocked: false, reducedMotion: 'no-preference' });
+    await test('power gate is shown on first load', async () => {
+      expect(await page.isVisible('#boot-power-gate.visible'), 'gate not visible');
+    });
+    await test('clicking the gate boots into the lock screen', async () => {
+      await page.mouse.click(720, 450);
+      await page.waitForSelector('#lock-screen-overlay.active', { timeout: 9000 });
+    });
+    await test('clicking "Swipe up to unlock" unlocks', async () => {
+      await page.waitForTimeout(400);
+      await page.click('#lock-swipe-hint');
+      await page.waitForTimeout(900);
+      const shown = await page.evaluate(() => getComputedStyle(document.getElementById('lock-screen-overlay')).display !== 'none');
+      expect(!shown, 'lock screen still visible after clicking the unlock button');
+    });
+    await test('boot + unlock produced no runtime errors', async () => {
+      expect(page.__errors.length === 0, page.__errors.join(' | '));
+    });
+    await page.context().close();
+
+    const p2 = await freshPage(browser, { unlocked: false });
+    await test('pressing Enter (no focus) unlocks the lock screen', async () => {
+      await p2.waitForSelector('#lock-screen-overlay.active');
+      await p2.keyboard.press('Enter');
+      await p2.waitForTimeout(900);
+      const shown = await p2.evaluate(() => getComputedStyle(document.getElementById('lock-screen-overlay')).display !== 'none');
+      expect(!shown, 'still locked');
+    });
+    await test('a plain click on the lock screen unlocks (like waking a Mac)', async () => {
+      await p2.evaluate(() => lockScreenNow());
+      await p2.waitForTimeout(500);
+      await p2.mouse.click(720, 300);
+      await p2.waitForTimeout(900);
+      const shown = await p2.evaluate(() => getComputedStyle(document.getElementById('lock-screen-overlay')).display !== 'none');
+      expect(!shown, 'still locked after click');
+    });
+    await p2.context().close();
+  }
+
+  /* ───────────── Desktop ───────────── */
+  if (section('desktop')) {
+    console.log('\nDesktop');
+    const page = await freshPage(browser);
+    await page.screenshot({ path: SHOTS + 'desktop.png' });
+    await test('desktop widgets never cover desktop icons', async () => {
+      const overlaps = await page.evaluate(() => {
+        const icons = [...document.querySelectorAll('.desktop-icon')].map(e => [e.querySelector('.desktop-icon-label').textContent, e.getBoundingClientRect()]);
+        const widgets = [...document.querySelectorAll('.mac-widget-card')].map(e => e.getBoundingClientRect());
+        const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        return icons.filter(([, r]) => widgets.some(w => hit(r, w))).map(([n]) => n);
+      });
+      expect(overlaps.length === 0, 'covered: ' + overlaps.join(', '));
+    });
+    await test('every desktop icon is fully on screen above the dock', async () => {
+      const off = await page.evaluate(() => {
+        const dock = document.querySelector('.dock').getBoundingClientRect();
+        return [...document.querySelectorAll('.desktop-icon')].filter(e => {
+          const r = e.getBoundingClientRect();
+          return r.bottom > dock.top && r.right > dock.left && r.left < dock.right || r.bottom > innerHeight || r.right > innerWidth;
+        }).map(e => e.textContent.trim());
+      });
+      expect(off.length === 0, 'off-screen/under dock: ' + off.join(', '));
+    });
+    await test('weather widget is not hardcoded "Sunny" at night / matches live data source', async () => {
+      const txt = await page.evaluate(() => document.querySelector('.desktop-widgets-column')?.textContent || '');
+      expect(!/H: 29° L: 19°/.test(txt), 'weather widget shows hardcoded H/L values');
+    });
+    const ids = await page.evaluate(() => DESKTOP_FILES.map(f => f.id));
+    for (const id of ids) {
+      await test(`Space Quick Looks desktop file "${id}"`, async () => {
+        await page.click(`.desktop-icon[data-file-id="${id}"]`);
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(250);
+        const ok = await page.isVisible('#quicklook-overlay.active');
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(150);
+        expect(ok, 'no Quick Look preview');
+      });
+    }
+    await test('double-click README.txt opens TextEdit with content', async () => {
+      await page.dblclick('.desktop-icon[data-file-id="readme"]');
+      await page.waitForTimeout(300);
+      const len = await page.evaluate(() => document.getElementById('textedit-body').textContent.length);
+      expect(len > 200, 'empty text');
+      await page.evaluate(() => closeWindow('textedit-window'));
+    });
+    await test('README does not advertise OS-reserved shortcuts (⌘Space / ⌘Tab)', async () => {
+      const body = await page.evaluate(() => TEXT_FILES.readme.body);
+      expect(!/Cmd \+ Space|Cmd \+ Tab/.test(body), 'README tells visitors to press keys the OS intercepts');
+    });
+    await test('desktop page had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  if (section('welcome')) {
+    console.log('\nAbout Mudit (first run)');
+    const page = await freshPage(browser, { welcome: true });
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: SHOTS + 'welcome.png' });
+    await test('the About Mudit window greets a first-time visitor', async () => {
+      expect(await page.evaluate(() => !document.getElementById('welcome-window').classList.contains('hidden')), 'not shown');
+    });
+    await test('its stats are computed from real data', async () => {
+      const t = await page.textContent('.welcome-stats');
+      expect(/3\s*internships/.test(t) && /10\s*projects/.test(t), t);
+    });
+    await test('Résumé / Projects / Contact buttons work', async () => {
+      await page.click('.welcome-btn:has-text("Projects")');
+      const finder = await page.evaluate(() => !document.getElementById('finder-window').classList.contains('hidden') && document.getElementById('finder-title-text').textContent);
+      await page.evaluate(() => openWelcome());
+      await page.click('.welcome-btn:has-text("Contact")');
+      const compose = await page.isVisible('#mail-compose-modal:not(.hidden)');
+      expect(finder === 'Projects' && compose, `finder=${finder} compose=${compose}`);
+    });
+    await test('it shows once per session, not on every reload', async () => {
+      await page.reload(); await page.waitForTimeout(1200);
+      expect(await page.evaluate(() => document.getElementById('welcome-window').classList.contains('hidden')), 'shown again');
+    });
+    await test('welcome had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Dock ───────────── */
+  if (section('dock')) {
+    console.log('\nDock');
+    const page = await freshPage(browser);
+    const map = {
+      'dock-finder': () => !document.getElementById('finder-window').classList.contains('hidden'),
+      'dock-launchpad': () => document.getElementById('launchpad-overlay').classList.contains('active'),
+      'dock-missioncontrol': () => document.body.classList.contains('mission-control-active'),
+      'dock-safari': () => !document.getElementById('safari-window').classList.contains('hidden'),
+      'dock-mail': () => !document.getElementById('mail-window').classList.contains('hidden'),
+      'dock-notes': () => !document.getElementById('notes-window').classList.contains('hidden'),
+      'dock-photos': () => !document.getElementById('photos-window').classList.contains('hidden'),
+      'dock-photobooth': () => !document.getElementById('photobooth-window').classList.contains('hidden'),
+      'dock-music': () => !document.getElementById('music-window').classList.contains('hidden'),
+      'dock-breakout': () => !document.getElementById('breakout-window').classList.contains('hidden'),
+      'dock-snake': () => !document.getElementById('snake-window').classList.contains('hidden'),
+      'dock-appstore': () => !document.getElementById('appstore-window').classList.contains('hidden'),
+      'dock-terminal': () => !document.getElementById('terminal-window').classList.contains('hidden'),
+      'dock-settings': () => !document.getElementById('settings-window').classList.contains('hidden'),
+      'dock-iris': () => document.getElementById('iris-overlay').classList.contains('active'),
+      'dock-trash': () => !document.getElementById('trash-window').classList.contains('hidden'),
+    };
+    for (const [id, check] of Object.entries(map)) {
+      await test(`dock: ${id} opens its app`, async () => {
+        await page.click('#' + id);
+        await page.waitForTimeout(450);
+        const ok = await page.evaluate(check);
+        // Reset for the next one
+        await page.keyboard.press('Escape');
+        await page.evaluate(() => {
+          if (typeof exitMissionControl === 'function') exitMissionControl();
+          if (typeof closeLaunchpad === 'function') closeLaunchpad();
+          if (typeof closeIris === 'function') closeIris();
+          document.querySelectorAll('.window:not(.hidden)').forEach(w => closeWindow(w.id));
+        });
+        await page.waitForTimeout(150);
+        expect(ok, 'did not open');
+      });
+    }
+    await test('Mission Control has its own dock icon (not a recoloured Launchpad)', async () => {
+      const [a, b] = await page.evaluate(() => [document.querySelector('#dock-launchpad img').getAttribute('src'), document.querySelector('#dock-missioncontrol img').getAttribute('src')]);
+      expect(a !== b, 'same artwork: ' + a);
+    });
+    await test('dock had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Windows & menu bar ───────────── */
+  if (section('windows')) {
+    console.log('\nWindows & Menu Bar');
+    const page = await freshPage(browser);
+    page.on('dialog', d => { page.__dialogs = (page.__dialogs || 0) + 1; d.dismiss().catch(() => {}); });
+    const wins = await page.evaluate(() => [...document.querySelectorAll('.window')].map(w => w.id));
+    for (const id of wins) {
+      await test(`traffic lights work on #${id}`, async () => {
+        await page.evaluate(i => openWindow(i), id);
+        await page.waitForTimeout(150);
+        await page.click(`#${id} .control.maximize`);
+        expect(await page.evaluate(i => document.getElementById(i).classList.contains('is-maximized'), id), 'did not zoom');
+        await page.click(`#${id} .control.maximize`);
+        expect(await page.evaluate(i => !document.getElementById(i).classList.contains('is-maximized'), id), 'did not restore');
+        await page.click(`#${id} .control.minimize`);
+        expect(await page.evaluate(i => document.getElementById(i).classList.contains('minimized'), id), 'did not minimize');
+        await page.evaluate(i => openWindow(i), id);
+        await page.waitForTimeout(500);
+        await page.click(`#${id} .control.close`);
+        expect(await page.evaluate(i => document.getElementById(i).classList.contains('hidden'), id), 'did not close');
+      });
+    }
+    const appNames = {
+      'welcome-window': 'About Mudit',
+      'finder-window': 'Finder', 'safari-window': 'Safari', 'mail-window': 'Mail', 'notes-window': 'Notes',
+      'terminal-window': 'Terminal', 'music-window': 'Music', 'photobooth-window': 'Photo Booth',
+      'breakout-window': 'Breakout', 'snake-window': 'Snake', 'photos-window': 'Photos',
+      'appstore-window': 'App Store', 'settings-window': 'System Settings', 'resume-window': 'Preview', 'textedit-window': 'TextEdit'
+    };
+    for (const [id, name] of Object.entries(appNames)) {
+      await test(`menu bar shows "${name}" when #${id} is frontmost`, async () => {
+        await page.evaluate(i => openWindow(i), id);
+        const shown = await page.textContent('.app-name-item');
+        await page.evaluate(i => closeWindow(i), id);
+        expect(shown === name, `shows "${shown}"`);
+      });
+    }
+    await test('every menu-bar item runs without throwing and without native alert()s', async () => {
+      const before = page.__errors.length;
+      for (const id of Object.keys(appNames)) {
+        await page.evaluate(i => openWindow(i), id);
+        const count = await page.evaluate(() => document.querySelectorAll('#menubar-app-menus .menu-dropdown').length);
+        for (let m = 0; m < count; m++) {
+          const items = await page.evaluate(m => { const dd = document.querySelectorAll('#menubar-app-menus .menu-dropdown')[m]; return dd ? dd.querySelectorAll('.dropdown-item:not(.disabled)').length : 0; }, m);
+          for (let k = 0; k < items; k++) {
+            await page.evaluate(i => { if (document.getElementById(i).classList.contains('hidden')) openWindow(i); else bringToFront(i); }, id);
+            await page.evaluate(([m, k]) => {
+              const dd = document.querySelectorAll('#menubar-app-menus .menu-dropdown')[m];
+              if (!dd) return;
+              const it = dd.querySelectorAll('.dropdown-item:not(.disabled)')[k];
+              if (it && !/Lock|Download|Export|Save Contact|Restart|Shut Down|Force Quit/.test(it.textContent)) it.click();
+            }, [m, k]);
+            await page.evaluate(() => { closeSpotlight?.(); closeLaunchpad?.(); closeIris?.(); closeQuickLook?.(); exitMissionControl?.(); });
+          }
+        }
+        await page.evaluate(() => document.querySelectorAll('.window:not(.hidden)').forEach(w => closeWindow(w.id)));
+      }
+      expect(page.__errors.length === before, page.__errors.slice(before).join(' | '));
+      expect(!page.__dialogs, `${page.__dialogs} native alert/prompt dialogs popped`);
+    });
+    await test('Settings ▸ View ▸ About opens the About pane', async () => {
+      await page.evaluate(() => openWindow('settings-window'));
+      await page.evaluate(() => { const dd = [...document.querySelectorAll('#menubar-app-menus .dropdown-item')].find(e => e.textContent.trim().startsWith('About')); dd && dd.click(); });
+      const visible = await page.evaluate(() => !document.getElementById('settings-pane-about-mac').classList.contains('hidden'));
+      expect(visible, 'About pane not shown');
+    });
+    await test('menu items never advertise browser-reserved shortcuts (⌘W ⌘Q ⌘N ⌘T)', async () => {
+      const bad = await page.evaluate(() => {
+        const all = Object.values(APP_MENUS).concat([DEFAULT_APP]).flatMap(a => Object.values(a.menus).flat());
+        return all.filter(i => /^⌘[WQNT]$/.test(i.shortcut || '')).map(i => i.label + ' ' + i.shortcut);
+      });
+      expect(bad.length === 0, bad.join(', '));
+    });
+    await test('minimizing a paused game keeps it paused', async () => {
+      await page.evaluate(() => openBreakout());
+      await page.waitForTimeout(200);
+      await page.evaluate(() => { if (!document.getElementById('breakout-overlay').classList.contains('open')) toggleBreakoutPause(); });
+      await page.evaluate(() => minimizeWindow('breakout-window'));
+      const stillPaused = await page.evaluate(() => document.getElementById('breakout-overlay').classList.contains('open'));
+      await page.evaluate(() => closeBreakout());
+      expect(stillPaused, 'game unpaused itself while minimized');
+    });
+    await test('window resize grip does not hijack clicks on a scrollbar edge', async () => {
+      await page.evaluate(() => { openWindow('finder-window'); finderSidebarNav('projects'); setFinderViewMode('list'); });
+      const box = await page.locator('#finder-window').boundingBox();
+      const w0 = box.width;
+      await page.mouse.move(box.x + box.width - 5, box.y + box.height / 2);
+      await page.mouse.down(); await page.mouse.move(box.x + box.width - 5, box.y + box.height / 2 + 40); await page.mouse.up();
+      const w1 = (await page.locator('#finder-window').boundingBox()).width;
+      expect(Math.abs(w1 - w0) < 1, 'dragging inside the content edge resized the window');
+    });
+    await test('windows/menus had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Spotlight & Launchpad & context menus ───────────── */
+  if (section('spotlight')) {
+    console.log('\nSpotlight / Launchpad / Context menus');
+    const page = await freshPage(browser);
+    await test('⌘K opens Spotlight', async () => {
+      await page.keyboard.press('Meta+k');
+      await page.waitForTimeout(200);
+      expect(await page.isVisible('#spotlight-overlay.active'));
+    });
+    await test('Spotlight finds a project and every result has a visible icon', async () => {
+      await page.fill('#spotlight-input', 'omnidoc');
+      await page.waitForTimeout(150);
+      const rows = await page.$$eval('.spotlight-row', r => r.length);
+      expect(rows > 0, 'no rows');
+      const blank = await page.evaluate(() => [...document.querySelectorAll('.spotlight-row-art i')].filter(i => { const c = getComputedStyle(i, '::before').content; return !c || c === 'none' || c === '""' || c === 'normal'; }).length);
+      expect(blank === 0, `${blank} result icon(s) render blank`);
+    });
+    await test('Spotlight inline calculator', async () => {
+      await page.fill('#spotlight-input', '12*8');
+      await page.waitForTimeout(150);
+      expect((await page.textContent('.spotlight-row .spotlight-row-title')).trim() === '96');
+    });
+    await test('Spotlight Enter launches Terminal', async () => {
+      await page.fill('#spotlight-input', 'terminal');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(250);
+      expect(await page.evaluate(() => !document.getElementById('terminal-window').classList.contains('hidden')));
+      await page.evaluate(() => closeWindow('terminal-window'));
+    });
+    await test('Spotlight shows correct app icons (Music is not the App Store icon)', async () => {
+      const src = await page.evaluate(() => SPOTLIGHT_APPS.find(a => /Music/.test(a.name)).icon);
+      expect(/music/.test(src), src);
+    });
+    const lp = await page.evaluate(() => LAUNCHPAD_APPS.map(a => a.id));
+    for (const id of lp) {
+      await test(`Launchpad launches "${id}" into a non-empty view`, async () => {
+        await page.evaluate(() => openLaunchpad());
+        await page.waitForTimeout(150);
+        const pagesBefore = page.context().pages().length;
+        await page.click(`.launchpad-app-item[data-app-id="${id}"]`);
+        await page.waitForTimeout(450);
+        const state = await page.evaluate(() => {
+          const open = [...document.querySelectorAll('.window:not(.hidden):not(.minimized)')];
+          const top = typeof getActiveWindow === 'function' ? getActiveWindow() : null;
+          const content = top ? top.querySelector('.window-content, .pb-stage, .breakout-container, .snake-container, .music-app-container, .dmg-content') : null;
+          return { open: open.length, iris: document.getElementById('iris-overlay').classList.contains('active'), text: content ? content.textContent.trim().length : 0, imgs: content ? content.querySelectorAll('img,canvas,video,iframe').length : 0 };
+        });
+        const popup = page.context().pages().length > pagesBefore;
+        for (const p of page.context().pages().slice(1)) await p.close();
+        await page.evaluate(() => { closeIris(); document.querySelectorAll('.window:not(.hidden)').forEach(w => closeWindow(w.id)); });
+        const mc = await page.evaluate(() => document.body.classList.contains('mission-control-active'));
+        await page.evaluate(() => exitMissionControl());
+        expect(popup || state.iris || mc || (state.open > 0 && (state.text > 20 || state.imgs > 0)), JSON.stringify(state));
+      });
+    }
+    await test('right-click desktop ▸ Change Wallpaper opens the wallpaper pane', async () => {
+      await page.mouse.click(300, 600, { button: 'right' });
+      await page.click('.context-menu-item:has-text("Change Wallpaper")');
+      await page.waitForTimeout(200);
+      expect(await page.evaluate(() => !document.getElementById('settings-pane-wallpaper').classList.contains('hidden')));
+      await page.evaluate(() => closeWindow('settings-window'));
+    });
+    await test('right-click a desktop icon ▸ Quick Look previews it', async () => {
+      await page.click('.desktop-icon[data-file-id="readme"]', { button: 'right' });
+      await page.click('.context-menu-item:has-text("Quick Look")');
+      await page.waitForTimeout(200);
+      const ok = await page.isVisible('#quicklook-overlay.active');
+      await page.keyboard.press('Escape');
+      expect(ok, 'no preview');
+    });
+    await test('spotlight/launchpad/context had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Control Centre / Mission Control ───────────── */
+  if (section('control')) {
+    console.log('\nControl Centre & Mission Control');
+    const page = await freshPage(browser);
+    await test('Control Centre opens from the menu bar', async () => {
+      await page.click('#control-center-trigger');
+      await page.waitForTimeout(250);
+      expect(await page.isVisible('#control-center-panel.open'));
+    });
+    await test('Appearance toggle visibly changes the UI', async () => {
+      await page.evaluate(() => openWindow('finder-window'));
+      const before = await page.evaluate(() => getComputedStyle(document.querySelector('#finder-window')).backgroundColor);
+      await page.evaluate(() => openControlCenter());
+      await page.waitForTimeout(150);
+      await page.click('#cc-btn-theme');
+      await page.waitForTimeout(400);
+      const after = await page.evaluate(() => getComputedStyle(document.querySelector('#finder-window')).backgroundColor);
+      await page.click('#cc-btn-theme');
+      expect(before !== after, 'window background unchanged: ' + before);
+    });
+    await test('Control Centre battery matches the real battery reading', async () => {
+      const [txt, lvl] = await page.evaluate(() => [document.getElementById('cc-battery-text').textContent, window.SYSTEM_BATTERY_LEVEL]);
+      expect(txt.includes(lvl + '%'), `panel says "${txt}", system says ${lvl}%`);
+    });
+    await test('Display brightness dims the whole screen (menu bar + dock too)', async () => {
+      await page.evaluate(() => setCcBrightness(50));
+      const dimmed = await page.evaluate(() => {
+        const el = document.elementFromPoint(innerWidth - 40, 12);
+        // Either a dimming veil sits on top, or the menu bar itself is filtered.
+        return el && (el.id === 'display-dimmer' || /brightness/.test(getComputedStyle(document.querySelector('.menu-bar')).filter) || !!document.getElementById('display-dimmer'));
+      });
+      await page.evaluate(() => setCcBrightness(100));
+      expect(dimmed, 'menu bar not dimmed');
+    });
+    await test('Mission Control enter/exit restores window positions', async () => {
+      await page.keyboard.press('Escape');
+      await page.evaluate(() => { openWindow('finder-window'); openWindow('safari-window'); });
+      const before = await page.evaluate(() => ['finder-window', 'safari-window'].map(i => document.getElementById(i).getBoundingClientRect().toJSON()));
+      await page.evaluate(() => enterMissionControl());
+      await page.waitForTimeout(500);
+      await page.evaluate(() => exitMissionControl());
+      await page.waitForTimeout(500);
+      const after = await page.evaluate(() => ['finder-window', 'safari-window'].map(i => document.getElementById(i).getBoundingClientRect().toJSON()));
+      expect(before.every((r, i) => Math.abs(r.x - after[i].x) < 2 && Math.abs(r.y - after[i].y) < 2), JSON.stringify({ before, after }));
+    });
+    await test('Mission Control windows sit above the dimmer and clicking one focuses it', async () => {
+      await page.evaluate(() => { openWindow('finder-window'); openWindow('notes-window'); enterMissionControl(); });
+      await page.waitForTimeout(450);
+      const box = await page.locator('#finder-window').boundingBox();
+      const top = await page.evaluate(([x, y]) => { const el = document.elementFromPoint(x, y); return el && el.closest('.window') ? el.closest('.window').id : (el && el.id); }, [box.x + box.width / 2, box.y + box.height / 2]);
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await page.waitForTimeout(400);
+      const front = await page.evaluate(() => ({ active: document.body.classList.contains('mission-control-active'), id: getActiveWindow().id }));
+      expect(top === 'finder-window' && !front.active && front.id === 'finder-window', JSON.stringify({ top, front }));
+    });
+    await test('control/mission had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Finder ───────────── */
+  if (section('finder')) {
+    console.log('\nFinder');
+    const page = await freshPage(browser);
+    await page.evaluate(() => openWindow('finder-window'));
+    const targets = await page.$$eval('.sidebar-v2-item[data-target]', els => els.map(e => e.dataset.target));
+    await test('every Finder sidebar location renders without error', async () => {
+      for (const t of targets) {
+        await page.click(`.sidebar-v2-item[data-target="${t}"]`);
+        await page.waitForTimeout(40);
+      }
+      expect(page.__errors.length === 0, page.__errors.join(' | '));
+    });
+    for (const v of ['icons', 'list', 'columns']) {
+      await test(`Finder ${v} view renders Projects`, async () => {
+        await page.click('.sidebar-v2-item[data-target="projects"]');
+        await page.click(`.finder-view-btn[data-view="${v}"]`);
+        const n = await page.evaluate(() => document.querySelectorAll('#finder-content-viewport [data-item-id], #finder-content-viewport .finder-column-row').length);
+        expect(n >= 10, 'items: ' + n);
+      });
+    }
+    await test('Finder search filters and clearing restores', async () => {
+      await page.click('.finder-view-btn[data-view="icons"]');
+      await page.fill('.finder-search-box input', 'omni');
+      await page.waitForTimeout(100);
+      const n = await page.$$eval('#finder-content-viewport [data-item-id]', e => e.length);
+      await page.fill('.finder-search-box input', '');
+      await page.waitForTimeout(100);
+      const m = await page.$$eval('#finder-content-viewport [data-item-id]', e => e.length);
+      expect(n >= 1 && m >= 10, `search ${n}, restored ${m}`);
+    });
+    await test('opening an image in Finder previews the actual image', async () => {
+      await page.click('.sidebar-v2-item[data-target="pictures"]');
+      await page.dblclick('#finder-content-viewport [data-item-id="profile-pic"]');
+      await page.waitForTimeout(250);
+      const img = await page.evaluate(() => !!document.querySelector('#ql-content img'));
+      await page.keyboard.press('Escape');
+      expect(img, 'preview has no <img>');
+    });
+    await test('Finder "Desktop" folder mirrors the real desktop', async () => {
+      await page.click('.sidebar-v2-item[data-target="desktop"]');
+      const names = await page.$$eval('#finder-content-viewport [data-item-id] .finder-grid-name', e => e.map(x => x.textContent.trim()));
+      const desk = await page.evaluate(() => DESKTOP_FILES.map(f => f.name));
+      expect(desk.every(n => names.includes(n)), `finder: ${names.join(', ')} | desktop: ${desk.join(', ')}`);
+    });
+    await test('Trash is one consistent set across Finder and the Trash app', async () => {
+      await page.click('.sidebar-v2-item[data-target="trash"]');
+      const finderTrash = await page.$$eval('#finder-content-viewport [data-item-id] .finder-grid-name', e => e.map(x => x.textContent.trim()).sort());
+      await page.evaluate(() => openWindow('trash-window'));
+      const appTrash = await page.$$eval('#trash-window .trash-item span, #trash-window .trash-item .trash-item-name', e => e.map(x => x.textContent.trim()).sort());
+      await page.evaluate(() => closeWindow('trash-window'));
+      expect(JSON.stringify(finderTrash) === JSON.stringify(appTrash), `finder [${finderTrash}] vs app [${appTrash}]`);
+    });
+    await test('finder had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Notes / Mail ───────────── */
+  if (section('notes|mail')) {
+    console.log('\nNotes & Mail');
+    const page = await freshPage(browser);
+    await page.evaluate(() => openWindow('notes-window'));
+    for (const folder of ['Philosophy', 'Current Learning', 'Tech Notes']) {
+      await test(`Notes folder "${folder}" shows its notes`, async () => {
+        await page.click(`.notes-sidebar .sidebar-item:has-text("${folder}")`);
+        const visible = await page.$$eval('.note-item', els => els.filter(e => e.offsetParent !== null).length);
+        expect(visible >= 1, 'empty folder');
+      });
+    }
+    await test('a new note survives a reload', async () => {
+      await page.click('.notes-sidebar .sidebar-item:has-text("All")');
+      await page.evaluate(() => addNewNotePrompt());
+      await page.keyboard.type('Persistence check');
+      await page.click('#note-body-content');
+      await page.keyboard.type('Body text');
+      await page.click('.note-item:nth-child(2)');
+      await page.reload(); await page.waitForTimeout(800);
+      const has = await page.evaluate(() => [...document.querySelectorAll('.note-item-title')].some(e => e.textContent.includes('Persistence check')));
+      expect(has, 'note lost on reload');
+    });
+    await page.evaluate(() => closeWindow('notes-window'));
+    await page.evaluate(() => openWindow('mail-window'));
+    await test('Mail reader actions come back after visiting an empty mailbox', async () => {
+      await page.click('.mail-sidebar [data-mailbox="drafts"]');
+      await page.click('.mail-sidebar [data-mailbox="inbox"]');
+      const disp = await page.evaluate(() => getComputedStyle(document.getElementById('mail-reader-actions')).display);
+      expect(disp !== 'none', 'actions hidden');
+    });
+    await test('Mail compose refuses to send without a reply-to email', async () => {
+      await page.click('#mail-window .app-pill-btn.primary');
+      await page.fill('#compose-message', 'Hello');
+      const before = page.__web3;
+      await page.click('#compose-send-btn');
+      await page.waitForTimeout(300);
+      const status = await page.textContent('#compose-status');
+      expect(page.__web3 === before && /email/i.test(status), `requests=${page.__web3 - before} status=${status}`);
+    });
+    await test('Mail does not execute HTML typed into the subject', async () => {
+      await page.fill('#compose-sender-name', '<img src=x onerror="window.__mx=1">');
+      await page.fill('#compose-sender-email', 'qa@example.com');
+      await page.fill('#compose-subject', '<img src=x onerror="window.__mx=1">');
+      await page.fill('#compose-message', 'test');
+      await page.click('#compose-send-btn');
+      await page.waitForTimeout(1800);
+      expect(!(await page.evaluate(() => window.__mx)), 'XSS executed');
+    });
+    await test('notes/mail had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Safari ───────────── */
+  if (section('safari')) {
+    console.log('\nSafari');
+    const page = await freshPage(browser);
+    await page.route('https://en.wikipedia.org/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ query: { searchinfo: { totalhits: 3 }, search: [{ title: 'Retrieval-augmented generation', snippet: 'RAG' }] }, title: 'Retrieval-augmented generation', extract: 'RAG is a technique', description: 'AI technique' }) }));
+    await page.evaluate(() => openWindow('safari-window'));
+    await test('Safari search does not execute HTML in the query', async () => {
+      await page.fill('#safari-url-input', '<img src=x onerror="window.__sx=1">');
+      await page.press('#safari-url-input', 'Enter');
+      await page.waitForTimeout(800);
+      expect(!(await page.evaluate(() => window.__sx)), 'XSS executed');
+    });
+    await test('Safari search shows real (not fabricated) result counts', async () => {
+      await page.fill('#safari-url-input', 'rag');
+      await page.press('#safari-url-input', 'Enter');
+      await page.waitForTimeout(600);
+      const t = await page.textContent('#safari-page-render-area');
+      expect(!/1,840,000/.test(t), 'shows fake "About 1,840,000 results"');
+    });
+    await test('typing a domain navigates instead of searching', async () => {
+      await page.fill('#safari-url-input', 'github.com/muditagrawal-alt');
+      await page.press('#safari-url-input', 'Enter');
+      await page.waitForTimeout(300);
+      const isSearch = await page.evaluate(() => safariTabs.find(t => t.id === activeSafariTabId).type === 'ddg_search');
+      expect(!isSearch, 'treated a URL as a search query');
+    });
+    await test('YouTube does not use the retired listType=search embed', async () => {
+      await page.fill('#safari-url-input', 'youtube');
+      await page.press('#safari-url-input', 'Enter');
+      await page.waitForTimeout(300);
+      const src = await page.evaluate(() => document.querySelector('#safari-page-render-area iframe')?.src || '');
+      expect(!/listType=search/.test(src), src);
+    });
+    await test('every Favorites tile opens a profile page', async () => {
+      await page.evaluate(() => openSafariStartPage());
+      const keys = await page.evaluate(() => Object.keys(safariShortcuts));
+      for (const k of keys) {
+        await page.evaluate(k => openSafariShortcut(k), k);
+        const h = await page.textContent('#safari-page-render-area h2');
+        expect(h && h.length > 2, 'blank page for ' + k);
+      }
+    });
+    await test('Instagram favourite links to the profile, not the homepage', async () => {
+      const url = await page.evaluate(() => safariShortcuts.instagram.url);
+      expect(/instagram\.com\/.+/.test(url), url);
+    });
+    await test('safari had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Terminal ───────────── */
+  if (section('terminal')) {
+    console.log('\nTerminal');
+    const page = await freshPage(browser);
+    await page.evaluate(() => openWindow('terminal-window'));
+    const cmds = ['help', 'whoami', 'cat resume.txt', 'history', 'about me', 'experience', 'education', 'projects', 'skills', 'contact', 'ls', 'ls projects/', 'pwd', 'cd projects', 'cat README.txt', 'cat Philosophy.txt', 'sudo hire-me', 'brew install talent', 'date', 'uname -a', 'echo hello', 'git status', 'git log', 'neofetch', 'curl mudit.dev'];
+    for (const c of cmds) {
+      await test(`terminal: "${c}" is understood`, async () => {
+        await page.evaluate(() => { openWindow('terminal-window'); document.querySelectorAll('.window:not(.hidden)').forEach(w => { if (w.id !== 'terminal-window') closeWindow(w.id); }); });
+        await page.fill('#terminal-input', c);
+        await page.press('#terminal-input', 'Enter');
+        await page.waitForTimeout(60);
+        const last = await page.evaluate(() => { const o = document.getElementById('terminal-output'); return o.lastElementChild ? o.lastElementChild.textContent : ''; });
+        expect(!/command not found|No such file|not found/.test(last), last.slice(0, 120));
+      });
+    }
+    await test('terminal uses a real monospace font, not Courier New', async () => {
+      const ff = await page.evaluate(() => getComputedStyle(document.getElementById('terminal-input')).fontFamily);
+      expect(!/^"?Courier New/.test(ff), ff);
+    });
+    await test('terminal had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Photo Booth ───────────── */
+  if (section('photobooth')) {
+    console.log('\nPhoto Booth');
+    const page = await freshPage(browser, {
+      init: () => {
+        window.__streams = [];
+        const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+        navigator.mediaDevices.getUserMedia = async (c) => { const s = await orig(c); window.__streams.push(s); return s; };
+      }
+    });
+    await test('opening Photo Booth requests the camera exactly once', async () => {
+      await page.click('#dock-photobooth');
+      await page.waitForTimeout(1500);
+      const n = await page.evaluate(() => window.__streams.length);
+      expect(n === 1, `getUserMedia called ${n} times`);
+    });
+    await test('taking a photo shows the review sheet', async () => {
+      await page.click('#pb-shutter-btn');
+      await page.waitForTimeout(3300);
+      expect(await page.isVisible('#pb-modal.open'));
+    });
+    await test('Set as Wallpaper works and does not blow the storage quota', async () => {
+      await page.click('#pb-modal button:has-text("Wallpaper")');
+      await page.waitForTimeout(500);
+      const [bg, size] = await page.evaluate(() => [document.body.style.backgroundImage.slice(0, 30), (localStorage.getItem('macos-portfolio-settings') || '').length]);
+      expect(/url\(/.test(bg) && size < 200000, `bg=${bg} settingsSize=${size}`);
+    });
+    await test('closing Photo Booth turns the camera fully off', async () => {
+      await page.click('#photobooth-window .control.close');
+      await page.waitForTimeout(300);
+      const live = await page.evaluate(() => window.__streams.flatMap(s => s.getTracks()).filter(t => t.readyState === 'live').length);
+      expect(live === 0, `${live} camera track(s) still live`);
+    });
+    await test('minimizing Photo Booth releases the camera', async () => {
+      await page.click('#dock-photobooth');
+      await page.waitForTimeout(1200);
+      await page.click('#photobooth-window .control.minimize');
+      await page.waitForTimeout(300);
+      const live = await page.evaluate(() => window.__streams.flatMap(s => s.getTracks()).filter(t => t.readyState === 'live').length);
+      await page.evaluate(() => closePhotoBooth());
+      expect(live === 0, `${live} live track(s) while minimized`);
+    });
+    await test('photobooth had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Music ───────────── */
+  if (section('music')) {
+    console.log('\nMusic');
+    const page = await freshPage(browser);
+    await page.route(/upload\.wikimedia\.org/, r => r.fulfill({ path: path.join(ROOT, 'assets/mac_startup.mp3'), contentType: 'audio/mpeg' }));
+    await page.click('#dock-music');
+    await test('pause then play resumes from the same position', async () => {
+      await page.evaluate(() => playMusicTrackIndex(0));
+      await page.waitForTimeout(1300);
+      await page.click('#music-play-btn');            // pause
+      await page.waitForTimeout(200);
+      const t1 = await page.textContent('#music-lcd-time');
+      await page.click('#music-play-btn');            // play
+      await page.waitForTimeout(250);
+      const t2 = await page.textContent('#music-lcd-time');
+      expect(!/^0:00/.test(t2) && t1.split('/')[0].trim() !== '0:00', `paused at ${t1}, resumed at ${t2}`);
+      await page.click('#music-play-btn');
+    });
+    await test('clicking a Library row highlights exactly one sidebar item', async () => {
+      await page.click('.music-nav-item:has-text("Artists")');
+      const n = await page.$$eval('.music-nav-item.active', e => e.length);
+      expect(n === 1, `${n} items highlighted`);
+    });
+    await test('a radio stream that fails to load does not claim to be playing', async () => {
+      await page.route(/zeno\.fm|radioparadise|bbcmedia|dancewave|musicradio/, r => r.abort());
+      await page.click('.music-nav-item:has-text("Radio")');
+      await page.click('.music-station-card >> nth=0');
+      await page.waitForTimeout(1200);
+      const t = await page.textContent('#music-player-status, #music-lcd-artist, #music-lcd-time');
+      const playingIcon = await page.evaluate(() => !!document.querySelector('#music-play-btn .fa-pause'));
+      expect(!playingIcon, 'still shows Pause/LIVE while nothing is audible: ' + t);
+    });
+    await test('Control Centre volume drives Music volume', async () => {
+      await page.evaluate(() => setCcVolume(20));
+      const v = await page.evaluate(() => window.getMusicVolume ? window.getMusicVolume() : null);
+      await page.evaluate(() => setCcVolume(80));
+      expect(v !== null && Math.abs(v - 0.2) < 0.05, 'music volume ' + v);
+    });
+    await test('music had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Games ───────────── */
+  if (section('games')) {
+    console.log('\nArcade');
+    const page = await freshPage(browser);
+    await test('Breakout: "Resume" after pause keeps the score (does not restart)', async () => {
+      await page.click('#dock-breakout');
+      await page.waitForTimeout(300);
+      // The intro overlay should be offered first; start if needed.
+      if (await page.isVisible('#breakout-overlay.open')) await page.click('#breakout-overlay-btn');
+      await page.evaluate(() => window.__bo = true);
+      await page.click('#breakout-canvas');           // launch ball
+      await page.waitForTimeout(4500);
+      await page.click('.breakout-header-actions .breakout-btn:has-text("Pause")');
+      const s1 = await page.textContent('#breakout-score');
+      await page.click('#breakout-overlay-btn');      // "Resume Game"
+      await page.waitForTimeout(150);
+      const s2 = await page.textContent('#breakout-score');
+      expect(s1 === s2 && !(await page.isVisible('#breakout-overlay.open')), `score ${s1} → ${s2}`);
+    });
+    await test('Breakout: re-opening from the Dock does not wipe a game in progress', async () => {
+      const s1 = await page.textContent('#breakout-score');
+      await page.click('#dock-breakout');
+      await page.waitForTimeout(150);
+      const s2 = await page.textContent('#breakout-score');
+      await page.evaluate(() => closeBreakout());
+      expect(s1 === s2, `score ${s1} → ${s2}`);
+    });
+    await test('Snake: "Resume" after pause continues the same game', async () => {
+      await page.click('#dock-snake');
+      await page.waitForTimeout(300);
+      if (await page.isVisible('#snake-overlay.open')) await page.click('#snake-overlay-btn');
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(500);
+      const before = await page.evaluate(() => window.snakeState ? JSON.stringify(window.snakeState().head) : null);
+      await page.click('.snake-btn:has-text("Pause")');
+      await page.click('#snake-overlay-btn');
+      await page.waitForTimeout(30);
+      const after = await page.evaluate(() => window.snakeState ? window.snakeState() : null);
+      await page.evaluate(() => closeSnake());
+      expect(after && !after.waiting && after.running, 'game restarted or state unavailable: ' + JSON.stringify(after) + ' before=' + before);
+    });
+    await test('games had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Settings ───────────── */
+  if (section('settings')) {
+    console.log('\nSettings');
+    const page = await freshPage(browser);
+    await page.evaluate(() => openWindow('settings-window'));
+    await test('exactly one Appearance option is selected on a fresh visit', async () => {
+      const n = await page.$$eval('.theme-option.active', e => e.length);
+      expect(n === 1, n + ' selected');
+    });
+    await test('wallpaper choice persists across reloads', async () => {
+      await page.click('.settings-sidebar .sidebar-item:has-text("Wallpaper")');
+      await page.click('.wallpaper-card:has-text("Golden Gate")');
+      await page.reload(); await page.waitForTimeout(800);
+      const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundImage);
+      expect(/Golden-Gate/.test(bg), bg.slice(0, 80));
+    });
+    await test('accent colour applies to selection highlights', async () => {
+      await page.evaluate(() => openWindow('settings-window'));
+      await page.click('.accent-dot[title="Pink"]');
+      const v = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+      expect(v === '#ff2d55', v);
+    });
+    await test('settings had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Iris ───────────── */
+  if (section('iris')) {
+    console.log('\nIris');
+    const page = await freshPage(browser, {
+      init: () => {
+        window.__srStarts = 0;
+        class FakeSR { constructor() { this.continuous = false; } start() { window.__srStarts++; } stop() {} abort() {} }
+        window.SpeechRecognition = FakeSR; window.webkitSpeechRecognition = FakeSR;
+      }
+    });
+    await test('the microphone is not touched until the visitor asks for it', async () => {
+      await page.mouse.click(200, 500);
+      await page.waitForTimeout(400);
+      const n = await page.evaluate(() => window.__srStarts);
+      expect(n === 0, `SpeechRecognition.start() called ${n} time(s) without consent`);
+    });
+    const ask = async (q) => {
+      await page.evaluate(() => openIris());
+      await page.fill('#iris-input', q);
+      await page.press('#iris-input', 'Enter');
+      await page.waitForTimeout(500);
+      return page.evaluate(() => { const m = [...document.querySelectorAll('.iris-message.iris')]; return m.length ? m[m.length - 1].textContent : ''; });
+    };
+    await test('a question ("what is RAG?") answers instead of launching things', async () => {
+      const pages = page.context().pages().length;
+      const a = await ask('what is RAG?');
+      const dmg = await page.evaluate(() => !document.getElementById('dmg-window').classList.contains('hidden'));
+      expect(!dmg && page.context().pages().length === pages && a.length > 20, `dmg mounted=${dmg} answer=${a.slice(0, 80)}`);
+    });
+    await test('"what is VLM leads?" does not pop a new tab', async () => {
+      const pages = page.context().pages().length;
+      await ask('what is VLM leads?');
+      expect(page.context().pages().length === pages, 'opened a tab for a question');
+    });
+    await test('"switch to dark mode" answers honestly instead of silently toggling a theme', async () => {
+      const before = await page.evaluate(() => currentThemeMode());
+      const a = await ask('switch to dark mode');
+      const after = await page.evaluate(() => currentThemeMode());
+      expect(!/switched/i.test(a) && /dark/i.test(a) && before === after, `${a} | theme ${before}→${after}`);
+    });
+    await test('off-topic questions are politely declined (scope guardrail)', async () => {
+      const a = await ask('what is the capital of peru?');
+      expect(/only know|couldn.t find/i.test(a), a);
+    });
+    await test('skill questions are answered from his listed stack', async () => {
+      const yes = await ask('does he know PyTorch?');
+      const no = await ask('does he know Haskell?');
+      expect(/^Yes/.test(yes.trim()) && /don.t see/i.test(no), `pytorch: ${yes.slice(0, 60)} | haskell: ${no.slice(0, 60)}`);
+    });
+    await test('"open his résumé" (a command) does open it', async () => {
+      await ask('open his résumé');
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => !document.getElementById('resume-window').classList.contains('hidden')), 'résumé not opened');
+      await page.evaluate(() => closeWindow('resume-window'));
+    });
+    await test('"who is Mudit?" gives a real answer', async () => {
+      const a = await ask('who is Mudit?');
+      expect(/IILM|engineer|AI/i.test(a), a);
+    });
+    await test('answers cite where they came from', async () => {
+      const a = await ask('tell me about his work at Carnot');
+      const cites = await page.evaluate(() => { const m = [...document.querySelectorAll('.iris-message.iris')].pop(); return m ? m.querySelectorAll('.iris-source, .iris-sources').length : 0; });
+      expect(/Carnot/.test(a) && cites > 0, `cites=${cites} answer=${a.slice(0, 100)}`);
+    });
+    await test('iris had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+
+
+  /* ───────────── App Store ───────────── */
+  if (section('appstore')) {
+    console.log('\nApp Store');
+    const page = await freshPage(browser);
+    await page.evaluate(() => openWindow('appstore-window'));
+    await page.waitForTimeout(250);
+    await test('App Store lists every project from the shared data', async () => {
+      const n = await page.$$eval('#appstore-grid-container .app-card', e => e.length);
+      expect(n === 10, n + ' cards');
+    });
+    await test('no fabricated star ratings anywhere', async () => {
+      const t = await page.textContent('#appstore-window');
+      expect(!/★|\b[45]\.\d\b/.test(t), 'ratings found');
+    });
+    await test('every category has projects (Defense included)', async () => {
+      const counts = {};
+      for (const c of ['ai', 'vision', 'systems', 'defense']) {
+        await page.click(`.appstore-sidebar .sidebar-item[data-cat="${c}"]`);
+        counts[c] = await page.$$eval('#appstore-grid-container .app-card', e => e.length);
+      }
+      await page.click('.appstore-sidebar .sidebar-item[data-cat="all"]');
+      expect(Object.values(counts).every(n => n > 0), JSON.stringify(counts));
+    });
+    await test('a project opens its product page, and Back returns', async () => {
+      await page.click('#appstore-grid-container .app-card >> nth=0');
+      const title = await page.textContent('#appstore-product h2');
+      await page.screenshot({ path: SHOTS + 'v-appstore-product.png' });
+      await page.click('.appstore-back');
+      const grid = await page.isVisible('#appstore-grid-container');
+      expect(title.length > 2 && grid, `title=${title} grid=${grid}`);
+    });
+    await test('Launchpad project tiles open the right product page', async () => {
+      await page.evaluate(() => openProjectDetails('Monocular RGB SLAM'));
+      const t = await page.textContent('#appstore-product h2');
+      expect(/SLAM/.test(t), t);
+    });
+    await test('app store had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Keyboard & system actions ───────────── */
+  if (section('keyboard')) {
+    console.log('\nKeyboard & system actions');
+    const page = await freshPage(browser);
+    await test('⌥W closes the frontmost window', async () => {
+      await page.evaluate(() => openWindow('notes-window'));
+      await page.keyboard.press('Alt+KeyW');
+      expect(await page.evaluate(() => document.getElementById('notes-window').classList.contains('hidden')));
+    });
+    await test('⌥M minimises the frontmost window', async () => {
+      await page.evaluate(() => openWindow('finder-window'));
+      await page.keyboard.press('Alt+KeyM');
+      expect(await page.evaluate(() => document.getElementById('finder-window').classList.contains('minimized')));
+      await page.evaluate(() => closeWindow('finder-window'));
+    });
+    await test('⌥Tab cycles running apps and commits on release', async () => {
+      await page.evaluate(() => { openWindow('safari-window'); openWindow('mail-window'); });
+      await page.keyboard.down('Alt');
+      await page.keyboard.press('Tab');
+      const shown = await page.isVisible('#app-switcher.visible');
+      await page.keyboard.up('Alt');
+      const front = await page.evaluate(() => getActiveWindow().id);
+      await page.evaluate(() => { closeWindow('safari-window'); closeWindow('mail-window'); });
+      expect(shown && front === 'safari-window', `shown=${shown} front=${front}`);
+    });
+    await test('"?" shows the keyboard shortcut sheet', async () => {
+      await page.mouse.click(700, 500);
+      await page.keyboard.press('Shift+Slash');
+      const ok = await page.isVisible('#quicklook-overlay.active .kbd-sheet');
+      await page.keyboard.press('Escape');
+      expect(ok);
+    });
+    await test('⌃L clears the Terminal', async () => {
+      await page.evaluate(() => { openWindow('terminal-window'); runTerminalCommand('help'); });
+      await page.keyboard.press('Control+KeyL');
+      const n = await page.evaluate(() => document.getElementById('terminal-output').children.length);
+      await page.evaluate(() => closeWindow('terminal-window'));
+      expect(n === 0, n + ' lines remain');
+    });
+    await test('⌘[ goes back in Finder', async () => {
+      await page.evaluate(() => { openWindow('finder-window'); finderSidebarNav('home'); finderSidebarNav('projects'); });
+      await page.mouse.click(600, 600);
+      await page.evaluate(() => bringToFront('finder-window'));
+      await page.keyboard.press('Meta+BracketLeft');
+      const t = await page.textContent('#finder-title-text');
+      await page.evaluate(() => closeWindow('finder-window'));
+      expect(t !== 'Projects', 'still on ' + t);
+    });
+    await test('arrow keys step through desktop files while Quick Look is open', async () => {
+      await page.click('.desktop-icon[data-file-id="readme"]');
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowDown');
+      const title = await page.textContent('#ql-title');
+      await page.keyboard.press('Escape');
+      expect(title === 'Resume.pdf', title);
+    });
+    await test('Apple ▸ Restart replays boot and returns through the lock screen', async () => {
+      await page.evaluate(() => restartMac());
+      await page.waitForSelector('#lock-screen-overlay.active', { timeout: 9000 });
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(700);
+      const desk = await page.evaluate(() => getComputedStyle(document.querySelector('.dock-container')).opacity);
+      expect(Number(desk) > 0.9, 'desktop opacity ' + desk);
+    });
+    await test('Apple ▸ Shut Down shows the power-on gate, and it boots again', async () => {
+      await page.evaluate(() => shutDownMac());
+      await page.waitForTimeout(200);
+      const gate = await page.isVisible('#boot-power-gate.visible');
+      await page.mouse.click(720, 450);
+      await page.waitForSelector('#lock-screen-overlay.active', { timeout: 9000 });
+      expect(gate);
+      await page.keyboard.press('Enter');
+    });
+    await test('AirDrop saves a real vCard built from the profile', async () => {
+      await page.waitForTimeout(600);
+      await page.evaluate(() => openFinderPane('airdrop'));
+      const [dl] = await Promise.all([page.waitForEvent('download'), page.click('.airdrop-target:has-text("Contact Card")')]);
+      const fs = require('fs');
+      const body = fs.readFileSync(await dl.path(), 'utf8');
+      expect(/BEGIN:VCARD/.test(body) && /muditagrawal03@gmail.com/.test(body) && dl.suggestedFilename().endsWith('.vcf'), body.slice(0, 80));
+    });
+    await test('Résumé download serves the real PDF', async () => {
+      const [dl] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => downloadResume())]);
+      const fs = require('fs');
+      const head = fs.readFileSync(await dl.path()).slice(0, 5).toString();
+      expect(head === '%PDF-' && /Resume/i.test(dl.suggestedFilename()), head + ' ' + dl.suggestedFilename());
+    });
+    await test('deleting a note offers Undo, and Undo restores it', async () => {
+      await page.evaluate(() => { openWindow('notes-window'); addNewNotePrompt(); });
+      await page.keyboard.type('Delete me');
+      await page.evaluate(() => commitNoteEdit(activeNoteId));
+      await page.click('#notes-delete-btn');
+      const gone = await page.evaluate(() => ![...document.querySelectorAll('.note-item-title')].some(e => e.textContent === 'Delete me'));
+      await page.click('.mac-toast-action:has-text("Undo")');
+      const back = await page.evaluate(() => [...document.querySelectorAll('.note-item-title')].some(e => e.textContent === 'Delete me'));
+      expect(gone && back, `gone=${gone} back=${back}`);
+    });
+    await test('Frosted Glass applies to every window, not just some', async () => {
+      await page.evaluate(() => { setThemeMode('glass'); openWindow('finder-window'); openWindow('music-window'); });
+      const bgs = await page.evaluate(() => ['finder-window', 'music-window'].map(i => getComputedStyle(document.getElementById(i)).backgroundColor));
+      await page.evaluate(() => setThemeMode('dark'));
+      expect(bgs.every(b => /0\.42/.test(b)), bgs.join(' | '));
+    });
+    await test('accent colour reaches Finder selection highlights', async () => {
+      await page.evaluate(() => { setAccentColor('#ff2d55'); openWindow('finder-window'); finderSidebarNav('projects'); });
+      await page.waitForTimeout(350);
+      const bg = await page.evaluate(() => getComputedStyle(document.querySelector('.sidebar-v2-item.active')).backgroundColor);
+      await page.evaluate(() => setAccentColor('#007aff'));
+      expect(/255, 45, 85/.test(bg), bg);
+    });
+    await test('keyboard/system had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  /* ───────────── Mobile ───────────── */
+  if (section('mobile')) {
+    console.log('\nMobile (390×844)');
+    const page = await freshPage(browser, { viewport: { width: 390, height: 844 } });
+    await page.screenshot({ path: SHOTS + 'mobile-desktop.png' });
+    await test('no horizontal page scroll on a phone', async () => {
+      const w = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(w <= 390, 'scrollWidth ' + w);
+    });
+    await test('a window opened on a phone fits the screen', async () => {
+      await page.evaluate(() => openWindow('finder-window'));
+      await page.waitForTimeout(300);
+      const r = await page.evaluate(() => document.getElementById('finder-window').getBoundingClientRect().toJSON());
+      await page.screenshot({ path: SHOTS + 'mobile-finder.png' });
+      expect(r.left >= -1 && r.right <= 391, JSON.stringify(r));
+    });
+    await test('every visible Dock icon is fully on screen', async () => {
+      const off = await page.evaluate(() => [...document.querySelectorAll('.dock-item')].filter(d => d.offsetParent !== null).filter(d => { const r = d.getBoundingClientRect(); return r.left < 0 || r.right > innerWidth; }).map(d => d.id));
+      expect(off.length === 0, 'clipped: ' + off.join(', '));
+    });
+    await test('tapping an email opens it on a phone, and Back returns', async () => {
+      await page.evaluate(() => { document.querySelectorAll('.window:not(.hidden)').forEach(w => closeWindow(w.id)); openWindow('mail-window'); });
+      await page.click('.mail-item >> nth=1');
+      const reading = await page.isVisible('#mail-reader-pane');
+      await page.click('#mail-reader-pane .mobile-back-btn');
+      const back = await page.isVisible('.mail-list-container');
+      await page.screenshot({ path: SHOTS + 'mobile-mail.png' });
+      expect(reading && back, `reading=${reading} back=${back}`);
+    });
+    await test('Settings panes are all reachable on a phone', async () => {
+      await page.evaluate(() => { closeWindow('mail-window'); openWindow('settings-window'); });
+      await page.click('.settings-sidebar .sidebar-item[data-pane="privacy"]');
+      expect(await page.isVisible('#settings-pane-privacy'), 'privacy pane not reachable');
+      await page.screenshot({ path: SHOTS + 'mobile-settings.png' });
+    });
+    await test('mobile had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+  }
+
+  const failed = summary();
+  await browser.close();
+  server.close();
+  process.exit(failed ? 1 : 0);
+})().catch(e => { console.error(e); process.exit(2); });
