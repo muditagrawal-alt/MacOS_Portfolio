@@ -1,0 +1,134 @@
+# The info bank
+
+Everything about the portfolio's owner lives in one file, `js/data/profile.js`: name, photo, experience, projects, résumé, links. Both versions of the site, the Mac and the iPhone, read it, along with Finder, Spotlight, Terminal, Iris and every other app. Nothing personal is written anywhere else.
+
+There are two ways to fill it in:
+
+- **The questionnaire.** Run `npm run setup` (or `npm start` the first time). It edits a draft with a live preview, then writes the info bank, your files and everything generated from them.
+- **By hand.** Edit `js/data/profile.js`, then run `npm run refresh` to regenerate the page titles, link previews and Home Screen name. Run `npm test` to check the result.
+
+Only `name` is required. Leave anything else out and that part of the site simply doesn't appear.
+
+## Editing by hand
+
+The file is JSON inside `window.PROFILE_DATA = …;`. Keep it valid JSON: the questionnaire re-saves it in the same format, and `npm test` checks that it can. Paths are relative to the repository root; put your own files in `assets/me/`.
+
+## Fields
+
+### You
+
+| Field | Example | Shown in |
+| --- | --- | --- |
+| `name` | `"Your Name"` | Everywhere: menu bar, About window, Lock Screen, Terminal, Iris |
+| `pronouns` | `"she"`, `"he"` or `"they"` | How Iris and the site's copy refer to you |
+| `role` | `"Software Engineer"` | About window, iPhone widgets, Iris |
+| `tagline` | `"Software Engineer & Designer"` | Under your name; link previews |
+| `bio` | Two or three sentences | About window; Iris's answer to "who is …?" |
+| `focus` | `"Distributed systems"` | About This Mac; Terminal's `curl me` |
+| `location` | `"London, UK"` | About This Mac ("Based in") |
+| `lookingFor` | `"backend roles"` | Mail's first message: "I'm looking for …" |
+| `photo` | `"assets/me/photo.jpg"` | About window, Launchpad, notifications. Your initials if empty |
+| `handle` | `"yourname"` | Terminal prompt (`yourname@macbook`), `curl yourname.dev`. Defaults to your name |
+| `values` | `["Ship small, measure, repeat"]` | Terminal: `cat philosophy.txt` |
+
+### `contact`
+
+| Field | Example | Notes |
+| --- | --- | --- |
+| `email` | `"you@example.com"` | Mail, the contact card, Iris |
+| `phone` | `"+1 555 0100"` | Optional |
+| `linkedin` | `"https://www.linkedin.com/in/you"` | A full URL |
+| `github` | `"https://github.com/you"` | A full URL. Powers the GitHub widgets on both versions |
+
+### `socials`
+
+Any other profiles, as `[{ "network", "url", "handle", "blurb" }]`. `network` is one of `github`, `linkedin`, `huggingface`, `medium`, `substack`, `x`, `instagram`, `leetcode`, `youtube`, `kaggle`, `stackoverflow`, `dribbble`, `behance`, `mastodon`, `bluesky` or `website`; anything else is shown as a website. When `api/feeds.js` is deployed, Medium and Substack also feed the site's latest writing.
+
+### `experience`
+
+Newest first, as `[{ "role", "org", "dates", "bullets": [] }]`. The first entry is what you're doing now: it's the green pill in the About window and Iris's "right now …". If every role contains "Intern", the About window counts internships instead of roles.
+
+### `education`
+
+```json
+{
+  "degree": "B.Sc. Computer Science",
+  "university": "University of Somewhere",
+  "years": "2021 – 2025",
+  "grade": "3.8",
+  "gradeLabel": "GPA",
+  "schooling": [{ "title": "High School Diploma", "school": "Central High School", "year": "2021", "score": "92%" }]
+}
+```
+
+`gradeLabel` is whatever your grade is called: GPA, CGPA, Class, Grade. Without a grade, the About window shows your skill count instead.
+
+### `courses` and `certificates`
+
+- `courses`: `[{ "title", "issuer", "year", "detail" }]`.
+- `certificates`: `[{ "title", "issuer", "image", "file" }]`. `image` is a thumbnail (JPG or PNG) and `file` the original (PDF or image). They fill the Photos app on both versions.
+
+### `projects`
+
+| Field | Notes |
+| --- | --- |
+| `name` | Required |
+| `title` | A longer name for the App Store page heading. Defaults to `name` |
+| `subtitle` | One line under the name |
+| `kind` | `"Web app"`, `"Library"`, `"Research"`… |
+| `description` | The App Store page and Iris |
+| `summary` | A short blurb for lists. Defaults to `description` |
+| `highlights` | Bullet points |
+| `tags` | `["Python", "FastAPI"]`: "Built with", search and categories |
+| `link` | The live app, opened by the OPEN button. A GitHub link counts as source, not as live |
+| `repo` | The repository |
+| `date` | `"Mar 2025"` |
+| `icon` | An image. The questionnaire draws one from the initials if you leave it empty |
+| `category` | `ai`, `vision`, `web`, `mobile`, `data`, `systems`, `design`, `defense` or `games` (or a list). Guessed from the text otherwise |
+| `featured` | `true` for the App Store's hero. Defaults to the first live project |
+| `aliases` | Other names visitors might type, for Iris, Spotlight and Finder |
+| `demo` | `{ "description", "requirements", "download", "stack" }`: adds an installer disk image to the Mac |
+| `live` | Overrides whether the project counts as deployed |
+
+### `skills`
+
+Groups, as `[{ "label": "Languages", "items": ["Python", "Go"] }]`.
+
+### `writing`, `notes` and `cutIdeas`
+
+- `writing`: `[{ "title", "topic", "summary", "url", "minutes" }]`. Safari's reading list and Iris.
+- `notes`: `[{ "title", "folder", "body", "date" }]`. The Notes app on both versions. `body` understands `**bold**`, `*italic*`, `[links](https://…)`, `- ` lists, `> ` quotes and blank lines between paragraphs.
+- `cutIdeas`: `[{ "name", "kind", "reason" }]`. The Trash: ideas you dropped, and why.
+
+### `resume`
+
+`{ "file": "assets/me/resume.pdf", "preview": "assets/me/resume.png", "updated": "June 2025" }`. Used by the Preview window, the Résumé app and every download button. `preview` is an image of the first page and is optional.
+
+### `site`
+
+| Field | Notes |
+| --- | --- |
+| `url` | The published address, such as `https://you.github.io/MacOS_Portfolio/`. Used for link previews and for which sites may call Iris's endpoint |
+| `image` | The link-preview card, 1200 × 630. The questionnaire draws one from your name, photo and stats |
+| `title`, `description` | Override the generated page title and description |
+
+## What the setup writes
+
+| File | What |
+| --- | --- |
+| `js/data/profile.js` | The info bank |
+| `assets/me/` | Your photo, résumé, certificates, project icons and link-preview card |
+| `index.html`, `ios.html` | The `<title>` and link-preview tags between the `profile:meta` markers |
+| `manifest.webmanifest` | The Home Screen name |
+| `api/_owner.js` | Who the serverless functions speak for |
+| `js/config/config.js` | The contact-form key and Iris endpoint, if you gave them |
+| `.portfolio/setup.json` | "Setup done", plus the previous info bank's unused files until you remove them. Git-ignored |
+
+## Optional services
+
+- **Contact form.** Mail sends visitors' messages to your inbox through [Web3Forms](https://web3forms.com), which is free and needs no backend. The access key goes in `js/config/config.js` (`WEB3FORMS_ACCESS_KEY`). It's public by design, because it can only send mail to you. Without a key, Mail offers visitors their own mail app.
+- **Iris's hosted model.** Iris answers from the info bank on its own. Deploy `api/iris.js` (see `api/README.md`) and set `IRIS_ENDPOINT`, and it phrases its answers with a language model too.
+
+## Keeping it a template
+
+`npm run test:template` fails if anything from the info bank (your name, email, handles, project names, employers) appears anywhere else in the code. That keeps your copy a clean template for whoever clones it next. If it flags an ordinary word, for example a surname that's also a CSS colour, add the word to `GENERIC` in `scripts/personal-tokens.js`.

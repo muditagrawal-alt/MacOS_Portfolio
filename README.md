@@ -8,6 +8,48 @@ A fully interactive, MacOS-themed portfolio website built with vanilla HTML, CSS
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 
+## ✨ Make it yours
+
+This repository is a template. Clone it, answer one questionnaire, and both versions are about you: your name in the menu bar and on the Lock Screen, your projects in the App Store and Launchpad, your experience in Finder and Terminal, your résumé in Preview, and an Iris that answers questions about *your* work.
+
+```bash
+git clone https://github.com/muditagrawal-alt/MacOS_Portfolio.git my-portfolio
+cd my-portfolio
+npm install    # tools for the test suites; the site itself has no dependencies
+npm start      # the first run opens the questionnaire at http://localhost:8000/setup/
+```
+
+You can also click **Use this template** on GitHub and clone your copy. You'll need Node 18 or later.
+
+| Step | What you give it |
+| --- | --- |
+| About you | Name, pronouns, photo, role, tagline, bio |
+| Contact & links | Email, phone, LinkedIn, GitHub, and profiles on 14 more networks, from Hugging Face to Bluesky |
+| Experience, Education | Roles with highlights; degree, schooling, courses |
+| Projects | Name, description, live link, repository, tags. No icon? One is drawn for you |
+| Skills, Résumé | Skill groups; your PDF and certificates |
+| Notes & extras | Principles, notes, writing, ideas you dropped (all optional) |
+| Site & services | Your site's address, a contact-form key, Iris's model endpoint (optional) |
+
+A live preview shows the real site, iPhone or Mac, with your answers as you type. **Build my portfolio** then writes everything into the repository:
+
+- `js/data/profile.js`: the info bank, everything about you in one file
+- `assets/me/`: your photo, résumé, certificates, project icons and a link-preview card drawn for you
+- the page titles, link-preview tags, Home Screen name and serverless settings, regenerated from the info bank
+
+After that it offers to remove the previous owner's photos, certificates and icons, and shows you how to publish:
+
+```bash
+git add -A && git commit -m "Make the portfolio mine"
+git push
+```
+
+On GitHub, go to **Settings → Pages → Deploy from a branch → `main` / (root)**. Your portfolio is at `https://<you>.github.io/<repository>/`, and phones get the iPhone version.
+
+**Changing it later:** run `npm run setup` to reopen the questionnaire with your answers. Or edit `js/data/profile.js` by hand and run `npm run refresh`. [setup/README.md](setup/README.md) describes every field, and the questionnaire can import and export the info bank as JSON.
+
+**No Node?** The questionnaire also works from any static server, including the deployed site's `/setup/`. Its **Download profile.js** button gives you the file to put in `js/data/profile.js`.
+
 ## 📱 One link, two experiences
 
 The same URL opens the right portfolio for the device:
@@ -30,16 +72,16 @@ Both versions read the same data (`js/data/*`), use the same services (`js/share
 
 - **Navigation that feels native:** every page is a History API entry (`#/app/path`), so the phone's own back swipe and Android's Back button work, deep links open the right page, and Back walks up the app. Apps zoom out of their icons; the home bar (tap or drag up) goes home.
 - **Messages is Iris:** answers come from the portfolio, each with source chips that open the app the answer came from.
-- **Apps:** About (contact card, experience, education, skills), Projects (App Store product pages), Résumé, Photos (certificates), Notes (shared with the Mac's Notes in the same browser, plus *Recently Deleted* post-mortems), Mail (sends to Mudit), Safari (start page and portfolio search), Music (recordings, radio, and generative tracks synthesised in the browser), Weather, Calculator and Settings (light/dark, wallpaper, haptics).
+- **Apps:** About (contact card, experience, education, skills), Projects (App Store product pages), Résumé, Photos (certificates), Notes (shared with the Mac's Notes in the same browser, plus *Recently Deleted* post-mortems), Mail (sends to the owner's inbox), Safari (start page and portfolio search), Music (recordings, radio, and generative tracks synthesised in the browser), Weather, Calculator and Settings (light/dark, wallpaper, haptics).
 - **Installable:** Add to Home Screen gives a full-screen app with its own icon.
 
 ## 📸 Screenshot
 
 <div align="center">
 
-![The desktop, with the About Mudit window](assets/og-image.jpg)
+![The desktop, with the About window open](assets/og-image.jpg)
 
-*First run: the About Mudit window, live widgets and the desktop files*
+*The template, set up by its author: the About window, live widgets and the desktop files*
 
 </div>
 
@@ -62,47 +104,15 @@ Each window features:
 - Authentic macOS window styling
 - Content-specific layouts (grid, list, card views)
 
-### 💼 Portfolio Sections
+### 💼 What visitors find
 
-#### About Me
-Personal introduction and professional overview
+All of it is built from the info bank, so adding a project or a role shows up everywhere at once:
 
-#### Experience
-- **AI/ML Intern** - Carnot Research Pvt. Ltd. (IITD-incubated startup) (June 2026 – Present)
-- **Machine Learning Intern** - Zee Tech and Innovation Centre (Dec 2025 – Jan 2026)
-- **Summer Intern** - WESEE, Indian Navy (June 2025 – July 2025)
-
-#### Education
-- B.Tech in Computer Science (AI/ML) - IILM University (2023 – 2027) [CGPA: 7.68]
-- Class 12 - Navy Children School, New Delhi (2023)
-- Class 10 - Navy Children School, Mumbai (2021)
-
-#### Projects
-8 featured projects with live GitHub links:
-- **OmniDoc** - RAG-based document intelligence system
-- **Sliver.Ai** - Smart video clipping tool
-- **S.W.O.R.D** - Real-time weapon detection system
-- **Deepfake Detector** - ML-based deepfake and fake news detection
-- **Helix-Compiler** - C-based compiler project
-- **Multiva.Ai** - Multilingual AI voice cloning platform
-- **Inflx** - AutoStream agent service
-- **Artifex** - Creative AI project
-
-#### Skills
-Comprehensive tech stack including:
-- **Languages**: Python, C, Java, HTML, CSS, Tailwind CSS
-- **Frameworks**: PyTorch, TensorFlow, Keras, OpenCV, Flask, Gradio, Streamlit
-- **Models**: YOLOv8/11/26, Whisper, XTTS, BLIP, Mistral 7B, FB-NLLB, Wav2Lip
-- **Tools**: Git, GitHub, Hugging Face, Jupyter, FFMPEG
-
-#### Contact
-Direct links to:
-- Email
-- LinkedIn
-- GitHub
-- HuggingFace
-- Blog
-- Phone
+- **About**: who you are, what you're doing now, and stats computed from your data
+- **Experience, education, skills**: Finder folders, the Résumé app, Terminal (`cat experience.txt`) and Iris
+- **Projects**: App Store product pages with live links, Launchpad icons, Spotlight and Safari search
+- **Contact**: Mail (to your inbox), a vCard over AirDrop, and your links in Finder and on the iPhone
+- **Extras**: Notes, a reading list in Safari, certificates in Photos, and the ideas you dropped in the Trash
 
 ### 🖨️ Resume Viewer
 - PDF preview with embedded image
@@ -118,29 +128,13 @@ Interactive terminal with custom commands:
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- No server or build tools required - runs entirely client-side
-
-### Installation
-
-1. **Clone the repository**
 ```bash
-git clone https://github.com/muditagrawal-alt/MacOS_Portfolio.git
-cd MacOS_Portfolio
+npm start            # http://localhost:8000 (the questionnaire opens on the first run)
+npm run setup        # reopen the questionnaire
+npm run refresh      # after editing js/data/profile.js by hand
 ```
 
-2. **Open in browser**
-```bash
-# Option 1: Direct file open
-open index.html
-
-# Option 2: Use a local server (recommended)
-python -m http.server 8000
-# Then visit http://localhost:8000
-```
-
-3. **That's it!** No build process, dependencies, or configuration needed.
+There's no build step. Any static server works for just viewing the site (`python3 -m http.server 8000`), but `npm start` is what lets the questionnaire save.
 
 ## 📂 Project Structure
 
@@ -150,12 +144,7 @@ See [Architecture](#architecture) below for a file-by-file map.
 
 ### Updating Content
 
-Everything visitors read comes from a few data files, so one edit updates every app (Finder, Spotlight, Iris, Terminal, the About window):
-
-1. **Profile, experience, education, contact, skills**: `js/data/profile.js`
-2. **Projects**: the `proj-*` entries in `js/data/filesystem.js` and `js/data/corpus.js` (the App Store and Iris are built from these)
-3. **Desktop files, Photos certificates, Trash post-mortems**: `js/data/desktop-files.js`
-4. **Résumé**: replace `assets/MuditAgrawalResumeAugust2026.pdf` and its preview PNG
+Everything visitors read comes from the info bank, `js/data/profile.js`. Finder's files, Spotlight and Iris's search index, the desktop files, Notes, Photos and the Trash are all generated from it (`js/data/filesystem.js`, `corpus.js`, `desktop-files.js`, `notes.js`). One edit therefore updates every app on both versions. Use the questionnaire (`npm run setup`), or edit the file and run `npm run refresh`. [setup/README.md](setup/README.md) describes every field.
 
 ### Styling
 
@@ -172,8 +161,8 @@ Add a `case` to the `switch (cmd)` in `js/apps/terminal.js`, and list it in `TER
 
 1. Go to repository Settings
 2. Navigate to Pages section
-3. Select main branch as source
-4. Your site will be live at `https://yourusername.github.io/MacOS_Portfolio`
+3. Choose **Deploy from a branch**, then `main` / (root)
+4. Your site will be live at `https://yourusername.github.io/MacOS_Portfolio`. Pages caches pages for about ten minutes, so a new push can take that long to show
 
 ### Netlify / Vercel
 
@@ -189,8 +178,8 @@ Upload all files to any static hosting service (AWS S3, Firebase Hosting, etc.)
 
 ### Pure Vanilla Stack
 - **No frameworks** - Built entirely with vanilla HTML, CSS, and JavaScript
-- **No dependencies** - Runs without npm, webpack, or build tools
-- **No backend** - Fully static, client-side only
+- **No dependencies** - The site needs no npm, webpack or build step. Node runs only the setup questionnaire and the tests
+- **No backend** - Fully static, client-side only (the optional Iris model proxy is a single serverless function)
 - **Lightweight** - Fast load times, minimal resource usage
 
 ### Browser Compatibility
@@ -234,9 +223,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Icons from [Font Awesome](https://fontawesome.com/)
 - Fonts from [Google Fonts](https://fonts.google.com/)
 
-## 📧 Contact
+## 📧 Author
 
-**Mudit Agrawal**
+**Mudit Agrawal** made this template; the live demo is his portfolio.
 
 - Email: muditagrawal03@gmail.com
 - LinkedIn: [Mudit Agrawal](https://www.linkedin.com/in/mudit-agrawal-167610318)
@@ -272,11 +261,12 @@ css/
   apps/*.css            one file per application
 js/
   router.js             device router — loaded first by both pages
-  data/profile.js       single source of truth for name, education, contact
-  data/corpus.js        ONE search index, shared by Safari, Spotlight and Iris
-  data/filesystem.js    Finder's folders and files (projects, skills, education, socials)
-  data/desktop-files.js desktop files, Photos certificates, Trash post-mortems
-  data/notes.js         Notes content
+  data/profile.js       the info bank: everything about the owner, and nothing anywhere else
+  data/profile-schema.js  defaults and derived fields (first name, pronouns, links) for every app
+  data/corpus.js        ONE search index, shared by Safari, Spotlight and Iris (from the info bank)
+  data/filesystem.js    Finder's folders and files (from the info bank)
+  data/desktop-files.js desktop files, Photos certificates, Trash post-mortems (from the info bank)
+  data/notes.js         Notes content (from the info bank)
   data/music.js         music catalogue + radio fallbacks
   shared/live-data.js   live weather and GitHub activity, cached
   shared/contact-form.js  the one contact-form send path, vCard + share helpers
@@ -295,11 +285,22 @@ js/
   core/system-status.js Wi-Fi + battery indicators
   core/control-center.js  Control Centre (brightness veil, volume, Now Playing)
   core/desktop-widgets.js live clock, weather and GitHub widgets
-  apps/welcome.js       "About Mudit" first-run window
+  core/profile-bind.js  fills data-tpl="{name}"-style placeholders in the markup from the info bank
+  core/setup-hint.js    "Make this portfolio yours", on a fresh clone's local server only
+  apps/welcome.js       the About window, first thing a visitor sees
   apps/iris-brain.js    Iris's in-browser RAG: BM25 retrieval + cited answers
   apps/*.js             one controller per application
-scripts/                CI gates 1–4 (see Testing)
+setup/
+  index.html, setup.js  the questionnaire: every field, live preview, build
+  apply.js              writes an info bank into the repository (`npm run refresh`)
+  site-meta.js          the page titles and link-preview tags, generated from the info bank
+  profile-format.js     reads and writes js/data/profile.js
+  README.md             every field of the info bank
+scripts/
+  dev-server.js         `npm start`: local server + the questionnaire's save endpoints (localhost only)
+  test-*.js             CI gates 1–5 (see Testing)
 api/iris.js             serverless model proxy — keeps the API key server-side
+api/_owner.js           who the serverless functions speak for (generated)
 ```
 
 ### Conventions
@@ -357,6 +358,7 @@ npm run test:all
 | 1 | `npm run test:syntax` | Every JS file parses |
 | 2 | `npm run test:assets` | Every asset referenced from both pages, the manifest **and** JS exists |
 | 3 | `npm run test:components` | Behaviour in jsdom, plus wiring integrity: every inline handler and menu command calls a real function, every linked Settings pane / Finder location exists |
-| 4 | `npm run test:e2e` | Real Chromium: every Dock app, traffic lights, lock screen, Quick Look, Spotlight, Mail/Safari XSS, camera release, keyboard shortcuts, Iris grounding; device routing (iPhone, iPadOS, overrides); every iPhone app's main flow, Back/deep links, and no sideways scrolling on iPhone and iPad (265 checks) |
+| 4 | `npm run test:e2e` | Real Chromium: every Dock app, traffic lights, lock screen, Quick Look, Spotlight, Mail/Safari XSS, camera release, keyboard shortcuts, Iris grounding; device routing (iPhone, iPadOS, overrides); every iPhone app's main flow, Back/deep links, and no sideways scrolling on iPhone and iPad; and the whole clone experience, where a new person fills in the questionnaire in a fresh copy and no trace of the previous owner survives |
+| 5 | `npm run test:template` | The template stays a template: nothing from the info bank (name, email, handles, project names, employers) appears anywhere else in the code, and the generated titles and link previews match it |
 
-The E2E suite answers GitHub, weather, Wikipedia and radio requests from fixtures and intercepts the contact form, so it is deterministic and never sends real email. `npm run test:e2e -- safari` runs only matching sections.
+The E2E suite answers GitHub, weather, Wikipedia and radio requests from fixtures and intercepts the contact form, so it is deterministic and never sends real email. Its expectations come from the info bank, so it still passes once the portfolio is yours. `npm run test:e2e -- safari` runs only matching sections.
