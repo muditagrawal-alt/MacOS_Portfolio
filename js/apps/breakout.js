@@ -169,7 +169,9 @@
                 e.preventDefault();
             } else if (e.code === 'Space') {
                 e.preventDefault();
-                if (!isBallLaunched && isRunning && !isPaused) {
+                if (!isRunning) {
+                    startNewGame();
+                } else if (!isBallLaunched && !isPaused) {
                     launchBall();
                 } else {
                     toggleBreakoutPause();
@@ -239,6 +241,8 @@
 
         isRunning = true;
         isPaused = false;
+        const headerBtn = document.getElementById('breakout-pause-btn');
+        if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
         if (animId) cancelAnimationFrame(animId);
         loop();
     }
@@ -599,6 +603,7 @@
         const title = document.getElementById('breakout-overlay-title');
         const desc = document.getElementById('breakout-overlay-desc');
         const btn = document.getElementById('breakout-overlay-btn');
+        const headerBtn = document.getElementById('breakout-pause-btn');
 
         if (isPaused) {
             if (title) title.textContent = 'Paused';
@@ -608,6 +613,33 @@
         } else {
             if (overlay) overlay.classList.remove('open');
         }
+        if (headerBtn) headerBtn.innerHTML = isPaused ? '<i class="fas fa-play"></i> Resume' : '<i class="fas fa-pause"></i> Pause';
+    }
+
+    /** Pause without toggling — safe to call when already paused. */
+    function pauseBreakout() {
+        if (isRunning && !isPaused) toggleBreakoutPause();
+    }
+
+    /** The overlay's one button: Resume a paused game, otherwise start one.
+        It used to call startBreakoutGame() even when it read "Resume Game",
+        wiping the score. */
+    function breakoutOverlayAction() {
+        if (isRunning && isPaused) toggleBreakoutPause();
+        else startNewGame();
+    }
+
+    function showBreakoutIntro() {
+        const overlay = document.getElementById('breakout-overlay');
+        const title = document.getElementById('breakout-overlay-title');
+        const desc = document.getElementById('breakout-overlay-desc');
+        const btn = document.getElementById('breakout-overlay-btn');
+        if (title) title.textContent = 'Breakout';
+        if (desc) desc.textContent = 'Move the mouse or use ← → to steer. Click or press Space to launch the ball.';
+        if (btn) btn.textContent = 'Start Game';
+        if (overlay) overlay.classList.add('open');
+        if (!canvas) initGame();
+        if (canvas && !isRunning) { resetLevel(); draw(); }
     }
 
     function gameOver(victory = false) {
@@ -627,7 +659,9 @@
     window.openBreakout = function() {
         if (typeof openWindow === 'function') openWindow('breakout-window');
         if (!canvas) initGame();
-        startNewGame();
+        // Re-opening from the Dock brings back the game in progress; only a
+        // fresh launch shows the start screen.
+        if (!isRunning) showBreakoutIntro();
     };
 
     window.closeBreakout = function() {
@@ -641,6 +675,9 @@
 
     window.startBreakoutGame = startNewGame;
     window.toggleBreakoutPause = toggleBreakoutPause;
+    window.pauseBreakout = pauseBreakout;
+    window.breakoutOverlayAction = breakoutOverlayAction;
+    window.breakoutState = () => ({ running: isRunning, paused: isPaused, score, lives, level });
 
     document.addEventListener('DOMContentLoaded', initGame);
 })();

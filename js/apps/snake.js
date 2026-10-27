@@ -105,7 +105,8 @@
                 e.preventDefault();
             } else if (e.code === 'Space') {
                 e.preventDefault();
-                toggleSnakePause();
+                if (!isRunning) startNewGame();
+                else toggleSnakePause();
             }
         });
     }
@@ -162,6 +163,8 @@
 
         isRunning = true;
         isPaused = false;
+        const headerBtn = document.getElementById('snake-pause-btn');
+        if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
         if (gameLoopId) clearTimeout(gameLoopId);
         tick();
     }
@@ -400,6 +403,7 @@
         const title = document.getElementById('snake-overlay-title');
         const desc = document.getElementById('snake-overlay-desc');
         const btn = document.getElementById('snake-overlay-btn');
+        const headerBtn = document.getElementById('snake-pause-btn');
 
         if (isPaused) {
             if (title) title.textContent = 'Paused';
@@ -409,6 +413,29 @@
         } else {
             if (overlay) overlay.classList.remove('open');
         }
+        if (headerBtn) headerBtn.innerHTML = isPaused ? '<i class="fas fa-play"></i> Resume' : '<i class="fas fa-pause"></i> Pause';
+    }
+
+    /** Pause without toggling — safe to call when already paused. */
+    function pauseSnake() {
+        if (isRunning && !isPaused) toggleSnakePause();
+    }
+
+    /** Overlay button: Resume when paused (it used to restart), else new game. */
+    function snakeOverlayAction() {
+        if (isRunning && isPaused) toggleSnakePause();
+        else startNewGame();
+    }
+
+    function showSnakeIntro() {
+        const overlay = document.getElementById('snake-overlay');
+        const title = document.getElementById('snake-overlay-title');
+        const desc = document.getElementById('snake-overlay-desc');
+        const btn = document.getElementById('snake-overlay-btn');
+        if (title) title.textContent = 'Snake';
+        if (desc) desc.textContent = 'Arrow keys or WASD to steer. Eat apples to grow; golden apples are worth more.';
+        if (btn) btn.textContent = 'Start Game';
+        if (overlay) overlay.classList.add('open');
     }
 
     function gameOver() {
@@ -429,7 +456,7 @@
     window.openSnake = function() {
         if (typeof openWindow === 'function') openWindow('snake-window');
         if (!canvas) initSnake();
-        startNewGame();
+        if (!isRunning) showSnakeIntro();
     };
 
     window.closeSnake = function() {
@@ -443,6 +470,9 @@
 
     window.startSnakeGame = startNewGame;
     window.toggleSnakePause = toggleSnakePause;
+    window.pauseSnake = pauseSnake;
+    window.snakeOverlayAction = snakeOverlayAction;
+    window.snakeState = () => ({ running: isRunning, paused: isPaused, waiting: isWaitingForStart, score, length: snake.length, head: snake[0] });
 
     document.addEventListener('DOMContentLoaded', initSnake);
 })();

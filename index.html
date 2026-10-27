@@ -1167,8 +1167,8 @@ C 890,381 908,392 928,394"/>
                         </div>
                     </div>
                     <div class="breakout-header-actions">
-                        <button type="button" class="breakout-btn" onclick="toggleBreakoutPause()"><i class="fas fa-pause"></i> Pause</button>
-                        <button type="button" class="breakout-btn active" onclick="startBreakoutGame()"><i class="fas fa-redo"></i> Restart</button>
+                        <button type="button" class="breakout-btn" id="breakout-pause-btn" onclick="toggleBreakoutPause()"><i class="fas fa-pause"></i> Pause</button>
+                        <button type="button" class="breakout-btn active" onclick="startBreakoutGame()"><i class="fas fa-redo"></i> New Game</button>
                     </div>
                 </div>
                 <div class="breakout-stage">
@@ -1177,7 +1177,7 @@ C 890,381 908,392 928,394"/>
                         <div class="breakout-overlay-badge"><i class="fas fa-trophy"></i> Steve Jobs &amp; Wozniak Heritage</div>
                         <div class="breakout-overlay-title" id="breakout-overlay-title">Breakout</div>
                         <div class="breakout-overlay-desc" id="breakout-overlay-desc">Move mouse or Left/Right arrow keys to deflect the ball and smash bricks!</div>
-                        <button type="button" class="breakout-play-btn" id="breakout-overlay-btn" onclick="startBreakoutGame()">Start Game</button>
+                        <button type="button" class="breakout-play-btn" id="breakout-overlay-btn" onclick="breakoutOverlayAction()">Start Game</button>
                         <div class="breakout-tip">Tip: Hit bricks to release Multi-Ball &amp; Laser powerups.</div>
                     </div>
                 </div>
@@ -1211,8 +1211,8 @@ C 890,381 908,392 928,394"/>
                         </div>
                     </div>
                     <div class="breakout-header-actions">
-                        <button type="button" class="snake-btn" onclick="toggleSnakePause()"><i class="fas fa-pause"></i> Pause</button>
-                        <button type="button" class="snake-btn" onclick="startSnakeGame()"><i class="fas fa-redo"></i> Restart</button>
+                        <button type="button" class="snake-btn" id="snake-pause-btn" onclick="toggleSnakePause()"><i class="fas fa-pause"></i> Pause</button>
+                        <button type="button" class="snake-btn" onclick="startSnakeGame()"><i class="fas fa-redo"></i> New Game</button>
                     </div>
                 </div>
                 <div class="snake-stage">
@@ -1221,7 +1221,7 @@ C 890,381 908,392 928,394"/>
                         <div class="snake-overlay-badge"><i class="fas fa-gamepad"></i> Classic Macintosh Arcade</div>
                         <div class="snake-overlay-title" id="snake-overlay-title">Snake</div>
                         <div class="snake-overlay-desc" id="snake-overlay-desc">Use Arrow Keys or WASD to eat apples, grow longer, and catch golden apples!</div>
-                        <button type="button" class="snake-play-btn" id="snake-overlay-btn" onclick="startSnakeGame()">Start Game</button>
+                        <button type="button" class="snake-play-btn" id="snake-overlay-btn" onclick="snakeOverlayAction()">Start Game</button>
                         <div class="snake-tip">Tip: Press Space anytime to pause.</div>
                     </div>
                 </div>
