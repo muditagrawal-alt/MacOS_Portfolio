@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-shell="ios" data-appearance="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Mudit Agrawal — Portfolio</title>
+    <meta name="description" content="Mudit Agrawal — AI/ML engineer (agentic and RAG systems, computer vision). The iPhone edition of his portfolio: résumé, projects, experience, and Iris, an assistant that answers questions about his work with cited sources.">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mudit">
+    <meta name="format-detection" content="telephone=no">
+    <meta property="og:title" content="Mudit Agrawal — Portfolio">
+    <meta property="og:description" content="AI/ML engineer — résumé, projects and experience, plus an assistant that answers questions about his work.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="assets/og-image.jpg">
+    <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preload" as="image" href="assets/Wallpapers/26-Tahoe-Beach-Day.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/ios/system.css?v=2.5">
+</head>
+<body>
+    <!-- The whole phone. On a real phone it IS the screen; opened on a desktop
+         with ?view=ios it becomes a framed device in the middle of the page. -->
+    <div class="ios-device" id="ios-device" data-form="phone">
+        <div class="ios-wallpaper" id="ios-wallpaper"></div>
+
+        <!-- Drawn only in the framed desktop preview: a real phone already
+             shows its own status bar and Dynamic Island. -->
+        <div class="ios-statusbar" id="ios-statusbar" aria-hidden="true">
+            <span class="ios-sb-time" id="ios-sb-time">9:41</span>
+            <span class="ios-sb-right">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <span class="ios-sb-battery"><span id="ios-sb-battery-fill"></span></span>
+            </span>
+        </div>
+        <button type="button" class="ios-island" id="ios-island" aria-label="Now Playing"></button>
+
+        <!-- Lock Screen -->
+        <section class="ios-lock" id="ios-lock" aria-label="Lock Screen">
+            <div class="ios-lock-top">
+                <i class="fas fa-lock ios-lock-glyph" id="ios-lock-glyph" aria-hidden="true"></i>
+                <div class="ios-lock-date" id="ios-lock-date"></div>
+                <div class="ios-lock-time" id="ios-lock-time"></div>
+                <div class="ios-lock-widgets" id="ios-lock-widgets"></div>
+            </div>
+            <button type="button" class="ios-lock-notification" id="ios-lock-notification">
+                <img src="assets/icons/messages.png" alt="">
+                <span class="ios-ln-text">
+                    <span class="ios-ln-head"><strong>Iris</strong><small>now</small></span>
+                    <span class="ios-ln-body">Hi, I’m Mudit’s assistant. Ask me anything about his work — I’ll show you where each answer comes from.</span>
+                </span>
+            </button>
+            <div class="ios-lock-hint" id="ios-lock-hint">Swipe up or tap to open</div>
+        </section>
+
+        <!-- Home Screen -->
+        <main class="ios-home" id="ios-home" aria-label="Home Screen">
+            <div class="ios-home-grid" id="ios-home-grid"></div>
+            <button type="button" class="ios-search-pill" id="ios-search-pill"><i class="fas fa-magnifying-glass"></i> Search</button>
+            <nav class="ios-dock" id="ios-dock" aria-label="Dock"></nav>
+        </main>
+
+        <!-- Spotlight search -->
+        <section class="ios-search" id="ios-search" aria-label="Search" hidden>
+            <div class="ios-search-bar">
+                <label class="ios-search-field"><i class="fas fa-magnifying-glass"></i><input type="search" id="ios-search-input" placeholder="Search" autocomplete="off" enterkeyhint="search"></label>
+                <button type="button" class="ios-search-cancel" id="ios-search-cancel">Cancel</button>
+            </div>
+            <div class="ios-search-results" id="ios-search-results"></div>
+        </section>
+
+        <!-- Apps render into this layer -->
+        <div class="ios-app-window" id="ios-app-window" aria-live="polite"></div>
+
+        <!-- Home bar: tap or drag up to go home -->
+        <div class="ios-home-bar" id="ios-home-bar" role="button" tabindex="0" aria-label="Go to Home Screen"><span></span></div>
+    </div>
+
+    <!-- Shown only in the framed desktop preview -->
+    <div class="ios-frame-caption" id="ios-frame-caption" hidden>
+        <span>iPhone version of Mudit’s portfolio</span>
+        <button type="button" onclick="PORTFOLIO_SHELL.switchTo('mac')"><i class="fas fa-laptop"></i> Back to the Mac version</button>
+    </div>
+
+    <!-- Shared data & engines (same files the Mac version uses) -->
+    <script src="js/data/profile.js?v=2.5"></script>
+    <script src="js/data/corpus.js?v=2.5"></script>
+    <script src="js/data/desktop-files.js?v=2.5"></script>
+    <script src="js/data/filesystem.js?v=2.5"></script>
+    <script src="js/data/notes.js?v=2.5"></script>
+    <script src="js/data/music.js?v=2.5"></script>
+    <script src="js/config/config.js?v=2.5"></script>
+    <script src="js/core/utils.js?v=2.5"></script>
+    <script src="js/shared/live-data.js?v=2.5"></script>
+    <script src="js/shared/contact-form.js?v=2.5"></script>
+    <script src="js/shared/generative-audio.js?v=2.5"></script>
+    <script src="js/apps/resume.js?v=2.5"></script>
+    <script src="js/apps/iris-brain.js?v=2.5"></script>
+
+    <!-- iOS shell -->
+    <script src="js/ios/system.js?v=2.5"></script>
+    <script src="js/ios/boot.js?v=2.5"></script>
+</body>
+</html>
