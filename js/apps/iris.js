@@ -14,7 +14,11 @@ let irisProcessing = false;
 let irisSpeechRecognition = null;
 let irisWakeWordRecognition = null;
 let irisIsListening = false;
-let irisHeyIrisEnabled = true;
+// The microphone is opt-in (System Settings ▸ Siri & Iris, or the pill in
+// the Iris overlay). It used to start listening on page load, which pops a
+// browser microphone prompt before the visitor has done anything.
+let irisHeyIrisEnabled = false;
+let irisLastInputWasVoice = false;
 let irisVoices = [];
 let irisLastReferencedEntity = null; // Memory for "open it", "launch that"
 let irisPendingTranscript = '';
@@ -88,7 +92,9 @@ function initWakeWordListener() {
 
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 const text = event.results[i][0].transcript.toLowerCase().trim();
-                const wakeMatch = text.match(/\b(hey\s*iris|hey\s*siri|ok\s*iris|okay\s*iris|iris)\b/i);
+                // A wake *phrase*, not the bare word — "iris" alone fired on
+                // any sentence that mentioned the name.
+                const wakeMatch = text.match(/\b(hey\s*iris|hey\s*siri|ok(ay)?\s*iris)\b/i);
 
                 if (wakeMatch) {
                     playSiriChime('wake');
@@ -99,6 +105,7 @@ function initWakeWordListener() {
                     if (remaining.length > 2) {
                         const input = document.getElementById('iris-input');
                         if (input) input.value = remaining;
+                        irisLastInputWasVoice = true;
                         sendIrisMessage(remaining);
                     } else {
                         // Spoken feedback and switch to active listening mode
@@ -134,22 +141,34 @@ function initWakeWordListener() {
 }
 
 function toggleHeyIrisListening() {
-    irisHeyIrisEnabled = !irisHeyIrisEnabled;
+    const next = !irisHeyIrisEnabled;
+    // Persist through Settings so the pill and the Settings switch agree.
+    if (typeof setPreference === 'function') setPreference('heyIris', next);
+    else setHeyIrisEnabled(next);
+}
+
+/** Single switch for the wake-word listener (Settings calls this). */
+function setHeyIrisEnabled(enabled) {
+    irisHeyIrisEnabled = Boolean(enabled);
     updateWakeStatusUI(irisHeyIrisEnabled);
     if (irisHeyIrisEnabled) {
         initWakeWordListener();
-    } else {
-        if (irisWakeWordRecognition) {
-            try { irisWakeWordRecognition.stop(); } catch (e) {}
-        }
+    } else if (irisWakeWordRecognition) {
+        try { irisWakeWordRecognition.onend = null; irisWakeWordRecognition.abort(); } catch (e) { /* already stopped */ }
+        irisWakeWordRecognition = null;
     }
 }
+window.setHeyIrisEnabled = setHeyIrisEnabled;
 
 function updateWakeStatusUI(active) {
     const statusPill = document.getElementById('iris-wake-status');
     if (!statusPill) return;
     statusPill.classList.toggle('listening', active);
-    statusPill.innerHTML = `<i class="fas fa-satellite-dish"></i> <span>"Hey Iris" ${active ? 'Active' : 'Off'}</span>`;
+    statusPill.setAttribute('aria-pressed', String(active));
+    statusPill.title = active ? 'Listening for “Hey Iris” — click to turn off' : 'Click to let Iris listen for “Hey Iris” (uses your microphone)';
+    statusPill.innerHTML = active
+        ? '<i class="fas fa-microphone"></i> <span>Listening for “Hey Iris”</span>'
+        : '<i class="fas fa-microphone-slash"></i> <span>“Hey Iris” is off</span>';
 }
 
 /* ── Active Speech Recognition & Real-Time Transcription ─────────────── */
@@ -208,6 +227,7 @@ function initIrisSpeech() {
                     irisPendingTranscript = finalTranscript.trim();
                     stopIrisListening();
                     playSiriChime('success');
+                    irisLastInputWasVoice = true;
                     sendIrisMessage(irisPendingTranscript);
                     irisPendingTranscript = '';
                 } else if (interimTranscript.trim()) {
@@ -227,6 +247,7 @@ function initIrisSpeech() {
                     irisPendingTranscript = '';
                     stopIrisListening();
                     playSiriChime('success');
+                    irisLastInputWasVoice = true;
                     sendIrisMessage(textToSend);
                 } else {
                     stopIrisListening();
@@ -323,6 +344,10 @@ function stopWaveformAnimation() {
 
 function speakIris(text) {
     if (!('speechSynthesis' in window)) return;
+    // Talk back when spoken to. Reading every typed answer aloud surprised
+    // visitors in quiet offices; that's now an opt-in setting.
+    const speakTyped = typeof window.getPreference === 'function' && window.getPreference('speakTyped');
+    if (!irisLastInputWasVoice && !speakTyped) return;
 
     try {
         window.speechSynthesis.cancel();
@@ -456,12 +481,12 @@ function renderIrisSuggestions() {
     }
 
     const suggestions = [
-        "Open Terminal",
-        "Download Mudit's resume",
-        "Launch VLM Lead Extraction",
-        "Change wallpaper to Tahoe Beach",
-        "What are Mudit's best projects?",
-        "Switch to dark mode"
+        "What has Mudit built?",
+        "Tell me about his work at Carnot",
+        "Does he know PyTorch?",
+        "Why should I hire him?",
+        "What is RAG?",
+        "Open his résumé"
     ];
 
     container.style.display = 'flex';
@@ -470,16 +495,19 @@ function renderIrisSuggestions() {
     ).join('');
 }
 
-function addIrisMessage(role, content, actionCard) {
+function addIrisMessage(role, content, actionCard, sources) {
     const conversation = document.getElementById('iris-conversation');
     if (!conversation) return;
 
     const msg = document.createElement('div');
     msg.className = `iris-message ${role}`;
-    let html = formatIrisResponse(content);
+    const body = document.createElement('div');
+    body.className = 'iris-message-body';
+    msg.appendChild(body);
 
+    let tail = '';
     if (actionCard) {
-        html += `
+        tail += `
             <div class="iris-action-card">
                 <div class="iris-action-icon"><i class="${escapeAttr(actionCard.icon || 'fas fa-check')}"></i></div>
                 <div class="iris-action-info">
@@ -490,10 +518,37 @@ function addIrisMessage(role, content, actionCard) {
             </div>
         `;
     }
+    if (sources && sources.length) {
+        tail += `<div class="iris-sources"><span class="iris-sources-label">Sources</span>${sources.map((s, i) =>
+            `<button type="button" class="iris-source" data-i="${i}" ${s.open ? '' : 'disabled'}>${escapeHtml(s.label)}</button>`).join('')}</div>`;
+    }
 
-    msg.innerHTML = html;
     conversation.appendChild(msg);
-    conversation.scrollTop = conversation.scrollHeight;
+    const finish = () => {
+        body.innerHTML = formatIrisResponse(content);
+        if (tail) {
+            msg.insertAdjacentHTML('beforeend', tail);
+            msg.querySelectorAll('.iris-source').forEach(btn => {
+                const src = sources[Number(btn.dataset.i)];
+                if (src && src.open) btn.addEventListener('click', () => { closeIris(); src.open(); });
+            });
+        }
+        conversation.scrollTop = conversation.scrollHeight;
+    };
+
+    // Iris "types" its answer word by word, like Siri; instant with reduced motion.
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (role !== 'iris' || reduce || content.length < 40) { finish(); return; }
+    const words = content.split(/(\s+)/);
+    let i = 0;
+    const step = () => {
+        i = Math.min(words.length, i + 3);
+        body.innerHTML = formatIrisResponse(words.slice(0, i).join(''));
+        conversation.scrollTop = conversation.scrollHeight;
+        if (i < words.length) setTimeout(step, 16);
+        else finish();
+    };
+    step();
 }
 
 function showIrisTyping() {
@@ -535,7 +590,8 @@ function formatIrisResponse(text) {
    ────────────────────────────────────────────────────────────────────────── */
 
 function evaluateUserPromptSemantics(rawPrompt) {
-    let q = rawPrompt.toLowerCase().trim();
+    // Accent-insensitive: "résumé" should match /resume/.
+    let q = rawPrompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
     // Strip greetings, wake words, pleasantries, commas, and punctuation
     q = q.replace(/^(hey\s*iris|hey\s*siri|ok\s*iris|okay\s*iris|iris|siri|hello|hey|hi)\b[,:\s]*/gi, '')
@@ -547,6 +603,23 @@ function evaluateUserPromptSemantics(rawPrompt) {
     if (/^(open|launch|visit|see|view|run)\s+(it|that|this|the app|the project|the site|the repo)$/i.test(q) && irisLastReferencedEntity) {
         q = `open ${irisLastReferencedEntity}`;
     }
+
+    // Dark mode: the Mac is always dark here. Say so honestly, and offer the
+    // option that does exist, instead of silently toggling Frosted Glass.
+    if (/\b(dark|light|night|day) (mode|theme)\b/i.test(q)) {
+        const glass = typeof currentThemeMode === 'function' && currentThemeMode() === 'glass';
+        return {
+            text: /\b(light|day)\b/i.test(q)
+                ? "This Mac only comes in dark, I'm afraid — but Frosted Glass makes the windows lighter and more translucent."
+                : "You're already in dark mode — it's the only mode here. Want Frosted Glass for more translucent windows?",
+            card: { title: 'Frosted Glass', subtitle: glass ? 'Currently on' : 'Currently off', icon: 'fas fa-circle-half-stroke', btnText: glass ? 'Turn Off' : 'Turn On', action: 'toggleTheme()' }
+        };
+    }
+
+    // Only imperatives act. Questions ("what is RAG?", "what is VLM Leads?")
+    // used to mount disk images and open tabs because a keyword matched.
+    const IMPERATIVE = /^(open|launch|start|run|show|display|view|play|pause|stop|resume|download|save|get|grab|fetch|change|set|switch|turn|take|snap|click|close|quit|hide|minimi[sz]e|maximi[sz]e|mount|go to|go|visit|bring up|pull up|email|compose|write|send|search( for)?|find|look up|lookup|lock|empty|put)\b/i;
+    if (!IMPERATIVE.test(q)) return null;
 
     // ── 1. RESUME & QUALIFICATIONS ─────────────────────────────────────────
     if (/\b(resume|cv|curriculum vitae|qualifications?|profile pdf)\b/i.test(q)) {
@@ -832,28 +905,6 @@ function evaluateUserPromptSemantics(rawPrompt) {
         }
     }
 
-    // ── 5. THEME & APPEARANCE ──────────────────────────────────────────────
-    if (/\b(dark mode|night mode|dark theme|light mode|day mode|light theme|toggle theme|switch theme|glass mode|glass theme)\b/i.test(q)) {
-        if (typeof toggleTheme === 'function') {
-            const mode = toggleTheme();
-            return { text: `Switched appearance to **${mode === 'glass' ? 'Glassmorphism' : 'Standard Dark'} Mode**.` };
-        }
-    }
-
-    // ── 6. WHY HIRE MUDIT & STRENGTHS ─────────────────────────────────────
-    if (/\b(why\s+(should\s+i\s+)?hire|reasons?\s+to\s+hire|why\s+choose|strengths?)\b/i.test(q)) {
-        return {
-            text: "Here is why you should hire Mudit: He is a high-caliber AI/ML engineer who builds production systems from scratch — ranging from high-throughput multimodal pipelines (VLM Leads) and real-time computer vision (SLAM, YOLOv11) to systems programming (Helix C compiler) and defensive airspace surveillance (Skyguard AI). He has proven startup internship experience at Carnot Research (IITD incubated) and won Smart India Hackathon internal rounds.",
-            card: {
-                title: 'Mudit Agrawal — AI/ML Engineer',
-                subtitle: 'Full-stack AI systems & production engineering',
-                icon: 'fas fa-award',
-                btnText: 'View Resume',
-                action: "closeIris(); openWindow('resume-window');"
-            }
-        };
-    }
-
     // ── 7. COMPOSE EMAIL / CONTACT ─────────────────────────────────────────
     if (/\b(compose|send\s+(an?\s+)?(email|mail|message)|write\s+(an?\s+)?(email|mail|message)|email\s+mudit|mail\s+mudit|send\s+mail)\b/i.test(q)) {
         if (typeof openWindow === 'function') {
@@ -932,14 +983,16 @@ async function sendIrisMessage(overrideMessage) {
             irisConversation.push({ role: 'assistant', content: semanticAction.text });
             speakIris(semanticAction.text);
         } else {
-            // Step 2: Query hosted proxy if present, otherwise answer smartly from portfolio corpus
-            let response = await callIrisProxy(message);
-            if (!response) response = answerFromCorpus(message);
-
+            // Grounded answer: retrieve passages from the portfolio, then
+            // either let the hosted model phrase them or compose locally.
+            const local = window.IrisBrain ? window.IrisBrain.respond(message) : { text: '', sources: [] };
+            let text = null;
+            if (!local.outOfScope) text = await callIrisProxy(message);
             hideIrisTyping();
-            addIrisMessage('iris', response);
-            irisConversation.push({ role: 'assistant', content: response });
-            speakIris(response);
+            const reply = text || local.text;
+            addIrisMessage('iris', reply, local.card, local.sources);
+            irisConversation.push({ role: 'assistant', content: reply });
+            speakIris(reply);
         }
     } catch (error) {
         console.error('Iris execution error:', error);
@@ -950,106 +1003,37 @@ async function sendIrisMessage(overrideMessage) {
     }
 
     irisProcessing = false;
+    irisLastInputWasVoice = false;
     setIrisOrbState('');
     if (sendBtn) sendBtn.disabled = false;
 }
 
-/* ── Model Transport (Hosted Serverless Proxy) ────────────────────────── */
-function getIrisSystemPrompt() {
-    const p = window.PROFILE_DATA || {};
-    const firstName = (p.name || 'Mudit').split(' ')[0];
-    const expText = (p.experience || []).map((e, idx) => `${idx + 1}. ${e.role} @ ${e.org} (${e.dates})`).join('\n');
-
-    return `You are Iris, an intelligent autonomous agent and Siri assistant for ${p.name || 'Mudit Agrawal'}'s macOS portfolio. You are friendly, concise, and capable of operating this website on behalf of the user.
-
-CRITICAL INSTRUCTIONS:
-- Keep answers SHORT (2-3 sentences max)
-- If the user wants to open an app (Finder, Safari, Terminal, App Store, Settings, Mail, Notes, Photos, Resume), tell them you're doing so.
-- Available Deployed Apps:
-  • VLM Lead Extraction: https://muditagrawal-lead-extraction.vercel.app
-  • Veritas Check (Deepfake Detector): https://veritas-check.vercel.app
-  • Helix Compiler: https://huggingface.co/spaces/muditagrawal03/Helix-Compiler
-  • Monocular RGB SLAM: https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM
-
-${(p.name || 'MUDIT AGRAWAL').toUpperCase()} PROFILE:
-BIO: ${p.bio || ''}
-EDUCATION: ${p.education?.degree || 'B.Tech CSE (AI/ML)'} @ ${p.education?.university || 'IILM'} (${p.education?.years || '2023-2027'}), CGPA: ${p.education?.cgpa || '7.68'}
-EXPERIENCE:
-${expText}
-CONTACT: ${p.contact?.email || 'muditagrawal03@gmail.com'} | ${p.contact?.phone || '+91-7289887349'}`;
-}
-
+/* ── Model Transport (Hosted Serverless Proxy) ────────────────────────────
+   The server owns the system prompt (api/iris.js); the client sends only the
+   conversation and the passages it retrieved, as grounding context. */
 async function callIrisProxy(userMessage) {
     const endpoint = window.APP_CONFIG && window.APP_CONFIG.IRIS_ENDPOINT;
     if (!endpoint) return null;
 
-    const history = irisConversation.slice(-10);
+    const history = irisConversation.slice(-6);
+    const context = window.IrisBrain ? window.IrisBrain.contextFor(userMessage, 6) : [];
 
     try {
+        const ctrl = new AbortController();
+        const to = setTimeout(() => ctrl.abort(), 12000);
         const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                system: getIrisSystemPrompt(),
-                messages: history
-            })
+            body: JSON.stringify({ messages: history, context }),
+            signal: ctrl.signal
         });
+        clearTimeout(to);
         if (!res.ok) return null;
         const data = await res.json();
         return data.reply || null;
     } catch (e) {
         return null;
     }
-}
-
-/* ── Smart Local Corpus Answering ─────────────────────────────────────── */
-function answerFromCorpus(userMessage) {
-    const p = window.PROFILE_DATA || {};
-    const q = userMessage.toLowerCase();
-
-    if (/\b(why hire|why should i hire|hire mudit|reasons to hire|strength|strengths)\b/i.test(q)) {
-        return `Here is why you should hire Mudit: He is a high-caliber AI/ML engineer who builds production systems from scratch — ranging from high-throughput multimodal pipelines (VLM Leads) and real-time computer vision (SLAM, YOLOv11) to systems programming (Helix C compiler) and defensive airspace surveillance (Skyguard AI). He has proven startup internship experience at Carnot Research (IITD incubated) and won Smart India Hackathon internal rounds. You can download his resume or explore his projects right here!`;
-    }
-
-    if (/\b(project|projects|work|apps|build|built|portfolio)\b/.test(q)) {
-        irisLastReferencedEntity = 'projects';
-        return `Mudit's featured projects include **[VLM Lead Extraction](https://muditagrawal-lead-extraction.vercel.app)** (live on Vercel), `
-             + `**[Veritas Check](https://veritas-check.vercel.app)** (live deepfake forensics), `
-             + `**[Helix Compiler](https://huggingface.co/spaces/muditagrawal03/Helix-Compiler)** (live Hugging Face Space), and `
-             + `**[Monocular RGB SLAM](https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM)**. `
-             + `Say "open it" to launch any of them!`;
-    }
-
-    if (/\b(contact|email|reach|hire|phone|call)\b/.test(q)) {
-        return `You can contact or reach ${p.name || 'Mudit'} directly at **${p.contact?.email || ''}** or ${p.contact?.phone || ''}. `
-             + `You can also ask me to compose an email right now.`;
-    }
-
-    if (/\b(education|degree|study|college|university|cgpa|academic)\b/.test(q)) {
-        const e = p.education || {};
-        return `${p.name || 'Mudit'} is pursuing a **${e.degree || 'B.Tech in Computer Science (AI/ML)'}** at **${e.university || 'IILM University'}** (${e.years || '2023–2027'}), currently holding a **${e.cgpa || '7.68'} CGPA**.`;
-    }
-
-    if (/\b(experience|intern|job|career|work history)\b/.test(q)) {
-        const lines = (p.experience || []).map(e => `• **${e.role}** at ${e.org} (${e.dates})`).join('\n');
-        return `Here is Mudit's work experience:\n${lines}`;
-    }
-
-    if (/\b(skills|tech stack|technologies|tools|languages)\b/.test(q)) {
-        return `Mudit's core stack covers **Python**, **PyTorch**, **LangChain**, **RAG architectures**, **Computer Vision (YOLO, OpenCV, SLAM)**, **FastAPI**, **Docker**, and **PostgreSQL**.`;
-    }
-
-    if (/\b(who are you|what are you|what can you do)\b/.test(q)) {
-        return `I'm Iris, your autonomous Siri assistant on Mudit's Mac! I can open apps, launch live projects, download Mudit's resume, change wallpapers, switch themes, or answer anything about his engineering work. You can also say "Hey Iris" anytime!`;
-    }
-
-    const matches = searchPortfolioCorpus(userMessage, { minScore: 2, limit: 3 });
-    if (matches.length > 0) {
-        const lines = matches.map(m => m.url ? `• **[${m.title}](${m.url})** — ${m.text}` : `• **${m.title}** — ${m.text}`).join('\n');
-        return `Here's what I found:\n${lines}`;
-    }
-
-    return `I can open any app on your desktop, launch Mudit's live deployed projects, download his resume, or tell you about his background. What would you like to explore?`;
 }
 
 function handleIrisInput(e) {
@@ -1062,8 +1046,15 @@ function handleIrisInput(e) {
 /* ── DOM Initialization ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
     initIrisSpeech();
-    initWakeWordListener();
     renderIrisSuggestions();
+
+    // Respect a previous opt-in, but never touch the microphone before the
+    // visitor has interacted with the page.
+    const optedIn = typeof window.getPreference === 'function' && window.getPreference('heyIris');
+    updateWakeStatusUI(false);
+    if (optedIn) {
+        document.addEventListener('pointerdown', () => setHeyIrisEnabled(true), { once: true });
+    }
 
     // Escape key closes Iris
     document.addEventListener('keydown', (e) => {
@@ -1074,11 +1065,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    // Ensure audio and wake listener initialize smoothly on first user interaction
-    document.addEventListener('pointerdown', () => {
-        if (irisHeyIrisEnabled && !irisWakeWordRecognition) {
-            initWakeWordListener();
-        }
-    }, { once: true });
 });

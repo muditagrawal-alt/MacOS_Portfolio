@@ -1282,8 +1282,8 @@ C 890,381 908,392 928,394"/>
 
         <!-- Iris AI Assistant Overlay -->
         <div class="iris-overlay" id="iris-overlay">
-            <div class="iris-wake-status" id="iris-wake-status" onclick="toggleHeyIrisListening()" title="Click to toggle Hey Iris ambient wake listener"><i class="fas fa-satellite-dish"></i> <span>"Hey Iris" Active</span></div>
-            <button class="iris-close-btn" onclick="closeIris()">✕</button>
+            <button type="button" class="iris-wake-status" id="iris-wake-status" onclick="toggleHeyIrisListening()" aria-pressed="false"><i class="fas fa-microphone-slash"></i> <span>“Hey Iris” is off</span></button>
+            <button type="button" class="iris-close-btn" onclick="closeIris()" aria-label="Close Iris">✕</button>
             <div class="iris-orb-container" onclick="document.getElementById('iris-input').focus()">
                 <div class="iris-orb"></div>
             </div>
@@ -1441,6 +1441,7 @@ C 890,381 908,392 928,394"/>
     <script src="js/apps/terminal.js?v=2.3"></script>
     <script src="js/apps/trash.js?v=2.3"></script>
     <script src="js/apps/resume.js?v=2.3"></script>
+    <script src="js/apps/iris-brain.js?v=2.3"></script>
     <script src="js/apps/iris.js?v=2.3"></script>
     <script src="js/apps/launchpad.js?v=2.3"></script>
     <script src="js/apps/notification-center.js?v=2.3"></script>
