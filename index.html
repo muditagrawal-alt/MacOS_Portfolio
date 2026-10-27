@@ -440,12 +440,12 @@ C 890,381 908,392 928,394"/>
             <div class="mail-compose-modal hidden" id="mail-compose-modal">
                 <div class="mail-compose-header">
                     <span>New Message</span>
-                    <button type="button" class="close-compose-btn" onclick="closeMailCompose()">&times;</button>
+                    <button type="button" class="close-compose-btn" onclick="closeMailCompose()" aria-label="Close and save draft">&times;</button>
                 </div>
                 <div class="mail-compose-fields">
                     <div class="compose-row"><span>To:</span> <input type="text" value="Mudit Agrawal <muditagrawal03@gmail.com>" readonly style="color:#888;"></div>
-                    <div class="compose-row"><span>From:</span> <input type="text" id="compose-sender-name" placeholder="Your Name"></div>
-                    <div class="compose-row"><span>Email:</span> <input type="email" id="compose-sender-email" placeholder="your@email.com"></div>
+                    <div class="compose-row"><span>From:</span> <input type="text" id="compose-sender-name" placeholder="Your name" autocomplete="name"></div>
+                    <div class="compose-row"><span>Reply-To:</span> <input type="email" id="compose-sender-email" placeholder="you@company.com (required)" autocomplete="email" required></div>
                     <div class="compose-row"><span>Subject:</span> <input type="text" id="compose-subject" placeholder="Project Inquiry / Job Opportunity / Collaboration"></div>
                     <textarea id="compose-message" placeholder="Type your message here..."></textarea>
                     <div class="compose-attachment-zone" id="compose-attachment-zone">
@@ -455,8 +455,8 @@ C 890,381 908,392 928,394"/>
                         <div id="compose-file-list"></div>
                     </div>
                     <div class="compose-actions">
-                        <button type="button" class="app-pill-btn primary" onclick="sendMailCompose()" id="compose-send-btn"><i class="fas fa-paper-plane"></i> Send Email</button>
-                        <span id="compose-status" style="font-size:12px;display:none;margin-left:10px;"></span>
+                        <button type="button" class="app-pill-btn primary" onclick="sendMailCompose()" id="compose-send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+                        <span id="compose-status" role="status" aria-live="polite" style="font-size:12px;display:none;margin-left:10px;"></span>
                     </div>
                 </div>
             </div>

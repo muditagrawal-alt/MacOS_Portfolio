@@ -500,6 +500,6 @@
 }
 
 .compose-attachment-zone i {
-    color: #007aff;
+    color: var(--accent);
     margin-right: 6px;
 }

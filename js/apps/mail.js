@@ -129,14 +129,14 @@ const emailStore = [
         to: 'Visitor <guest@macbook>',
         date: 'Aug 10 at 9:00 AM',
         subject: 'Attached: Mudit Agrawal Resume (PDF Pack)',
-        snippet: 'Download or preview the official January 2026 resume for Mudit Agrawal (B.Tech CS AI/ML)...',
+        snippet: 'Download or preview the August 2026 résumé for Mudit Agrawal (B.Tech CS AI/ML)...',
         body: `
             <p>Attached is the updated resume document for ${profileRef.name || 'Mudit Agrawal'}.</p>
             <p>Includes complete coursework, academic achievements at ${profileRef.education?.university || 'IILM University'}, ${(profileRef.experience || []).map(e => e.org.split(' (')[0]).join(', ')} internships, and projects.</p>
         `,
         attachment: {
             title: 'MuditAgrawalResumeAugust2026.pdf',
-            size: '1.2 MB • PDF Document',
+            size: '58 KB • PDF Document',
             action: 'openResumeWindow()'
         },
         actions: [
@@ -194,23 +194,32 @@ function renderMailList(filterQuery = '') {
         return;
     }
 
+    // Every field is escaped: Sent/Drafts entries carry text the visitor typed.
     listContainer.innerHTML = emails.map(email => `
-        <div class="mail-item ${email.id === activeEmailId ? 'active' : ''}" data-email-id="${email.id}" onclick="selectEmail(${email.id}, this)">
+        <div class="mail-item ${email.id === activeEmailId ? 'active' : ''}" data-email-id="${email.id}" tabindex="0" role="button"
+             onclick="selectEmail(${email.id}, this)" onkeydown="if(event.key==='Enter'){selectEmail(${email.id}, this)}">
             <div class="mail-item-header">
                 <div class="mail-sender-row">
                     <span class="unread-dot ${email.unread ? '' : 'read'}"></span>
-                    <span class="mail-sender">${email.senderName}</span>
+                    <span class="mail-sender">${escapeHtml(email.senderName)}</span>
                 </div>
-                <span class="mail-time">${email.date}</span>
+                <span class="mail-time">${escapeHtml(email.date)}</span>
             </div>
-            <div class="mail-subject">${email.subject}</div>
-            <div class="mail-snippet">${email.snippet}</div>
+            <div class="mail-subject">${escapeHtml(email.subject)}</div>
+            <div class="mail-snippet">${escapeHtml(email.snippet)}</div>
         </div>
     `).join('');
 }
 
 function selectEmail(id, element) {
     activeEmailId = id;
+    // On a phone the list and the message can't share the screen: a tap on a
+    // row pushes to the message (Back returns). Programmatic selection on
+    // boot/mailbox switch passes no element and must not push.
+    if (element) {
+        const layout = document.querySelector('.mail-layout');
+        if (layout) layout.classList.add('show-detail');
+    }
     const email = emailStore.find(e => e.id === id);
     if (!email) return;
 
@@ -240,8 +249,8 @@ function selectEmail(id, element) {
     const actionsSlot = document.getElementById('mail-reader-actions');
 
     if (subjectEl) subjectEl.textContent = email.subject;
-    if (fromEl) fromEl.innerHTML = `From: <strong style="color:#fff;">${email.from}</strong> <i class="fas fa-check-circle mail-verified-badge" title="Verified Contact"></i>`;
-    if (toEl) toEl.innerHTML = `To: <span style="color:#aaa;">${email.to}</span>`;
+    if (fromEl) fromEl.innerHTML = `From: <strong style="color:#fff;">${escapeHtml(email.from)}</strong>${email.mailbox === 'inbox' ? ' <i class="fas fa-check-circle mail-verified-badge" title="Verified Contact"></i>' : ''}`;
+    if (toEl) toEl.innerHTML = `To: <span style="color:#aaa;">${escapeHtml(email.to)}</span>`;
     if (dateEl) dateEl.textContent = email.date;
     if (avatarEl) {
         avatarEl.textContent = email.initials || 'MA';
@@ -252,7 +261,7 @@ function selectEmail(id, element) {
     if (attachmentSlot) {
         if (email.attachment) {
             attachmentSlot.innerHTML = `
-                <div class="mail-attachment-box" onclick="${email.attachment.action}">
+                <div class="mail-attachment-box" role="button" tabindex="0" onclick="${email.attachment.action}" onkeydown="if(event.key==='Enter'){${email.attachment.action}}">
                     <i class="fas fa-file-pdf"></i>
                     <div class="mail-attachment-info">
                         <h4>${email.attachment.title}</h4>
@@ -275,6 +284,13 @@ function selectEmail(id, element) {
             return `<a href="${act.href}" ${act.target ? `target="${act.target}"` : ''} class="mail-action-btn ${act.primary ? 'primary' : ''}"><i class="${act.icon}"></i> ${act.text}</a>`;
         }).join('');
         actionsSlot.innerHTML = actionHtml;
+        // clearMailReader() hides this slot for empty mailboxes; without
+        // restoring it the buttons never came back for any later message.
+        actionsSlot.style.display = '';
+    }
+    if (email.mailbox === 'drafts') {
+        actionsSlot.innerHTML = `<button type="button" class="mail-action-btn primary" onclick="resumeDraft(${email.id})"><i class="fas fa-pen"></i> Continue Editing</button>`;
+        actionsSlot.style.display = '';
     }
 }
 
@@ -287,6 +303,8 @@ function mailboxContents(boxName) {
 
 function switchMailbox(boxName, element) {
     activeMailbox = boxName;
+    const layout = document.querySelector('.mail-layout');
+    if (layout) layout.classList.remove('show-detail');
     document.querySelectorAll('.mail-sidebar .sidebar-item').forEach(item => item.classList.remove('active'));
     if (element) element.classList.add('active');
 
@@ -328,15 +346,67 @@ function filterMailMessages(query) {
     renderMailList(query);
 }
 
+let editingDraftId = null;
+
 function openMailCompose() {
     const modal = document.getElementById('mail-compose-modal');
-    if (modal) modal.classList.remove('hidden');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    const first = document.getElementById(document.getElementById('compose-sender-name').value ? 'compose-message' : 'compose-sender-name');
+    if (first) setTimeout(() => first.focus(), 50);
 }
 
-function closeMailCompose() {
-    const modal = document.getElementById('mail-compose-modal');
-    if (modal) modal.classList.add('hidden');
+function composeFieldValues() {
+    const v = id => (document.getElementById(id) || {}).value || '';
+    return { name: v('compose-sender-name').trim(), email: v('compose-sender-email').trim(), subject: v('compose-subject').trim(), message: v('compose-message').trim() };
 }
+
+/** Closing a message that has content saves it to Drafts, like Mail.app. */
+function closeMailCompose(options = {}) {
+    const modal = document.getElementById('mail-compose-modal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    const f = composeFieldValues();
+    if (!options.discard && (f.subject || f.message)) {
+        const id = editingDraftId || Date.now();
+        const existing = emailStore.find(e => e.id === id);
+        const draft = {
+            id, mailbox: 'drafts', starred: false, unread: false,
+            initials: (f.name || 'D').charAt(0).toUpperCase(),
+            avatarBg: 'linear-gradient(135deg, #8e8e93, #636366)',
+            from: `${f.name || 'You'}${f.email ? ` <${f.email}>` : ''}`,
+            senderName: f.name || 'Draft',
+            to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
+            date: 'Draft', subject: f.subject || '(No Subject)',
+            snippet: f.message.slice(0, 100),
+            body: `<p>${escapeHtml(f.message).replace(/\n/g, '<br>')}</p>`,
+            fields: f, actions: []
+        };
+        if (existing) Object.assign(existing, draft); else emailStore.unshift(draft);
+        if (activeMailbox === 'drafts') renderMailList();
+        if (typeof showToast === 'function') showToast('Saved to Drafts', { body: draft.subject, icon: 'fas fa-file-pen' });
+    }
+    modal.classList.add('hidden');
+    editingDraftId = null;
+    if (!options.keepFields) resetComposeForm();
+}
+
+function resumeDraft(id) {
+    const d = emailStore.find(e => e.id === id && e.mailbox === 'drafts');
+    if (!d || !d.fields) return;
+    editingDraftId = id;
+    const set = (el, v) => { const x = document.getElementById(el); if (x) x.value = v || ''; };
+    set('compose-sender-name', d.fields.name);
+    set('compose-sender-email', d.fields.email);
+    set('compose-subject', d.fields.subject);
+    set('compose-message', d.fields.message);
+    openMailCompose();
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const modal = document.getElementById('mail-compose-modal');
+    if (modal && !modal.classList.contains('hidden')) closeMailCompose();
+});
 
 // ── File Attachment Handling ──
 let composeAttachments = [];
@@ -345,7 +415,7 @@ function handleComposeFileSelect(input) {
     const files = Array.from(input.files);
     files.forEach(file => {
         if (file.size > 500 * 1024) {
-            alert(`File "${file.name}" exceeds 500KB limit.`);
+            showToast("Attachment too large", { body: `${file.name} is over the 500 KB limit.`, icon: "fas fa-paperclip" });
             return;
         }
         composeAttachments.push(file);
@@ -394,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const files = Array.from(e.dataTransfer.files);
         files.forEach(file => {
             if (file.size > 500 * 1024) {
-                alert(`File "${file.name}" exceeds 500KB limit.`);
+                showToast("Attachment too large", { body: `${file.name} is over the 500 KB limit.`, icon: "fas fa-paperclip" });
                 return;
             }
             composeAttachments.push(file);
@@ -403,97 +473,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ── Send Mail via EmailJS + Web3Forms Fallback ──
-async function sendMailCompose() {
-    const senderName = document.getElementById('compose-sender-name')?.value?.trim() || 'Anonymous Visitor';
-    const senderEmail = document.getElementById('compose-sender-email')?.value?.trim() || '';
-    const subject = document.getElementById('compose-subject')?.value?.trim() || 'Portfolio Contact';
-    const message = document.getElementById('compose-message')?.value?.trim() || '';
+// ── Send via Web3Forms ──
+function setComposeStatus(text, color, html) {
     const statusEl = document.getElementById('compose-status');
+    if (!statusEl) return;
+    statusEl.style.display = 'inline';
+    statusEl.style.color = color;
+    if (html) statusEl.innerHTML = html; else statusEl.textContent = text;
+}
+
+async function sendMailCompose() {
+    const f = composeFieldValues();
     const sendBtn = document.getElementById('compose-send-btn');
 
-    // Basic validation
-    if (!message) {
-        if (statusEl) { statusEl.textContent = '⚠ Please write a message'; statusEl.style.display = 'inline'; statusEl.style.color = '#ff9500'; }
-        return;
-    }
-    if (senderEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-        if (statusEl) { statusEl.textContent = '⚠ Invalid email format'; statusEl.style.display = 'inline'; statusEl.style.color = '#ff9500'; }
-        return;
-    }
+    if (!f.message) { setComposeStatus('Write a message first.', '#ff9f0a'); return; }
+    // Without a reply-to address Mudit has no way to answer.
+    if (!f.email) { setComposeStatus('Add your email so Mudit can reply.', '#ff9f0a'); document.getElementById('compose-sender-email').focus(); return; }
+    if (!isValidEmail(f.email)) { setComposeStatus('That email address doesn’t look right.', '#ff9f0a'); return; }
 
-    // UI: Sending state
-    if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'; }
-    if (statusEl) { statusEl.textContent = 'Sending via secure channel...'; statusEl.style.display = 'inline'; statusEl.style.color = '#007aff'; }
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
+    setComposeStatus('Sending…', '#0a84ff');
 
-    let sent = false;
+    // Shared with the iPhone version: js/shared/contact-form.js
+    const { sent, droppedAttachments } = await sendContactMessage({ ...f, via: 'Portfolio contact (Mac)' }, composeAttachments);
 
-    // Web3Forms only. The previous EmailJS branch could never fire — its
-    // public key was an empty string, so the condition was always false —
-    // and it pulled a second SDK off a CDN for nothing. One send path.
-    try {
-        const formData = new FormData();
-        formData.append('access_key', (window.APP_CONFIG && window.APP_CONFIG.WEB3FORMS_ACCESS_KEY) || '');
-        formData.append('name', senderName);
-        formData.append('email', senderEmail || 'anonymous@visitor.com');
-        formData.append('subject', subject);
-        formData.append('message', message);
-        formData.append('from_name', 'macOS Portfolio Contact Form');
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send'; }
 
-        composeAttachments.forEach((file, i) => {
-            formData.append(`attachment_${i}`, file);
-        });
-
-        const res = await fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (res.ok) sent = true;
-        else console.warn('Web3Forms failed:', res.status);
-    } catch (e) {
-        console.warn('Web3Forms failed:', e);
-    }
-
-    // 3. Handle result
     if (sent) {
-        if (statusEl) { statusEl.textContent = '✅ Email sent successfully!'; statusEl.style.color = '#34c759'; }
-
-        // Add to Sent mailbox in UI
-        const newSentId = Date.now();
+        setComposeStatus(droppedAttachments ? 'Sent — attachments couldn’t be included.' : 'Message sent.', '#30d158');
         emailStore.unshift({
-            id: newSentId, mailbox: 'sent', starred: false, unread: false,
-            initials: senderName.charAt(0).toUpperCase(),
+            id: Date.now(), mailbox: 'sent', starred: false, unread: false,
+            initials: (f.name || 'Y').charAt(0).toUpperCase(),
             avatarBg: 'linear-gradient(135deg, #ff9500, #ff5e3a)',
-            from: `${senderName} <${senderEmail || 'visitor'}>`,
-            senderName: senderName,
+            from: `${f.name || 'You'} <${f.email}>`,
+            senderName: f.name || 'You',
             to: 'Mudit Agrawal <muditagrawal03@gmail.com>',
-            date: 'Just now', subject: subject,
-            snippet: message.length > 100 ? message.substring(0, 100) + '…' : message,
-            body: `<p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`,
+            date: 'Just now', subject: f.subject || '(No Subject)',
+            snippet: f.message.length > 100 ? f.message.substring(0, 100) + '…' : f.message,
+            body: `<p>${escapeHtml(f.message).replace(/\n/g, '<br>')}</p>`,
             actions: []
         });
-
+        if (editingDraftId) {
+            const i = emailStore.findIndex(e => e.id === editingDraftId);
+            if (i !== -1) emailStore.splice(i, 1);
+        }
         setTimeout(() => {
-            closeMailCompose();
-            resetComposeForm();
-            // Jump to Sent so the visitor can see the message actually landed.
+            closeMailCompose({ discard: true });
             const sentTab = document.querySelector('.mail-sidebar .sidebar-item[data-mailbox="sent"]');
             switchMailbox('sent', sentTab);
             updateMailBadges();
-        }, 1200);
+            if (typeof showToast === 'function') showToast('Message sent', { body: 'Mudit will reply to ' + f.email, icon: 'fas fa-paper-plane' });
+        }, 900);
     } else {
-        if (statusEl) { statusEl.textContent = '❌ Send failed. Try the direct email link below.'; statusEl.style.color = '#ff3b30'; }
-        // Fallback to mailto: as last resort
-        setTimeout(() => {
-            window.location.href = `mailto:muditagrawal03@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-        }, 2000);
+        // No silent redirect: offer the visitor's own mail app explicitly.
+        const href = `mailto:muditagrawal03@gmail.com?subject=${encodeURIComponent(f.subject)}&body=${encodeURIComponent(f.message)}`;
+        setComposeStatus('', '#ff453a', `Couldn’t send right now. <a href="${escapeHtml(href)}" style="color:#0a84ff;text-decoration:underline;">Open in your mail app</a>`);
     }
-
-    if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email'; }
 }
 
 function resetComposeForm() {
+    editingDraftId = null;
     const fields = ['compose-sender-name', 'compose-sender-email', 'compose-subject', 'compose-message'];
     fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     composeAttachments = [];
