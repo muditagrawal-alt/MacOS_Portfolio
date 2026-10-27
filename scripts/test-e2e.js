@@ -19,7 +19,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const http = require('http');
-const { chromium } = require('playwright');
+const { chromium, devices } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHOTS = path.join(ROOT, 'test-results') + path.sep;
@@ -47,10 +47,23 @@ const GITHUB_FIXTURE = JSON.stringify([
     { name: 'OmniDoc', description: 'Multimodal RAG', language: 'Python', stargazers_count: 3, pushed_at: new Date(Date.now() - 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/OmniDoc', fork: false, archived: false },
     { name: 'Sliver-Smart-Video-Clipping-Tool', description: 'Video', language: 'Python', stargazers_count: 1, pushed_at: new Date(Date.now() - 3 * 864e5).toISOString(), html_url: 'https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool', fork: false, archived: false }
 ]);
+// Current conditions plus 24 hourly and 7 daily entries, timed from now (local time, as Open-Meteo's timezone=auto returns).
+function WEATHER_FIXTURE() {
+    const p = n => String(n).padStart(2, '0');
+    const iso = d => `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    const hours = [...Array(24)].map((_, i) => { const d = new Date(); d.setMinutes(0, 0, 0); d.setHours(d.getHours() + i); return `${iso(d)}T${p(d.getHours())}:00`; });
+    const days = [...Array(7)].map((_, i) => iso(new Date(Date.now() + i * 864e5)));
+    return JSON.stringify({
+        current: { temperature_2m: 23.4, weather_code: 0, is_day: 0 },
+        hourly: { time: hours, temperature_2m: hours.map((_, i) => 20 + (i % 6)), weather_code: hours.map((_, i) => [0, 1, 2, 3, 61, 2][i % 6]), is_day: hours.map((_, i) => (i > 8 && i < 20 ? 1 : 0)) },
+        daily: { time: days, temperature_2m_max: [29, 30, 31, 28, 27, 30, 32], temperature_2m_min: [18, 19, 20, 17, 16, 19, 21], weather_code: [0, 1, 2, 61, 63, 3, 0] }
+    });
+}
+
 async function routeLiveApis(ctx, page) {
     await ctx.route('https://api.github.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: GITHUB_FIXTURE }));
     await ctx.route('https://ipwho.is/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true,"latitude":28.61,"longitude":77.21,"city":"New Delhi","country_code":"IN"}' }));
-    await ctx.route('https://api.open-meteo.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"current":{"temperature_2m":23.4,"weather_code":0,"is_day":0},"daily":{"temperature_2m_max":[29],"temperature_2m_min":[18]}}' }));
+    await ctx.route('https://api.open-meteo.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: WEATHER_FIXTURE() }));
     await ctx.route(/radio-browser\.info/, r => r.abort());
     await ctx.route(/i\.ytimg\.com|google\.com\/s2\/favicons/, r => r.fulfill({ status: 204 }));
     // Never let a test send a real email.
@@ -81,6 +94,31 @@ async function freshPage(browser, { unlocked = true, viewport = { width: 1440, h
     await page.waitForTimeout(unlocked ? 900 : 300);
     return page;
 }
+
+const IPHONE = devices['iPhone 15 Pro'];
+const IPAD = devices['iPad Pro 11'];
+// iPadOS asks for desktop sites: a Mac user agent, but with multi-touch.
+const IPADOS = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15', viewport: { width: 820, height: 1180 }, hasTouch: true, isMobile: false };
+const IOS_APPS = ['about', 'projects', 'resume', 'photos', 'notes', 'weather', 'calculator', 'settings', 'messages', 'mail', 'safari', 'music'];
+
+/** A page on the iPhone/iPad version. `device` is a Playwright descriptor. */
+async function iosPage(browser, { device = IPHONE, unlocked = true, path = 'ios.html', init } = {}) {
+    const ctx = await browser.newContext({ ...device, reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = await ctx.newPage();
+    page.__web3 = 0;
+    page.__errors = [];
+    await routeLiveApis(ctx, page);
+    page.on('pageerror', e => page.__errors.push(e.message));
+    page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|ERR_|net::/.test(m.text())) page.__errors.push('console: ' + m.text()); });
+    if (unlocked) await page.addInitScript(() => { try { sessionStorage.setItem('ios-unlocked', '1'); } catch (e) {} });
+    if (init) await page.addInitScript(init);
+    await page.goto(BASE + path);
+    await page.waitForTimeout(700);
+    return page;
+}
+
+const iosGo = (page, app, path = []) => page.evaluate(([a, p]) => IOS.go(a, p), [app, path]).then(() => page.waitForTimeout(250));
+const topPage = '.ios-app-window .ios-page:last-child';
 
 async function test(name, fn) {
     try {
@@ -1115,6 +1153,314 @@ const section = (name) => !only || only.test(name);
     });
     await test('mobile had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
     await page.context().close();
+  }
+
+  /* ───────────── iPhone & iPad ───────────── */
+  if (section('ios')) {
+    console.log('\nDevice routing');
+    await test('an iPhone opening the portfolio link lands on the iPhone version', async () => {
+      const page = await iosPage(browser, { path: '' });
+      const url = page.url();
+      await page.context().close();
+      expect(/ios\.html/.test(url), url);
+    });
+    await test('an iPad that reports itself as a Mac (iPadOS) gets the iPad layout', async () => {
+      const page = await iosPage(browser, { device: IPADOS, path: '', init: () => Object.defineProperty(Navigator.prototype, 'maxTouchPoints', { get: () => 5 }) });
+      const r = { url: page.url(), form: await page.getAttribute('#ios-device', 'data-form') };
+      await page.context().close();
+      expect(/ios\.html/.test(r.url) && r.form === 'tablet', JSON.stringify(r));
+    });
+    await test('a laptop opening ios.html is sent to the Mac version', async () => {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const page = await ctx.newPage();
+      await page.goto(BASE + 'ios.html');
+      await page.waitForTimeout(500);
+      const r = { url: page.url(), shell: await page.getAttribute('html', 'data-shell') };
+      await ctx.close();
+      expect(!/ios\.html/.test(r.url) && r.shell === 'mac', JSON.stringify(r));
+    });
+    await test('?view=ios on a laptop shows a framed iPhone, and "Back to the Mac version" returns', async () => {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const page = await ctx.newPage();
+      await page.goto(BASE + '?view=ios');
+      await page.waitForTimeout(600);
+      const framed = await page.evaluate(() => document.body.classList.contains('ios-framed') && !document.getElementById('ios-frame-caption').hidden);
+      const cleanUrl = !/view=/.test(page.url());
+      await page.screenshot({ path: SHOTS + 'ios-framed.png' });
+      await page.click('#ios-frame-caption button');
+      await page.waitForTimeout(600);
+      const back = await page.getAttribute('html', 'data-shell');
+      await page.goto(BASE);
+      await page.waitForTimeout(400);
+      const stays = await page.getAttribute('html', 'data-shell');
+      await ctx.close();
+      expect(framed && cleanUrl && back === 'mac' && stays === 'mac', JSON.stringify({ framed, cleanUrl, back, stays }));
+    });
+    await test('"View Mac Version" on a phone sticks across visits; switching back restores automatic', async () => {
+      const page = await iosPage(browser);
+      await iosGo(page, 'settings');
+      await page.click(`${topPage} [data-action="mac"]`);
+      await page.waitForTimeout(800);
+      const onMac = await page.getAttribute('html', 'data-shell');
+      await page.goto(BASE);
+      await page.waitForTimeout(500);
+      const sticky = await page.getAttribute('html', 'data-shell');
+      await page.evaluate(() => PORTFOLIO_SHELL.switchTo('ios'));
+      await page.waitForTimeout(800);
+      const r = { onMac, sticky, back: await page.getAttribute('html', 'data-shell'), pref: await page.evaluate(() => localStorage.getItem('portfolio-view')) };
+      await page.context().close();
+      expect(r.onMac === 'mac' && r.sticky === 'mac' && r.back === 'ios' && r.pref === null, JSON.stringify(r));
+    });
+    await test('the Mac Apple menu offers the iPhone version', async () => {
+      const page = await freshPage(browser);
+      const has = await page.evaluate(() => [...document.querySelectorAll('.dropdown-item')].some(d => /View iPhone Version/.test(d.textContent)));
+      await page.context().close();
+      expect(has, 'no "View iPhone Version" menu item');
+    });
+
+    console.log('\niPhone (393×852)');
+    const page = await iosPage(browser, { unlocked: false });
+    await test('the Lock Screen shows the time and unlocks with a tap', async () => {
+      const locked = await page.isVisible('#ios-lock.visible');
+      const time = (await page.textContent('#ios-lock-time')).trim();
+      await page.screenshot({ path: SHOTS + 'ios-lock.png' });
+      await page.click('#ios-lock-time');
+      await page.waitForTimeout(600);
+      const unlocked = await page.evaluate(() => document.body.classList.contains('ios-unlocked') && !document.getElementById('ios-lock').classList.contains('visible'));
+      expect(locked && /\d/.test(time) && unlocked, JSON.stringify({ locked, time, unlocked }));
+    });
+    await test('the Home Screen shows every app and live widgets', async () => {
+      await page.waitForTimeout(300);
+      const r = await page.evaluate(() => ({
+        icons: [...document.querySelectorAll('#ios-home [data-app-icon]')].map(i => i.dataset.appIcon),
+        weather: document.querySelector('.ios-ww-temp').textContent,
+        github: document.querySelector('#ios-widget-github').textContent
+      }));
+      await page.screenshot({ path: SHOTS + 'ios-home.png' });
+      expect(r.icons.length === 12 && r.weather === '23°' && /OmniDoc/.test(r.github), JSON.stringify(r));
+    });
+    await test('tapping an icon opens the app', async () => {
+      await page.click('#ios-home [data-app-icon="about"]');
+      await page.waitForTimeout(400);
+      const r = await page.evaluate(() => ({ hash: location.hash, shown: document.getElementById('ios-app-window').classList.contains('shown') }));
+      expect(r.hash === '#/about' && r.shown, JSON.stringify(r));
+    });
+    await test('pages push and pop with the Back button and the browser Back', async () => {
+      await page.click(`${topPage} [data-action="exp-0"]`);
+      await page.waitForTimeout(400);
+      const pushed = await page.evaluate(() => location.hash);
+      await page.goBack();
+      await page.waitForTimeout(400);
+      const popped = await page.evaluate(() => location.hash);
+      await page.click(`${topPage} [data-ios-back]`);
+      await page.waitForTimeout(500);
+      const home = await page.evaluate(() => !document.body.classList.contains('ios-in-app') && !location.hash);
+      expect(pushed === '#/about/experience/0' && popped === '#/about' && home, JSON.stringify({ pushed, popped, home }));
+    });
+    await test('the home bar returns to the Home Screen', async () => {
+      await iosGo(page, 'settings');
+      await page.click('#ios-home-bar');
+      await page.waitForTimeout(500);
+      expect(!(await page.evaluate(() => document.body.classList.contains('ios-in-app'))), 'still in the app');
+    });
+    await test('Search finds portfolio content and can hand the question to Iris', async () => {
+      await page.click('#ios-search-pill');
+      await page.fill('#ios-search-input', 'omnidoc');
+      await page.waitForTimeout(200);
+      const results = await page.textContent('#ios-search-results');
+      await page.screenshot({ path: SHOTS + 'ios-search.png' });
+      await page.click('#ios-search-ask');
+      await page.waitForSelector('.msg-row.iris .msg-sources', { timeout: 4000 });
+      expect(/From this portfolio/.test(results) && (await page.evaluate(() => location.hash)) === '#/messages', results.slice(0, 120));
+    });
+    await test('Iris answers with sources, and a source opens the right page', async () => {
+      await page.click(`${topPage} .ios-nav-action`);   // New conversation: the suggestions return
+      await page.click('.msg-suggest button:has-text("Where has he worked?")');
+      await page.waitForSelector('.msg-row.iris .msg-sources button:not([disabled])', { timeout: 4000 });
+      await page.screenshot({ path: SHOTS + 'ios-iris.png' });
+      await page.click('.msg-row.iris .msg-sources button:not([disabled]) >> nth=0');
+      await page.waitForTimeout(500);
+      const hash = await page.evaluate(() => location.hash);
+      expect(/^#\/about/.test(hash), hash);
+    });
+    await test('the Iris conversation survives a reload, and "New conversation" clears it', async () => {
+      await page.reload();
+      await page.waitForTimeout(700);
+      await iosGo(page, 'messages');
+      const kept = await page.locator('.msg-row.me').count();
+      await page.click(`${topPage} .ios-nav-action`);
+      const cleared = await page.locator('.msg-row.me').count();
+      expect(kept > 0 && cleared === 0, JSON.stringify({ kept, cleared }));
+    });
+    await test('Projects filters by category, and product pages link out safely', async () => {
+      await iosGo(page, 'projects');
+      await page.click(`${topPage} [data-filter="vision"]`);
+      const ok = await page.evaluate(() => {
+        const vision = getPortfolioProjects().filter(p => p.cats.includes('vision')).map(p => p.id).sort().join();
+        return [...document.querySelectorAll('.ios-app-window .proj-item')].map(i => i.dataset.project).sort().join() === vision;
+      });
+      await page.click(`${topPage} .proj-item >> nth=0`);
+      await page.waitForTimeout(400);
+      const link = await page.evaluate(() => { const a = document.querySelector('.ios-app-window .ios-page:last-child .proj-get'); return a && { target: a.target, rel: a.rel, href: a.getAttribute('href') }; });
+      await page.screenshot({ path: SHOTS + 'ios-product.png' });
+      expect(ok && link && link.target === '_blank' && /noopener/.test(link.rel) && /^https:/.test(link.href), JSON.stringify(link));
+    });
+    await test('Notes: a new note persists across a reload in the Mac-compatible format', async () => {
+      await iosGo(page, 'notes');
+      await page.click(`${topPage} .notes-fab`);
+      await page.waitForTimeout(600);
+      await page.fill(`${topPage} .notes-title-input`, 'Interview prep');
+      await page.fill(`${topPage} .notes-text`, 'Ask about the RAG eval pipeline');
+      await page.reload();
+      await page.waitForTimeout(700);
+      const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('notes-user-v1') || '[]'));
+      await iosGo(page, 'notes', ['all']);
+      const listed = await page.textContent(`${topPage} .notes-list`);
+      expect(stored.some(n => n.title === 'Interview prep' && n.text === 'Ask about the RAG eval pipeline') && /Interview prep/.test(listed), JSON.stringify(stored));
+    });
+    await test('Notes: deleting a note offers Undo, which restores it', async () => {
+      await page.click(`${topPage} .notes-row:has-text("Interview prep")`);
+      await page.waitForTimeout(400);
+      await page.click(`${topPage} .ios-nav-action[aria-label="Delete note"]`);
+      await page.waitForTimeout(300);
+      const gone = await page.evaluate(() => !JSON.parse(localStorage.getItem('notes-user-v1') || '[]').some(n => n.title === 'Interview prep'));
+      await page.click('.mac-toast-action');
+      await page.waitForTimeout(400);
+      const back = await page.evaluate(() => JSON.parse(localStorage.getItem('notes-user-v1') || '[]').some(n => n.title === 'Interview prep'));
+      expect(gone && back, JSON.stringify({ gone, back }));
+    });
+    await test('Recently Deleted lists every Trash post-mortem', async () => {
+      await iosGo(page, 'notes', ['deleted']);
+      const r = await page.evaluate(() => ({ rows: document.querySelectorAll('.ios-app-window .ios-page:last-child .ios-row').length, items: window.TRASH_ITEMS.length }));
+      expect(r.rows === r.items && r.items > 0, JSON.stringify(r));
+    });
+    await test('Mail will not send without a reply-to address', async () => {
+      await iosGo(page, 'mail', ['compose']);
+      await page.fill(`${topPage} [name="message"]`, 'Hello there');
+      await page.click(`${topPage} .ios-nav-action[aria-label="Send"]`);
+      await page.waitForTimeout(300);
+      const hint = await page.textContent(`${topPage} .mail-hint`);
+      expect(/email/i.test(hint) && page.__web3 === 0, `${hint} / sent ${page.__web3}`);
+    });
+    await test('Mail keeps a draft, then sends through the contact form', async () => {
+      await page.fill(`${topPage} [name="name"]`, 'Test Recruiter');
+      await page.fill(`${topPage} [name="email"]`, 'recruiter@example.com');
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      await iosGo(page, 'mail', ['compose']);
+      const restored = await page.inputValue(`${topPage} [name="email"]`);
+      await page.click(`${topPage} .ios-nav-action[aria-label="Send"]`);
+      await page.waitForTimeout(800);
+      const toast = await page.textContent('#mac-toast-stack').catch(() => '');
+      const draft = await page.evaluate(() => localStorage.getItem('ios-mail-draft'));
+      expect(restored === 'recruiter@example.com' && page.__web3 === 1 && /Message sent/.test(toast) && draft === null, JSON.stringify({ restored, sent: page.__web3, toast, draft }));
+    });
+    await test('Calculator respects precedence, percent and division by zero', async () => {
+      await iosGo(page, 'calculator');
+      const press = async (keys) => { for (const k of keys) await page.click(`${topPage} [data-k="${k}"]`); };
+      const shown = () => page.textContent(`${topPage} .calc-display`);
+      await press(['7', '×', '6', '+', '2', '=']);
+      const a = await shown();
+      await press(['AC', '5', '0', '%']);
+      const b = await shown();
+      await press(['AC', '1', '÷', '0', '=']);
+      const c = await shown();
+      expect(a === '44' && b === '0.5' && c === 'Error', JSON.stringify({ a, b, c }));
+    });
+    await test('Calculator works from a hardware keyboard', async () => {
+      await page.keyboard.press('Escape');
+      for (const k of ['1', '2', '+', '3', 'Enter']) await page.keyboard.press(k);
+      const v = await page.textContent(`${topPage} .calc-display`);
+      expect(v === '15', v);
+    });
+    await test('Weather shows current conditions, 24 hours and 7 days', async () => {
+      await iosGo(page, 'weather');
+      await page.waitForSelector(`${topPage} .wx-day`, { timeout: 4000 });
+      const r = await page.evaluate(() => ({ temp: document.querySelector('.wx-temp').textContent, hours: document.querySelectorAll('.wx-hour').length, days: document.querySelectorAll('.wx-day').length }));
+      await page.screenshot({ path: SHOTS + 'ios-weather.png' });
+      expect(r.temp === '23°' && r.hours >= 20 && r.days === 7, JSON.stringify(r));
+    });
+    await test('Music plays a generative track and shows a mini player', async () => {
+      await iosGo(page, 'music');
+      const i = await page.evaluate(() => MUSIC_TRACKS.findIndex(t => t.synth));
+      await page.click(`${topPage} [data-track="${i}"]`);
+      await page.waitForTimeout(600);
+      const r = await page.evaluate(() => ({ mini: !document.querySelector('.music-mini').hidden, title: document.querySelector('.music-mini-title').textContent, ctx: typeof sharedAudioCtx !== 'undefined' && sharedAudioCtx && sharedAudioCtx.state }));
+      await page.click('.music-mini-btn >> nth=0');
+      expect(r.mini && /Midnight|Neon/.test(r.title) && r.ctx === 'running', JSON.stringify(r));
+    });
+    await test('Photos opens a certificate full screen', async () => {
+      await iosGo(page, 'photos');
+      await page.click(`${topPage} .photos-tile >> nth=1`);
+      await page.waitForTimeout(400);
+      const cap = await page.textContent(`${topPage} figcaption`);
+      expect(new RegExp(await page.evaluate(() => PHOTO_LIBRARY.certificates.items[0].issuer)).test(cap), cap);
+    });
+    await test('Safari searches the portfolio and recognises web addresses', async () => {
+      await iosGo(page, 'safari');
+      await page.fill('.safari-field input', 'rag');
+      const results = await page.textContent(`${topPage} .safari-scroll`);
+      await page.fill('.safari-field input', 'example.com');
+      const address = await page.textContent(`${topPage} .safari-scroll`);
+      expect(/From this portfolio/.test(results) && /OmniDoc/.test(results) && /Opens in a new tab/.test(address), address.slice(0, 120));
+    });
+    await test('Résumé opens the current PDF', async () => {
+      await iosGo(page, 'resume');
+      await page.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
+      await page.click(`${topPage} .resume-actions [data-action="open"]`);
+      const opened = await page.evaluate(() => window.__opened[0] || '');
+      expect(/MuditAgrawalResumeAugust2026\.pdf$/.test(opened), opened);
+    });
+    await test('Settings: Dark appearance and a new wallpaper persist after a reload', async () => {
+      await iosGo(page, 'settings', ['display']);
+      await page.click(`${topPage} [data-action="mode-dark"]`);
+      await iosGo(page, 'settings', ['wallpaper']);
+      await page.click(`${topPage} [data-action="w-1"]`);
+      await page.reload();
+      await page.waitForTimeout(700);
+      const r = await page.evaluate(() => ({ mode: document.documentElement.dataset.appearance, wp: document.getElementById('ios-wallpaper').style.backgroundImage }));
+      await page.screenshot({ path: SHOTS + 'ios-dark.png' });
+      expect(r.mode === 'dark' && /Golden-Gate/.test(r.wp), JSON.stringify(r));
+    });
+    await test('Lock Screen in Settings locks the phone', async () => {
+      await iosGo(page, 'settings');
+      await page.click(`${topPage} [data-action="lock"]`);
+      await page.waitForTimeout(300);
+      expect(await page.isVisible('#ios-lock.visible'), 'not locked');
+      await page.click('#ios-lock-time');
+      await page.waitForTimeout(500);
+    });
+    await test('no app scrolls sideways on a phone', async () => {
+      const wide = [];
+      for (const app of IOS_APPS) {
+        await iosGo(page, app);
+        await page.waitForTimeout(150);
+        const r = await page.evaluate(() => { const b = document.querySelector('.ios-app-window .ios-page:last-child .ios-page-body'); return { doc: document.documentElement.scrollWidth, body: b ? b.scrollWidth - b.clientWidth : 0 }; });
+        if (r.doc > 393 || r.body > 1) wide.push(`${app}:${JSON.stringify(r)}`);
+      }
+      expect(wide.length === 0, wide.join(' '));
+    });
+    await test('iPhone had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+    await page.context().close();
+
+    console.log('\niPad (834×1194)');
+    const pad = await iosPage(browser, { device: IPAD });
+    await test('iPad uses the tablet layout with a six-column Home Screen', async () => {
+      const r = await pad.evaluate(() => ({ form: document.getElementById('ios-device').dataset.form, cols: getComputedStyle(document.getElementById('ios-home-grid')).gridTemplateColumns.split(' ').length }));
+      await pad.screenshot({ path: SHOTS + 'ios-ipad.png' });
+      expect(r.form === 'tablet' && r.cols === 6, JSON.stringify(r));
+    });
+    await test('no app scrolls sideways on an iPad', async () => {
+      const wide = [];
+      for (const app of IOS_APPS) {
+        await iosGo(pad, app);
+        const r = await pad.evaluate(() => { const b = document.querySelector('.ios-app-window .ios-page:last-child .ios-page-body'); return { doc: document.documentElement.scrollWidth - innerWidth, body: b ? b.scrollWidth - b.clientWidth : 0 }; });
+        if (r.doc > 0 || r.body > 1) wide.push(`${app}:${JSON.stringify(r)}`);
+      }
+      expect(wide.length === 0, wide.join(' '));
+    });
+    await test('iPad had no runtime errors', async () => expect(pad.__errors.length === 0, pad.__errors.join(' | ')));
+    await pad.context().close();
   }
 
   const failed = summary();
