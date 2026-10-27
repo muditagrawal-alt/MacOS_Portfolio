@@ -1,0 +1,69 @@
+/* Calculator — always dark */
+
+.ios-app-window.theme-calculator,
+.ios-page.calc-page { background: #000; color: #fff; }
+
+.ios-page.calc-page .ios-page-body {
+    display: flex;
+    padding: calc(var(--safe-top) + 8px) 0 calc(var(--safe-bottom) + 26px);
+    overflow: hidden;
+    user-select: none;
+}
+
+.ios-page.calc-page .ios-page-content { display: flex; flex: 1; padding: 0 min(4.4cqw, 20px); }
+
+.calc { display: flex; flex-direction: column; justify-content: flex-end; flex: 1; width: 100%; max-width: 440px; margin: 0 auto; }
+
+.calc-screen { display: flex; flex-direction: column; align-items: flex-end; padding: 0 8px 10px; min-width: 0; }
+
+/* Long expressions keep their end visible: the line overflows to the left. */
+.calc-history {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 26px;
+    max-width: 100%;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 22px;
+    white-space: pre;
+    overflow: hidden;
+}
+
+.calc-history span { flex-shrink: 0; }
+
+.calc-display {
+    max-width: 100%;
+    font-size: 88px;
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    white-space: nowrap;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
+}
+
+.calc-keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: min(3.6cqw, 16px);
+}
+
+.calc-key {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 999px;
+    background: #333336;
+    color: #fff;
+    font-size: min(9cqw, 38px);
+    font-weight: 400;
+    cursor: pointer;
+    transition: filter 0.12s, background-color 0.25s, color 0.25s;
+}
+
+.calc-key:active { filter: brightness(1.6); }
+.calc-key.fn { background: #a5a5a5; color: #000; font-size: min(8cqw, 32px); font-weight: 500; }
+.calc-key.op { background: #ff9f0a; font-size: min(10cqw, 42px); }
+.calc-key.op.armed { background: #fff; color: #ff9f0a; }
+.calc-key.zero { grid-column: span 2; aspect-ratio: auto; justify-items: start; padding-left: min(8.4cqw, 34px); }
