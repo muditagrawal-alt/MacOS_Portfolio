@@ -68,25 +68,53 @@ function playPhotoBoothSound(type = 'shutter') {
 }
 
 /* ── Camera Initialization & Fallback Simulator ─────────────────────── */
-async function initPhotoBoothCamera() {
+let pbInitPromise = null;
+
+function photoBoothVisible() {
+    const win = document.getElementById('photobooth-window');
+    return Boolean(win && !win.classList.contains('hidden') && !win.classList.contains('minimized'));
+}
+
+/**
+ * Starts the camera at most once. Opening Photo Booth used to call this twice
+ * (openPhotoBooth() and openWindow() each did), so two streams were opened,
+ * the first reference was overwritten, and closing the app stopped only the
+ * second one — the camera light stayed on after Photo Booth was closed.
+ */
+function initPhotoBoothCamera() {
+    if (pbStream && pbStream.getTracks().some(t => t.readyState === 'live')) return Promise.resolve();
+    if (pbInitPromise) return pbInitPromise;
+    pbInitPromise = startPhotoBoothCamera().finally(() => { pbInitPromise = null; });
+    return pbInitPromise;
+}
+
+async function startPhotoBoothCamera() {
     const video = document.getElementById('pb-video');
     const badge = document.getElementById('pb-sim-badge');
     const canvas = document.getElementById('pb-preview-canvas');
     if (!video) return;
 
     pbCameraReady = false;
-
-    // Reset video element properties for cross-browser autoplay compliance
     video.autoplay = true;
     video.playsInline = true;
     video.muted = true;
+    if (badge) badge.innerHTML = '<i class="fas fa-circle" style="color:#ffd60a;"></i> Waiting for camera…';
 
     try {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            pbStream = await navigator.mediaDevices.getUserMedia({
+            const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
                 audio: false
             });
+
+            // The visitor may have closed or minimised the window while the
+            // permission prompt was up — never keep a camera nobody can see.
+            if (!photoBoothVisible()) {
+                stream.getTracks().forEach(t => t.stop());
+                return;
+            }
+            if (pbStream) pbStream.getTracks().forEach(t => t.stop());
+            pbStream = stream;
 
             video.srcObject = pbStream;
             video.style.display = 'block';
@@ -96,17 +124,14 @@ async function initPhotoBoothCamera() {
             pbCameraReady = true;
             stopSimulatedCamera();
 
-            if (badge) {
-                badge.innerHTML = '<i class="fas fa-circle" style="color:#00e676;"></i> Camera Active';
-            }
+            if (badge) badge.innerHTML = '<i class="fas fa-circle" style="color:#30d158;"></i> Camera On';
             return;
         }
     } catch (err) {
-        console.warn('Webcam permission not granted or device absent, launching studio simulation:', err);
+        console.warn('Camera unavailable or permission denied — using the studio preview:', err && err.name);
     }
 
-    // Fallback: interactive studio simulation
-    startSimulatedCamera();
+    if (photoBoothVisible()) startSimulatedCamera();
 }
 
 function startSimulatedCamera() {
@@ -117,7 +142,7 @@ function startSimulatedCamera() {
     if (!canvas) return;
 
     canvas.style.display = 'block';
-    if (badge) badge.innerHTML = '<i class="fas fa-circle" style="color:#007aff;"></i> Studio Simulation View';
+    if (badge) badge.innerHTML = '<i class="fas fa-circle" style="color:#0a84ff;"></i> No camera — studio preview';
 
     const ctx = canvas.getContext('2d');
     canvas.width = 640;
@@ -367,13 +392,16 @@ function saveCapturedPhoto(dataUrl, captureCanvas) {
     // Guardrail against localStorage QuotaExceededError:
     // Generate an ultra-compact ~8KB thumbnail for localStorage storage
     try {
+        // 480×270 JPEG (~25 KB): sharp enough to view and save again after a
+        // reload. The old 160×90 thumb came back as a postage stamp.
         const thumbCanvas = document.createElement('canvas');
-        thumbCanvas.width = 160;
-        thumbCanvas.height = 90;
+        thumbCanvas.width = 480;
+        thumbCanvas.height = 270;
         const tctx = thumbCanvas.getContext('2d');
         if (captureCanvas) {
-            tctx.drawImage(captureCanvas, 0, 0, 160, 90);
-            const thumbData = thumbCanvas.toDataURL('image/jpeg', 0.65);
+            tctx.drawImage(captureCanvas, 0, 0, 480, 270);
+            const thumbData = thumbCanvas.toDataURL('image/jpeg', 0.72);
+            photoObj.thumb = thumbData;
             const storedList = pbPhotos.slice(0, 6).map(p => ({
                 id: p.id,
                 thumb: p.id === photoObj.id ? thumbData : (p.thumb || thumbData),
@@ -450,7 +478,18 @@ function downloadActivePhoto() {
 
 function setPhotoAsWallpaper() {
     if (!pbActivePhoto || typeof setDesktopWallpaper !== 'function') return;
-    setDesktopWallpaper(pbActivePhoto.dataUrl || pbActivePhoto.thumb);
+    // Re-encode as JPEG before it's persisted: a 1280×720 PNG data URL can be
+    // several MB and would blow localStorage's quota.
+    const img = new Image();
+    img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth || 1280;
+        c.height = img.naturalHeight || 720;
+        c.getContext('2d').drawImage(img, 0, 0);
+        setDesktopWallpaper(c.toDataURL('image/jpeg', 0.82));
+        if (typeof showToast === 'function') showToast('Wallpaper set', { body: 'Your Photo Booth picture is now the desktop.', icon: 'fas fa-image' });
+    };
+    img.src = pbActivePhoto.dataUrl || pbActivePhoto.thumb;
     closePhotoModal();
 }
 
@@ -463,8 +502,9 @@ function deleteActivePhoto() {
 
 /* ── Window Lifecycle Hooks ──────────────────────────────────────────── */
 function openPhotoBooth() {
+    // openWindow() starts the camera for this window; calling
+    // initPhotoBoothCamera() here as well is what opened a second stream.
     if (typeof openWindow === 'function') openWindow('photobooth-window');
-    initPhotoBoothCamera();
 }
 
 function closePhotoBooth() {
