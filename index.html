@@ -433,6 +433,7 @@ C 890,381 908,392 928,394"/>
                 <!-- Pane 3: Reading Pane -->
                 <div class="mail-reader" id="mail-reader-pane">
                     <div class="mail-reader-toolbar">
+                        <button type="button" class="mobile-back-btn" onclick="document.querySelector('.mail-layout').classList.remove('show-detail')"><i class="fas fa-chevron-left"></i> Mailboxes</button>
                         <button type="button" class="mail-tool-btn" onclick="openMailCompose()"><i class="fas fa-reply"></i> Reply</button>
                         <button type="button" class="mail-tool-btn" onclick="trashActiveEmail()"><i class="fas fa-trash-alt"></i> Trash</button>
                     </div>
@@ -513,6 +514,7 @@ C 890,381 908,392 928,394"/>
                 </div>
                 <!-- Note Canvas / Editor -->
                 <div class="notes-canvas" id="notes-canvas-pane">
+                    <button type="button" class="mobile-back-btn" onclick="document.querySelector('.notes-layout').classList.remove('show-detail')"><i class="fas fa-chevron-left"></i> Notes</button>
                     <div class="note-date-stamp" id="note-date-stamp"></div>
                     <h1 class="note-title" id="note-title-display"></h1>
                     <div class="note-body-content" id="note-body-content"></div>
