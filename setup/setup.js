@@ -481,6 +481,11 @@
                 <div><strong>${skillCount(p)}</strong><span>${plural(skillCount(p), 'skill')}</span></div>
                 <div><strong>${Object.keys(referencedUploads()).length}</strong><span>${plural(Object.keys(referencedUploads()).length, 'file')}</span></div>
             </div>
+            <p class="field-hint center share-label">When you share your link</p>
+            <div class="share-preview">
+                <img id="share-preview-img" alt="The link preview Messages, Slack and LinkedIn will show">
+                <div><strong>${esc(`${p.name || 'Your name'} - macOS Portfolio`)}</strong><span>${esc((p.site.url || guessSiteUrl()).replace(/^https?:\/\//, '').split('/')[0] || 'your-site.github.io')}</span></div>
+            </div>
             ${server
                 ? '<p class="field-hint center">Building writes <code>js/data/profile.js</code>, your files in <code>assets/me/</code>, the page titles and link previews.</p>'
                 : '<p class="field-hint center">No setup server is running, so this downloads a <code>profile.js</code> with your photos embedded — replace <code>js/data/profile.js</code> with it. Running <code>npm start</code> instead lets this page save everything for you.</p>'}
@@ -512,6 +517,7 @@
         const s = STEPS[step];
         $('#setup-step').innerHTML = s.render();
         $('#setup-step').dataset.step = s.id;
+        if (s.id === 'review' && !built) paintSharePreview();
         $('#setup-steps').innerHTML = STEPS.map((x, i) => `
             <li class="${i === step ? 'current' : ''} ${i < step || (draft && i > 0 && stepDone(i)) ? 'done' : ''}">
                 <button type="button" data-act="goto" data-step="${i}" ${!draft && i > 0 ? 'disabled' : ''} ${i === step ? 'aria-current="step"' : ''}>
@@ -758,6 +764,186 @@
         });
     }
 
+    /* ── Link preview ───────────────────────────────────────────────────── */
+    // What Messages, Slack and LinkedIn show for the site's link: the owner's
+    // About window on the default desktop, drawn at 1200×630 with type big
+    // enough to read in a small bubble.
+    const LINK_PREVIEW = 'assets/me/link-preview.jpg';
+
+    function loadImage(src) {
+        return new Promise((resolve) => {
+            if (!src) { resolve(null); return; }
+            const img = new Image();
+            if (/^https?:/.test(src)) img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+            img.src = src;
+        });
+    }
+
+    async function drawLinkPreview() {
+        const p = draft;
+        const W = 1200, H = 630;
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        const font = (weight, size) => `${weight} ${size}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+        const shape = (x, y, w, h, r) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        };
+        const fit = (text, max) => {
+            let t = String(text || '');
+            if (ctx.measureText(t).width <= max) return t;
+            while (t && ctx.measureText(`${t}…`).width > max) t = t.slice(0, -1);
+            return `${t.trimEnd()}…`;
+        };
+        const cover = (img, x, y, w, h) => {
+            const s = Math.max(w / img.width, h / img.height);
+            ctx.drawImage(img, x + (w - img.width * s) / 2, y + (h - img.height * s) / 2, img.width * s, img.height * s);
+        };
+        const [wallpaper, photo] = await Promise.all([loadImage('../assets/Wallpapers/26-Tahoe-Beach-Day.jpg'), loadImage(assetSrc(p.photo))]);
+        const first = String(p.name || '').trim().split(/\s+/)[0] || 'me';
+
+        // Desktop and menu bar
+        if (wallpaper) cover(wallpaper, 0, 0, W, H);
+        else { const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#1d4f91'); g.addColorStop(1, '#4fa3d9'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+        ctx.fillRect(0, 0, W, 32);
+        ctx.fillStyle = '#fff';
+        ctx.textBaseline = 'middle';
+        ctx.font = font(700, 15);
+        ctx.fillText(`About ${first}`, 28, 17);
+        ctx.font = font(400, 15);
+        ctx.fillText('File      Go      Window      Help', 46 + ctx.measureText(`About ${first}`).width + 22, 17);
+
+        // The About window
+        const x = 220, y = 104, w = 760, h = 452;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 60;
+        ctx.shadowOffsetY = 24;
+        shape(x, y, w, h, 14);
+        ctx.fillStyle = 'rgba(30, 30, 34, 0.9)';
+        ctx.fill();
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ['#ff5f57', '#febc2e', '#28c840'].forEach((c, i) => { ctx.beginPath(); ctx.arc(x + 26 + i * 22, y + 24, 7, 0, Math.PI * 2); ctx.fillStyle = c; ctx.fill(); });
+        ctx.textAlign = 'center';
+        ctx.font = font(600, 15);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.62)';
+        ctx.fillText(`About ${first}`, x + w / 2, y + 25);
+        ctx.textAlign = 'left';
+
+        // Portrait (or initials)
+        const cx = x + 112, cy = y + 142, r = 64;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        if (photo) cover(photo, cx - r, cy - r, r * 2, r * 2);
+        else {
+            const g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+            g.addColorStop(0, '#5ac8fa'); g.addColorStop(1, '#5856d6');
+            ctx.fillStyle = g;
+            ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.font = font(700, 50);
+            ctx.fillText(String(p.name || '').split(/\s+/).filter(Boolean).map(s => s[0]).join('').slice(0, 2).toUpperCase(), cx, cy + 2);
+            ctx.textAlign = 'left';
+        }
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Name, tagline, current role
+        const tx = x + 206, tw = w - 206 - 36;
+        let size = 46;
+        do { ctx.font = font(700, size); size -= 2; } while (ctx.measureText(p.name || '').width > tw && size > 28);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(fit(p.name, tw), tx, y + 112);
+        ctx.font = font(400, 22);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+        ctx.fillText(fit(p.tagline || p.role, tw), tx, y + 152);
+        const now = p.experience[0];
+        if (now && now.role) {
+            ctx.font = font(500, 17);
+            const label = fit([now.role, now.org].filter(Boolean).join(' · '), tw - 46);
+            const pw = ctx.measureText(label).width + 46;
+            shape(tx, y + 176, pw, 36, 18);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(tx + 20, y + 194, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#30d158';
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.fillText(label, tx + 34, y + 195);
+        }
+
+        // Stats, as the About window computes them
+        const exp = p.experience;
+        const interns = exp.length > 0 && exp.every(e => /\bintern/i.test(e.role || ''));
+        const live = p.projects.filter(x => x.link && !/github\.com/.test(x.link)).length;
+        const stats = [
+            [exp.length, plural(exp.length, interns ? 'internship' : 'role')],
+            [p.projects.length, plural(p.projects.length, 'project')],
+            [live, plural(live, 'live app')],
+            p.education.grade ? [p.education.grade, p.education.gradeLabel || 'GPA'] : [skillCount(p), plural(skillCount(p), 'skill')]
+        ];
+        const sx = x + 40, sy = y + 254, sw = w - 80, sh = 104, cw = sw / stats.length;
+        shape(sx, sy, sw, sh, 16);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.stroke();
+        ctx.textAlign = 'center';
+        stats.forEach(([value, label], i) => {
+            if (i) { ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; ctx.fillRect(sx + cw * i, sy + 18, 1, sh - 36); }
+            ctx.fillStyle = '#fff';
+            ctx.font = font(700, 40);
+            ctx.fillText(fit(String(value), cw - 20), sx + cw * i + cw / 2, sy + 44);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = font(500, 17);
+            ctx.fillText(label, sx + cw * i + cw / 2, sy + 80);
+        });
+        ctx.font = font(500, 18);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('Résumé  ·  Projects  ·  Experience  ·  Ask Iris', x + w / 2, y + h - 46);
+        return canvas.toDataURL('image/jpeg', 0.86);
+    }
+
+    /** A hand-picked preview stays while its owner is the one editing; anyone else gets their own. */
+    function keepsOwnLinkPreview() {
+        const img = draft.site.image;
+        return Boolean(img) && img !== LINK_PREVIEW && draft.name === CURRENT.name;
+    }
+
+    async function ensureLinkPreview() {
+        if (keepsOwnLinkPreview()) return;
+        try {
+            uploads[LINK_PREVIEW] = await drawLinkPreview();
+            draft.site.image = LINK_PREVIEW;
+        } catch (e) {
+            draft.site.image = '';   // a tainted canvas (photo from another site): no preview beats the old owner's
+        }
+    }
+
+    function paintSharePreview() {
+        const img = $('#share-preview-img');
+        if (!img) return;
+        if (keepsOwnLinkPreview()) { img.src = assetSrc(draft.site.image); return; }
+        drawLinkPreview().then((url) => { img.src = url; }).catch(() => { img.closest('.share-preview').hidden = true; });
+    }
+
     function skillCount(p) { return p.skills.reduce((n, g) => n + (g.items || []).length, 0); }
 
     /** Uploads the info bank still points at (removed ones aren't written). */
@@ -854,6 +1040,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Building…';
         ensureProjectIcons();
+        await ensureLinkPreview();
         const files = Object.entries(referencedUploads()).map(([path, data]) => ({ path, data }));
         try {
             const res = await fetch('/__setup/save', {
@@ -876,6 +1063,8 @@
     /** No local server: a profile.js with the files embedded, to drop in by hand. */
     function download() {
         ensureProjectIcons();
+        // Link previews need a real file, which only the setup server can write; drop an inherited one.
+        if (!keepsOwnLinkPreview()) draft.site.image = '';
         const embedded = JSON.parse(JSON.stringify(draft).replace(/"(assets\/me\/[^"]+)"/g, (m, p) => (uploads[p] ? JSON.stringify(uploads[p]) : m)));
         saveFile('profile.js', ProfileFormat.serializeProfile(embedded), 'text/javascript');
         built = true;

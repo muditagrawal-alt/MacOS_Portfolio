@@ -1553,6 +1553,7 @@ const section = (name) => !only || only.test(name);
         await page.fill('[data-path="site.url"]', 'https://ada-example.github.io/MacOS_Portfolio/');
         await page.fill('[data-config="web3formsKey"]', '');
         await page.click('#setup-next');   // review
+        await page.waitForFunction(() => (document.querySelector('#share-preview-img').getAttribute('src') || '').startsWith('data:image/jpeg'), null, { timeout: 5000 });
         await page.screenshot({ path: SHOTS + 'setup-review.png' });
         expect(/Build my portfolio/.test(await page.textContent('#setup-next')), 'the last step’s primary button should build');
         await page.click('#setup-next');
@@ -1561,11 +1562,13 @@ const section = (name) => !only || only.test(name);
         const profileSrc = fs.readFileSync(path.join(tmp, 'js/data/profile.js'), 'utf8');
         const files = fs.readdirSync(path.join(tmp, 'assets/me'));
         const indexHtml = fs.readFileSync(path.join(tmp, 'index.html'), 'utf8');
+        if (files.includes('link-preview.jpg')) fs.copyFileSync(path.join(tmp, 'assets/me/link-preview.jpg'), SHOTS + 'setup-link-preview.jpg');
         const r = {
           profile: /"name": "Ada Lovelace"/.test(profileSrc) && /"pronouns": "she"/.test(profileSrc),
           photo: files.some(f => /^photo\.(png|jpg)$/.test(f)),
           resume: files.includes('ada-lovelace-resume.pdf'),
           icon: files.some(f => /^project-bernoulli-numbers\.png$/.test(f)),
+          linkPreview: files.includes('link-preview.jpg') && indexHtml.includes('content="https://ada-example.github.io/MacOS_Portfolio/assets/me/link-preview.jpg"'),
           title: /<title>Ada Lovelace - macOS Portfolio<\/title>/.test(indexHtml),
           owner: /"name": "Ada Lovelace"/.test(fs.readFileSync(path.join(tmp, 'api/_owner.js'), 'utf8')),
           key: /WEB3FORMS_ACCESS_KEY: null/.test(fs.readFileSync(path.join(tmp, 'js/config/config.js'), 'utf8')),

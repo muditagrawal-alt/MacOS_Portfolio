@@ -305,6 +305,13 @@ h2.sub small { color: var(--text-2); font-size: 13px; font-weight: 500; margin-l
 .stats-row strong { font-size: 24px; letter-spacing: -0.4px; }
 .stats-row span { color: var(--text-2); font-size: 12.5px; }
 
+.share-label { margin: 26px 0 8px; }
+.share-preview { max-width: 400px; margin: 0 auto; border-radius: 16px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 14px 34px -22px rgba(0, 0, 0, 0.45); }
+.share-preview img { display: block; width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; background: rgba(127, 127, 127, 0.12); }
+.share-preview div { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px 12px; }
+.share-preview strong { font-size: 14px; }
+.share-preview span { color: var(--text-2); font-size: 12.5px; }
+
 .build-error { color: var(--bad); text-align: center; min-height: 20px; }
 
 .done-screen { text-align: center; padding-top: 24px; }
