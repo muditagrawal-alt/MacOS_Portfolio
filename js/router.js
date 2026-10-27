@@ -45,12 +45,21 @@
 
     var detected = isTouchFirst() ? 'ios' : 'mac';
     var params = new URLSearchParams(location.search);
+    var current = document.documentElement.getAttribute('data-shell') === 'ios' ? 'ios' : 'mac';
+
+    // The setup questionnaire's live preview (?preview=draft) shows whichever
+    // page it asked for, and must not redirect or remember a choice.
+    if (params.get('preview') === 'draft') {
+        window.PORTFOLIO_PREVIEW = true;
+        window.PORTFOLIO_SHELL = { current: current, detected: current, overridden: false, switchTo: function () {} };
+        return;
+    }
+
     var fromUrl = params.get('view');
     if (fromUrl === 'ios' || fromUrl === 'mac') write(sessionStorage, SESSION_KEY, fromUrl);
 
     var choice = [fromUrl, read(sessionStorage, SESSION_KEY), read(localStorage, PREF_KEY)]
         .filter(function (v) { return v === 'ios' || v === 'mac'; })[0] || detected;
-    var current = document.documentElement.getAttribute('data-shell') === 'ios' ? 'ios' : 'mac';
 
     function urlFor(view) {
         var base = location.pathname.replace(/[^/]*$/, '');

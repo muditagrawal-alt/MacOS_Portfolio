@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex">
+    <title>Make it yours — Portfolio Setup</title>
+    <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+    <div class="setup-app">
+        <aside class="setup-rail" aria-label="Setup steps">
+            <div class="setup-brand">
+                <img src="../assets/icons/favicon.svg" alt="">
+                <div><strong>Make it yours</strong><small>Portfolio setup</small></div>
+            </div>
+            <ol class="setup-steps" id="setup-steps"></ol>
+            <div class="setup-rail-foot">
+                <button type="button" class="link-btn" id="setup-export"><i class="fas fa-file-export"></i> Export info bank</button>
+                <label class="link-btn"><i class="fas fa-file-import"></i> Import info bank<input type="file" id="setup-import" accept=".json,application/json" hidden></label>
+                <span class="setup-saved" id="setup-saved" aria-live="polite"></span>
+            </div>
+        </aside>
+
+        <main class="setup-main">
+            <header class="setup-progress"><span id="setup-progress-bar"></span></header>
+            <section class="setup-step" id="setup-step" aria-live="polite"></section>
+            <footer class="setup-nav">
+                <button type="button" class="btn ghost" id="setup-back"><i class="fas fa-arrow-left"></i> Back</button>
+                <div class="setup-nav-right">
+                    <span class="setup-hint-text" id="setup-hint-text"></span>
+                    <button type="button" class="btn primary" id="setup-next">Continue <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </footer>
+        </main>
+
+        <aside class="setup-preview" aria-label="Live preview">
+            <div class="preview-toolbar">
+                <span>Live preview</span>
+                <div class="preview-toggle" role="tablist">
+                    <button type="button" role="tab" class="active" data-preview="ios">iPhone</button>
+                    <button type="button" role="tab" data-preview="mac">Mac</button>
+                </div>
+            </div>
+            <div class="preview-stage" id="preview-stage">
+                <div class="preview-phone"><iframe id="preview-ios" title="iPhone preview" loading="lazy"></iframe></div>
+                <div class="preview-mac" hidden><iframe id="preview-mac" title="Mac preview" loading="lazy"></iframe></div>
+            </div>
+            <p class="preview-note">Unsaved changes, shown with the real site. Nothing is written until you build.</p>
+        </aside>
+    </div>
+
+    <!-- The current info bank, its schema (defaults, social networks) and the file format -->
+    <script>window.PROFILE_SCHEMA_ONLY = true;</script>
+    <script src="../js/data/profile.js"></script>
+    <script src="../js/data/profile-schema.js"></script>
+    <script src="profile-format.js"></script>
+    <script src="setup.js"></script>
+</body>
+</html>

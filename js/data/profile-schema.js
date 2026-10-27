@@ -186,4 +186,12 @@ function normalizeProfile(raw) {
     return p;
 }
 
+// The setup questionnaire's live preview: show its unsaved draft instead.
+if (window.PORTFOLIO_PREVIEW) {
+    try {
+        const draft = JSON.parse(localStorage.getItem('portfolio-setup-preview') || 'null');
+        if (draft && draft.name) window.PROFILE_DATA = draft;
+    } catch (e) { /* no draft — show the saved info bank */ }
+}
+
 if (!window.PROFILE_SCHEMA_ONLY) window.PROFILE_DATA = normalizeProfile(window.PROFILE_DATA);

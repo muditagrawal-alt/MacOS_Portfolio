@@ -19,11 +19,13 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const http = require('http');
+const { spawn } = require('child_process');
 const { chromium, devices } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHOTS = path.join(ROOT, 'test-results') + path.sep;
 const setup = require('../setup/apply.js');
+const { personalTokens, findTokens } = require('./personal-tokens.js');
 // Expectations come from the info bank, so the suite still passes after `npm run setup`.
 const P = setup.normalize(setup.readProfile(ROOT), ROOT);
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1473,6 +1475,208 @@ const section = (name) => !only || only.test(name);
     });
     await test('iPad had no runtime errors', async () => expect(pad.__errors.length === 0, pad.__errors.join(' | ')));
     await pad.context().close();
+  }
+
+  /* ───────────── Make it yours (setup questionnaire) ───────────── */
+  if (section('setup')) {
+    console.log('\nMake it yours — a fresh clone, set up by someone new');
+    // A throwaway copy of the repository, so the real info bank is never touched.
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-clone-'));
+    fs.cpSync(ROOT, tmp, { recursive: true, filter: (src) => !/[\\/](node_modules|\.git|test-results|scratch|\.portfolio)([\\/]|$)/.test(path.relative(ROOT, src) ? `/${path.relative(ROOT, src)}` : '') });
+    const port = 8700 + Math.floor(Math.random() * 200);
+    const origin = `http://localhost:${port}`;
+    const server = spawn(process.execPath, ['scripts/dev-server.js', '--port', String(port), '--no-open'], { cwd: tmp, stdio: ['ignore', 'pipe', 'pipe'] });
+    let serverLog = '';
+    await new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error(`dev server did not start: ${serverLog}`)), 8000);
+      const onData = (d) => { serverLog += d; if (/Portfolio running/.test(serverLog)) { clearTimeout(t); resolve(); } };
+      server.stdout.on('data', onData);
+      server.stderr.on('data', onData);
+    });
+    // Whoever owns this copy now: nothing of theirs may survive the new owner's setup.
+    const OLD = personalTokens(P);
+    const leftovers = (html) => findTokens(html, OLD).map(f => f.token);
+    const tinyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVR42mP8z8DwnwEJMDGgAQYGBgB1BAEFtk6nqwAAAABJRU5ErkJggg==', 'base64');
+    const tinyPdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF');
+
+    try {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+      const page = await ctx.newPage();
+      page.__errors = [];
+      page.on('pageerror', e => page.__errors.push(e.message));
+      await ctx.route(/^https?:\/\/(?!localhost)/, r => (['stylesheet', 'font'].includes(r.request().resourceType()) ? r.continue() : r.abort()));
+
+      await test('a fresh clone reports setup as pending, and the site offers it', async () => {
+        const status = await (await fetch(`${origin}/__setup/status`)).json();
+        await page.addInitScript(() => { try { sessionStorage.setItem('mac-unlocked', 'true'); sessionStorage.setItem('mac-welcome-shown', '1'); } catch (e) {} });
+        await page.goto(origin + '/');
+        await page.waitForSelector('.setup-hint', { timeout: 4000 });
+        expect(status.pending === true && /setup/.test(await page.getAttribute('.setup-hint a', 'href')), JSON.stringify(status));
+      });
+
+      await test('the questionnaire walks through every step and builds the portfolio', async () => {
+        await page.goto(origin + '/setup/');
+        await page.click('[data-act="start-fresh"]');
+        await page.setInputFiles('[data-upload="photo"] input[type=file]', { name: 'me.png', mimeType: 'image/png', buffer: tinyPng });
+        await page.waitForSelector('[data-upload="photo"] img');
+        await page.fill('[data-path="name"]', 'Ada Lovelace');
+        await page.selectOption('[data-path="pronouns"]', 'she');
+        await page.fill('[data-path="role"]', 'Software Engineer');
+        await page.fill('[data-path="tagline"]', 'Software Engineer & Mathematician');
+        await page.fill('[data-path="bio"]', 'Writes programs for engines that do not exist yet.');
+        await page.click('#setup-next');
+        await page.fill('[data-path="contact.email"]', 'ada@example.com');
+        await page.fill('[data-path="contact.github"]', 'https://github.com/ada-example');
+        await page.click('#setup-next');
+        await page.click('[data-act="add"][data-list="experience"]');
+        await page.fill('[data-path="experience.0.role"]', 'Analyst');
+        await page.fill('[data-path="experience.0.org"]', 'Analytical Engines Ltd.');
+        await page.fill('[data-path="experience.0.dates"]', '1842 – 1843');
+        await page.fill('[data-path="experience.0.bullets"]', 'Wrote the first published algorithm\nTranslated and annotated Menabrea');
+        await page.click('#setup-next');
+        await page.fill('[data-path="education.degree"]', 'Private tuition in mathematics');
+        await page.click('#setup-next');
+        await page.click('[data-act="add"][data-list="projects"]');
+        await page.fill('[data-path="projects.0.name"]', 'Bernoulli Numbers');
+        await page.fill('[data-path="projects.0.subtitle"]', 'Note G, the first program');
+        await page.fill('[data-path="projects.0.link"]', 'https://bernoulli.example.com');
+        await page.fill('[data-path="projects.0.tags"]', 'Algorithms, Mathematics');
+        await page.click('#setup-next');
+        await page.click('[data-act="add"][data-list="skills"]');
+        await page.fill('[data-path="skills.0.label"]', 'Languages');
+        await page.fill('[data-path="skills.0.items"]', 'Notation, French');
+        await page.click('#setup-next');
+        await page.setInputFiles('[data-upload="resume.file"] input[type=file]', { name: 'cv.pdf', mimeType: 'application/pdf', buffer: tinyPdf });
+        await page.waitForSelector('[data-upload="resume.file"] .fa-file-pdf');
+        await page.click('#setup-next');   // extras
+        await page.click('#setup-next');   // site & services
+        await page.fill('[data-path="site.url"]', 'https://ada-example.github.io/MacOS_Portfolio/');
+        await page.fill('[data-config="web3formsKey"]', '');
+        await page.click('#setup-next');   // review
+        await page.screenshot({ path: SHOTS + 'setup-review.png' });
+        expect(/Build my portfolio/.test(await page.textContent('#setup-next')), 'the last step’s primary button should build');
+        await page.click('#setup-next');
+        await page.waitForSelector('.done-screen', { timeout: 8000 });
+        await page.screenshot({ path: SHOTS + 'setup-done.png' });
+        const profileSrc = fs.readFileSync(path.join(tmp, 'js/data/profile.js'), 'utf8');
+        const files = fs.readdirSync(path.join(tmp, 'assets/me'));
+        const indexHtml = fs.readFileSync(path.join(tmp, 'index.html'), 'utf8');
+        const r = {
+          profile: /"name": "Ada Lovelace"/.test(profileSrc) && /"pronouns": "she"/.test(profileSrc),
+          photo: files.some(f => /^photo\.(png|jpg)$/.test(f)),
+          resume: files.includes('ada-lovelace-resume.pdf'),
+          icon: files.some(f => /^project-bernoulli-numbers\.png$/.test(f)),
+          title: /<title>Ada Lovelace - macOS Portfolio<\/title>/.test(indexHtml),
+          owner: /"name": "Ada Lovelace"/.test(fs.readFileSync(path.join(tmp, 'api/_owner.js'), 'utf8')),
+          key: /WEB3FORMS_ACCESS_KEY: null/.test(fs.readFileSync(path.join(tmp, 'js/config/config.js'), 'utf8')),
+          marker: fs.existsSync(path.join(tmp, '.portfolio/setup.json'))
+        };
+        expect(Object.values(r).every(Boolean), JSON.stringify(r));
+      });
+
+      await test('the Mac version is now about the new owner — no trace of the previous one', async () => {
+        await page.goto(origin + '/');
+        await page.waitForTimeout(1200);
+        const r = await page.evaluate(() => ({
+          html: document.documentElement.outerHTML,
+          welcome: (openWelcome(), document.querySelector('#welcome-content h1').textContent),
+          whoami: (runTerminalCommand('whoami'), document.getElementById('terminal-output').lastElementChild.textContent),
+          iris: IrisBrain.respond('who is she?').text,
+          hint: Boolean(document.querySelector('.setup-hint'))
+        }));
+        await page.screenshot({ path: SHOTS + 'setup-mac.png' });
+        const left = leftovers(r.html);
+        expect(r.welcome === 'Ada Lovelace' && r.whoami.trim() === 'Ada Lovelace' && /Ada Lovelace/.test(r.iris) && !r.hint && left.length === 0, JSON.stringify({ ...r, html: undefined, left }));
+      });
+
+      await test('the iPhone version is about the new owner too', async () => {
+        const phone = await browser.newContext({ ...IPHONE, reducedMotion: 'reduce' });
+        await phone.route(/^https?:\/\/(?!localhost)/, r => (['stylesheet', 'font'].includes(r.request().resourceType()) ? r.continue() : r.abort()));
+        const p2 = await phone.newPage();
+        await p2.addInitScript(() => { try { sessionStorage.setItem('ios-unlocked', '1'); } catch (e) {} });
+        await p2.goto(origin + '/ios.html#/about');
+        await p2.waitForTimeout(900);
+        const r = await p2.evaluate(() => ({ html: document.documentElement.outerHTML, name: document.querySelector('.about-hero h1').textContent }));
+        await p2.screenshot({ path: SHOTS + 'setup-ios.png' });
+        await phone.close();
+        const left = leftovers(r.html);
+        expect(r.name === 'Ada Lovelace' && left.length === 0, JSON.stringify({ name: r.name, left }));
+      });
+
+      await test('the setup server refuses other origins, other hosts and paths outside assets/me', async () => {
+        const save = (body, headers = {}) => fetch(`${origin}/__setup/save`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
+        const cross = await save({ profile: { name: 'X' } }, { Origin: 'https://evil.example' });
+        const escape = await save({ profile: { name: 'X' }, files: [{ path: 'assets/me/../../index.html', data: 'data:text/html;base64,PGgxPg==' }] }, { Origin: origin });
+        const host = await new Promise((resolve) => {
+          const req = http.request({ host: '127.0.0.1', port, path: '/__setup/status', headers: { Host: 'evil.example' } }, (res) => resolve(res.statusCode));
+          req.on('error', () => resolve(0));
+          req.end();
+        });
+        const secret = await fetch(`${origin}/.env`);
+        const stillAda = /"name": "Ada Lovelace"/.test(fs.readFileSync(path.join(tmp, 'js/data/profile.js'), 'utf8'));
+        expect(cross.status === 403 && escape.status === 400 && host === 421 && secret.status === 404 && stillAda, JSON.stringify({ cross: cross.status, escape: escape.status, host, secret: secret.status, stillAda }));
+      });
+
+      await test('the template and asset gates pass on the new owner’s copy', async () => {
+        const run = (script) => new Promise((resolve) => {
+          const child = spawn(process.execPath, [script], { cwd: tmp });
+          let log = '';
+          child.stdout.on('data', d => { log += d; });
+          child.stderr.on('data', d => { log += d; });
+          child.on('close', (code) => resolve({ code, log }));
+        });
+        const outs = await Promise.all(['scripts/test-template.js', 'scripts/test-assets.js'].map(run));
+        expect(outs.every(o => o.code === 0), outs.flatMap(o => o.log.split('\n').filter(l => /FAIL/.test(l))).slice(0, 5).join(' | '));
+      });
+
+      await test('a name and nothing else still opens every app on both versions', async () => {
+        const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-bare-'));
+        fs.cpSync(tmp, bare, { recursive: true });
+        setup.saveSubmission({ name: 'Min', pronouns: 'they' }, {}, bare);
+        const bport = port + 1;
+        const bserver = spawn(process.execPath, ['scripts/dev-server.js', '--port', String(bport), '--no-open'], { cwd: bare, stdio: ['ignore', 'pipe', 'pipe'] });
+        const errors = [];
+        try {
+          await new Promise((resolve) => bserver.stdout.on('data', d => /Portfolio running/.test(d) && resolve()));
+          const mac = await ctx.newPage();
+          mac.on('pageerror', e => errors.push(`mac: ${e.message}`));
+          await mac.goto(`http://localhost:${bport}/?view=mac`);
+          await mac.waitForTimeout(1200);
+          errors.push(...await mac.evaluate(() => {
+            const out = [];
+            const run = (label, fn) => { try { fn(); } catch (e) { out.push(`${label}: ${e.message}`); } };
+            document.querySelectorAll('.window[id]').forEach(w => run(w.id, () => { openWindow(w.id); closeWindow(w.id); }));
+            run('launchpad', () => { openLaunchpad(); closeLaunchpad(); });
+            ['whoami', 'neofetch', 'ls projects/', 'cat experience.txt', 'curl me'].forEach(c => run(c, () => runTerminalCommand(c)));
+            ['who is Min?', 'what have they built?', 'how do I reach them?'].forEach(q => run(q, () => IrisBrain.respond(q)));
+            return out;
+          }));
+          await mac.close();
+          const phone = await browser.newContext({ ...IPHONE, reducedMotion: 'reduce' });
+          await phone.route(/^https?:\/\/(?!localhost)/, r => (['stylesheet', 'font'].includes(r.request().resourceType()) ? r.continue() : r.abort()));
+          const ios = await phone.newPage();
+          ios.on('pageerror', e => errors.push(`ios: ${e.message}`));
+          await ios.addInitScript(() => { try { sessionStorage.setItem('ios-unlocked', '1'); } catch (e) {} });
+          await ios.goto(`http://localhost:${bport}/ios.html`);
+          await ios.waitForTimeout(900);
+          for (const app of await ios.evaluate(() => [...document.querySelectorAll('#ios-home [data-app-icon]')].map(i => i.dataset.appIcon))) {
+            await ios.evaluate(a => { location.hash = `#/${a}`; }, app);
+            await ios.waitForTimeout(250);
+          }
+          await phone.close();
+        } finally {
+          bserver.kill();
+          fs.rmSync(bare, { recursive: true, force: true });
+        }
+        expect(errors.length === 0, errors.slice(0, 4).join(' | '));
+      });
+
+      await test('setup had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
+      await ctx.close();
+    } finally {
+      server.kill();
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   }
 
   const failed = summary();

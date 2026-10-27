@@ -1,9 +1,12 @@
 {
   "name": "macos-portfolio",
-  "version": "2.5.0",
-  "description": "Mudit Agrawal — macOS Sequoia Interactive Portfolio & Autonomous Desktop Environment",
+  "version": "3.0.0",
+  "description": "An interactive macOS and iPhone portfolio. Clone it, answer one questionnaire, and it is yours.",
   "main": "index.html",
   "scripts": {
+    "start": "node scripts/dev-server.js",
+    "setup": "node scripts/dev-server.js --setup",
+    "refresh": "node setup/apply.js refresh",
     "test:syntax": "node scripts/test-syntax.js",
     "test:assets": "node scripts/test-assets.js",
     "test:components": "node scripts/test-components.js",
@@ -20,7 +23,10 @@
     "interactive",
     "apple-music",
     "iris-siri",
-    "vanilla-javascript"
+    "vanilla-javascript",
+    "ios",
+    "template",
+    "portfolio-template"
   ],
   "author": "Mudit Agrawal",
   "license": "MIT",
