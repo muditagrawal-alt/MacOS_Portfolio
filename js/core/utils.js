@@ -40,6 +40,18 @@ function safeUrl(url) {
 }
 
 /**
+ * A project's demo video, for the Mac's App Store and the iPhone's Projects:
+ * a YouTube link plays inline (privacy-enhanced), a video file uses the
+ * native player, anything else becomes a "Watch the demo" link.
+ */
+function projectVideoHtml(url, className = 'proj-video') {
+    const yt = String(url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
+    if (yt) return `<div class="${className}"><iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(yt[1])}?playsinline=1&rel=0" title="Demo video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+    if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return `<div class="${className}"><video src="${escapeHtml(safeUrl(url))}" controls playsinline preload="metadata"></video></div>`;
+    return `<a class="${className}-link" href="${escapeHtml(safeUrl(url))}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play"></i> Watch the demo</a>`;
+}
+
+/**
  * Opens an external URL without handing the new tab a window.opener
  * reference back to this page (reverse-tabnabbing protection).
  */

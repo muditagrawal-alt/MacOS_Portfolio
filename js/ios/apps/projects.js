@@ -25,14 +25,6 @@
     const githubButton = (p, extra = '') => (p.repo
         ? `<a class="proj-gh ${extra}" href="${escapeHtml(safeUrl(p.repo))}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(`${p.name} on GitHub`)}"><i class="fab fa-github"></i></a>` : '');
 
-    /** A YouTube link plays inline (privacy-enhanced); a video file uses the native player. */
-    function demoVideo(url) {
-        const yt = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
-        if (yt) return `<div class="proj-video"><iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(yt[1])}?playsinline=1&rel=0" title="Demo video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-        if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return `<div class="proj-video"><video src="${escapeHtml(safeUrl(url))}" controls playsinline preload="metadata"></video></div>`;
-        return `<a class="ios-btn block secondary" href="${escapeHtml(safeUrl(url))}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play"></i> Watch the demo</a>`;
-    }
-
     function list(content) {
         const projects = all();
         const featured = projects.find(p => p.live) || projects[0];
@@ -105,7 +97,7 @@
                 <div><span>HOSTED ON</span><strong><i class="fa${/github/.test(host) ? 'b fa-github' : 's fa-globe'}"></i></strong><small>${escapeHtml(host || '—')}</small></div>
                 <div><span>UPDATED</span><strong>${escapeHtml(p.date || '—')}</strong><small>&nbsp;</small></div>
             </div>
-            ${p.video ? `<section class="proj-section"><h3>Demo</h3>${demoVideo(p.video)}</section>` : ''}
+            ${p.video ? `<section class="proj-section"><h3>Demo</h3>${projectVideoHtml(p.video)}</section>` : ''}
             <section class="proj-section">
                 <h3>About this project</h3>
                 ${prose.map(s => `<p>${escapeHtml(s)}</p>`).join('')}

@@ -1014,6 +1014,18 @@ const section = (name) => !only || only.test(name);
       const t = await page.textContent('#appstore-product h2');
       expect(t.includes(project.name), t);
     });
+    await test('product pages link GitHub and play a demo video', async () => {
+      const project = P.projects.find(x => x.repo && x.live) || P.projects.find(x => x.repo);
+      if (!project) return;
+      const r = await page.evaluate((id) => {
+        const x = PROFILE_DATA.projects.find(p => p.fsId === id);
+        x.video = 'https://youtu.be/dQw4w9WgXcQ';
+        openAppStoreProduct(id);
+        return { github: Boolean(document.querySelector('#appstore-product .fa-github')), video: (document.querySelector('#appstore-product .product-video iframe') || {}).src || '' };
+      }, project.fsId);
+      await page.evaluate((id) => { delete PROFILE_DATA.projects.find(p => p.fsId === id).video; closeAppStoreProduct(); }, project.fsId);
+      expect((r.github || !project.live) && /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/.test(r.video), JSON.stringify(r));
+    });
     await test('app store had no runtime errors', async () => expect(page.__errors.length === 0, page.__errors.join(' | ')));
     await page.context().close();
   }

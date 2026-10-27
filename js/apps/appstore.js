@@ -79,6 +79,7 @@ function openAppStoreProduct(id) {
                 <div class="product-sub">${escapeHtml(p.subtitle)}</div>
                 <div class="product-actions">
                     <button type="button" class="appstore-get-btn ${p.live ? 'live' : ''}" onclick="openExternal('${escapeAttr(p.link)}')">${p.live ? 'OPEN APP' : 'VIEW SOURCE'}</button>
+                    ${p.repo && p.repo !== p.link ? `<button type="button" class="product-share" onclick="openExternal('${escapeAttr(p.repo)}')" aria-label="View on GitHub" title="View on GitHub"><i class="fab fa-github"></i></button>` : ''}
                     <button type="button" class="product-share" onclick="copyTextToClipboard('${escapeAttr(p.link)}', 'Link copied')" aria-label="Copy link"><i class="fas fa-link"></i></button>
                 </div>
             </div>
@@ -88,6 +89,7 @@ function openAppStoreProduct(id) {
             <div><span>Hosted on</span><strong>${escapeHtml(host || '—')}</strong></div>
             <div><span>Updated</span><strong>${escapeHtml(p.date || '—')}</strong></div>
         </div>
+        ${p.video ? `<section class="product-section"><h3>Demo</h3>${projectVideoHtml(p.video, 'product-video')}</section>` : ''}
         <section class="product-section">
             <h3>About this project</h3>
             <p>${escapeHtml(p.desc)}</p>
