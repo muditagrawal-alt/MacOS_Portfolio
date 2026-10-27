@@ -1,5 +1,15 @@
-# Vercel serves the site too (it hosts api/iris.js). Keep the questionnaire,
-# admin and tooling off it.
+# What a Vercel deploy leaves out. The site and api/ are all it needs.
+
+# Never upload secrets or local state (the CLI uploads the working folder,
+# and Vercel's own defaults don't skip .env).
+.env
+.env.*
+!.env.example
+.portfolio/
+node_modules/
+scratch/
+test-results/
+
+# The setup questionnaire, the admin and the tooling stay on your computer.
 setup/
 scripts/
-test-results/

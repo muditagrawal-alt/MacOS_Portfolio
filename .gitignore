@@ -43,3 +43,6 @@ assets/Wallpapers/*.png
 
 # Setup questionnaire state: "setup done" marker and pending clean-up, per clone
 .portfolio/
+
+# Vercel CLI: the linked project (.vercel/); its token lands in .env.local, ignored above
+.vercel
