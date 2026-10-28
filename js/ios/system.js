@@ -380,7 +380,7 @@ const IOS = (() => {
     const HOME = {
         pages: [
             ['about', 'projects', 'resume', 'maps', 'photos', 'camera', 'notes', 'settings'],
-            () => [...Object.keys(apps).filter(id => id.startsWith('live-')), 'game-2048', 'snake', 'weather', 'calculator']
+            () => ['calendar', 'wallet', ...Object.keys(apps).filter(id => id.startsWith('live-')), 'game-2048', 'snake', 'weather', 'calculator']
         ],
         dock: ['messages', 'mail', 'safari', 'music']
     };
@@ -602,7 +602,8 @@ const IOS = (() => {
         about: ['about', 'fas fa-user'], resume: ['resume', 'fas fa-file-lines'], projects: ['projects', 'fas fa-cube'],
         maps: ['maps', 'fas fa-map-location-dot'], mail: ['mail', 'fas fa-envelope'], photos: ['photos', 'fas fa-images'],
         notes: ['notes', 'fas fa-note-sticky'], music: ['music', 'fas fa-music'], camera: ['camera', 'fas fa-camera'],
-        games: ['game-2048', 'fas fa-gamepad'], weather: ['weather', 'fas fa-cloud-sun'], settings: ['settings', 'fas fa-gear']
+        games: ['game-2048', 'fas fa-gamepad'], weather: ['weather', 'fas fa-cloud-sun'], settings: ['settings', 'fas fa-gear'],
+        calendar: ['calendar', 'fas fa-calendar'], wallet: ['wallet', 'fas fa-wallet']
     };
     const words = (s) => String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 1);
     /** The item whose name shares the most words with what Iris said, if any. */

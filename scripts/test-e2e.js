@@ -1269,7 +1269,8 @@ const section = (name) => !only || only.test(name);
       await page.screenshot({ path: SHOTS + 'ios-home.png' });
       // Every live project is an app of its own.
       const live = P.projects.filter(x => x.live && x.link).map(x => `live-${x.id}`);
-      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', 'camera', 'game-2048', 'snake', ...(P.places.length ? ['maps'] : [])];
+      const core = ['about', 'projects', 'resume', 'photos', 'notes', 'settings', 'weather', 'calculator', 'messages', 'mail', 'safari', 'music', 'camera', 'game-2048', 'snake', ...(P.places.length ? ['maps'] : []),
+        ...(P.places.some(x => /\d{4}/.test(x.date)) ? ['calendar'] : []), ...(P.certificates.length + P.hackathons.length + P.events.length ? ['wallet'] : [])];
       const missing = [...core, ...live].filter(id => !r.icons.includes(id));
       expect(!missing.length && r.pages === 2 && (r.hackathons || !P.hackathons.length) && r.weather === '23°' && (!P.github.user || /Lighthouse/.test(r.github)), JSON.stringify({ ...r, missing }));
     });
@@ -1327,6 +1328,60 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(500);
       expect(r.hash === `#/maps/${pin.id}` && r.title === pin.title, JSON.stringify(r));
+    });
+    await test('Calendar shows the year with its busy months, and an entry leads to the map', async () => {
+      const dated = await page.evaluate(() => (window.CalendarData ? CalendarData.entries.length : 0));
+      if (!dated) return;
+      await iosGo(page, 'calendar');
+      await page.waitForSelector('.cal-months', { timeout: 4000 });
+      const r = await page.evaluate(() => {
+        const year = Number(document.querySelector('.cal-year').textContent);
+        const starting = CalendarData.entries.filter(e => e.span.start.y === year);
+        const months = new Set(starting.filter(e => e.span.start.m !== null).map(e => e.span.start.m));
+        const busy = [...document.querySelectorAll('.cal-month.busy')].map(b => Number(b.dataset.month));
+        return {
+          year, busy, months: [...months],
+          today: year === new Date().getFullYear() ? Boolean(document.querySelector('.cal-days .today')) : true,
+          rows: document.querySelectorAll('.cal-row').length, wantRows: starting.length
+        };
+      });
+      await page.screenshot({ path: SHOTS + 'ios-calendar.png' });
+      const placed = await page.evaluate(() => {
+        const year = Number(document.querySelector('.cal-year').textContent);
+        const e = CalendarData.entries.find(x => x.place && x.span.start.y === year) || CalendarData.entries.find(x => x.place);
+        return e ? e.id : null;
+      });
+      let hash = null;
+      if (placed) {
+        await iosGo(page, 'calendar', [placed]);
+        await page.waitForSelector('.cal-event', { timeout: 3000 });
+        await page.click('.cal-actions [data-action="map"]');
+        await page.waitForTimeout(700);
+        hash = await page.evaluate(() => location.hash);
+      }
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      expect(r.busy.length === r.months.length && r.months.every(m => r.busy.includes(m)) && r.today && r.rows >= r.wantRows && (!placed || hash === `#/maps/${placed}`),
+        JSON.stringify({ ...r, placed, hash }));
+    });
+    await test('Wallet stacks every certificate and hackathon as a pass; a certificate opens in Photos', async () => {
+      const want = P.certificates.length + P.hackathons.length + P.events.length;
+      if (!want) return;
+      await iosGo(page, 'wallet');
+      await page.waitForSelector('.wl-card', { timeout: 4000 });
+      const count = await page.evaluate(() => document.querySelectorAll('.wl-stack .wl-card').length);
+      await page.screenshot({ path: SHOTS + 'ios-wallet.png' });
+      let opened = null;
+      if (P.certificates.length) {
+        await page.click('.wl-stack [data-pass="cert-1"]', { position: { x: 40, y: 20 } });
+        await page.waitForSelector('.wl-card.full', { timeout: 3000 });
+        await page.click('.wl-actions [data-action="photo"]');
+        await page.waitForTimeout(600);
+        opened = await page.evaluate(() => location.hash);
+      }
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      expect(count === want && (!P.certificates.length || opened === '#/photos/cert-1'), JSON.stringify({ count, want, opened }));
     });
     await test('Camera takes a photo into the Camera Roll, Photos shows it, and the camera is released', async () => {
       await iosGo(page, 'camera');

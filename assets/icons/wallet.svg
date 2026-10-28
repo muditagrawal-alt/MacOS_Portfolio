@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="wBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2d3a"/><stop offset="1" stop-color="#0d0e14"/></linearGradient>
+    <linearGradient id="wPocket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b5063"/><stop offset="1" stop-color="#2c2f3c"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="url(#wBg)"/>
+  <rect x="20" y="22" width="88" height="56" rx="9" fill="#2bb5a5"/>
+  <rect x="20" y="36" width="88" height="56" rx="9" fill="#f2b33d"/>
+  <rect x="20" y="50" width="88" height="56" rx="9" fill="#ef5f6b"/>
+  <path d="M14 66 H45 C51 66 53 76 64 76 C75 76 77 66 83 66 H114 V104 C114 109 110 113 105 113 H23 C18 113 14 109 14 104 Z" fill="url(#wPocket)"/>
+  <path d="M18 70 H45 C49 70 52 80 64 80 C76 80 79 70 83 70 H110" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1.6" stroke-dasharray="3 3"/>
+</svg>

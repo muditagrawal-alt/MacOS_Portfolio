@@ -13,7 +13,7 @@
    ========================================================================== */
 
 window.IrisClient = (() => {
-    const APPS = new Set(['about', 'resume', 'projects', 'maps', 'mail', 'photos', 'notes', 'music', 'camera', 'games', 'weather', 'settings']);
+    const APPS = new Set(['about', 'resume', 'projects', 'maps', 'mail', 'photos', 'notes', 'music', 'camera', 'games', 'weather', 'settings', 'calendar', 'wallet']);
     const DEICTIC = /\b(this|that|it|these|here|this one|that one)\b/i;
 
     /** "What does this do?" while looking at a project means that project. */

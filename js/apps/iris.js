@@ -874,7 +874,9 @@ const IRIS_MAC_ACTIONS = {
     music: ['fas fa-music', 'Music', () => openMusic()],
     camera: ['fas fa-camera', 'Photo Booth', () => openPhotoBooth()],
     games: ['fas fa-gamepad', 'Snake', () => openSnake()],
-    settings: ['fas fa-gear', 'System Settings', () => openWindow('settings-window')]
+    settings: ['fas fa-gear', 'System Settings', () => openWindow('settings-window')],
+    // The iPhone's Wallet holds the certificates; on the Mac they're in Photos.
+    wallet: ['fas fa-award', 'Certificates', () => openWindow('photos-window')]
 };
 
 /** The Mac has no Maps app: a place opens on OpenStreetMap. */
