@@ -43,6 +43,9 @@
                 { icon: 'fas fa-mobile-screen-button', color: '#ff2d55', title: 'Haptics', toggle: 'haptics', checked: IOS.readPref('haptics', true) },
                 window.IOSFullscreen && IOSFullscreen.available && { icon: 'fas fa-expand', color: '#5856d6', title: 'Full Screen', toggle: 'fullscreen', checked: IOS.readPref('fullscreen', true) }
             ].filter(Boolean), { footer: window.IOSFullscreen && IOSFullscreen.available ? 'Full Screen hides the browser’s bars. Tap the status bar to bring them back.' : '' })}
+            ${window.IrisVoice && IrisVoice.supported ? IOS.group([
+                { icon: 'fas fa-volume-high', color: '#af52de', title: 'Read Typed Answers Aloud', toggle: 'speakTyped', checked: IOS.readPref('speakTyped', false) }
+            ], { header: 'Iris', footer: 'Iris always answers aloud when you ask by voice: hold the home bar, then tap the mic.' }) : ''}
             ${IOS.group([
                 { icon: 'fas fa-laptop', color: '#8e8e93', title: 'View Mac Version', sub: 'The full desktop: Finder, Terminal, games and more', chevron: true, action: 'mac' }
             ])}
@@ -60,7 +63,8 @@
             mac: () => window.PORTFOLIO_SHELL && PORTFOLIO_SHELL.switchTo('mac'),
             lock: () => IOS.lockNow(),
             'toggle:haptics': (on) => { IOS.writePref('haptics', on); if (on) IOS.haptic(); },
-            'toggle:fullscreen': (on) => IOSFullscreen.setWanted(on)
+            'toggle:fullscreen': (on) => IOSFullscreen.setWanted(on),
+            'toggle:speakTyped': (on) => { IOS.writePref('speakTyped', on); if (!on) IrisVoice.stop(); }
         });
     }
 

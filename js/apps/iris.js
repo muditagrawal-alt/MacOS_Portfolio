@@ -19,7 +19,6 @@ let irisIsListening = false;
 // browser microphone prompt before the visitor has done anything.
 let irisHeyIrisEnabled = false;
 let irisLastInputWasVoice = false;
-let irisVoices = [];
 let irisLastReferencedEntity = null; // Memory for "open it", "launch that"
 let irisPendingTranscript = '';
 let irisWaveformInterval = null;
@@ -258,16 +257,6 @@ function initIrisSpeech() {
         }
     }
 
-    // Initialize text-to-speech voices
-    if ('speechSynthesis' in window) {
-        const loadVoices = () => {
-            irisVoices = window.speechSynthesis.getVoices();
-        };
-        loadVoices();
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-        }
-    }
 }
 
 function startIrisListening() {
@@ -343,66 +332,23 @@ function stopWaveformAnimation() {
 }
 
 function speakIris(text) {
-    if (!('speechSynthesis' in window)) return;
+    if (!window.IrisVoice) return;
     // Talk back when spoken to. Reading every typed answer aloud surprised
     // visitors in quiet offices; that's now an opt-in setting.
     const speakTyped = typeof window.getPreference === 'function' && window.getPreference('speakTyped');
     if (!irisLastInputWasVoice && !speakTyped) return;
 
-    try {
-        window.speechSynthesis.cancel();
-
-        // Clean out markdown and urls for pristine spoken audio
-        let clean = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                        .replace(/[*_#•]/g, ' ')
-                        .replace(/<[^>]+>/g, ' ')
-                        .replace(/https?:\/\/\S+/g, '')
-                        .trim();
-
-        // Speak concisely (first 2 natural sentences)
-        const sentences = clean.split(/(?<=[.?!])\s+/);
-        if (sentences.length > 2) clean = sentences.slice(0, 2).join(' ');
-
-        const utterance = new SpeechSynthesisUtterance(clean);
-        utterance.rate = 1.05;
-        utterance.pitch = 1.0;
-
-        if (irisVoices.length > 0) {
-            const preferred = irisVoices.find(v =>
-                (v.name.includes('Siri') || v.name.includes('Samantha') || v.name.includes('Karen') ||
-                 v.name.includes('Victoria') || v.name.includes('Daniel') || v.name.includes('Google UK English Female')) &&
-                v.lang.startsWith('en')
-            ) || irisVoices.find(v => v.lang.startsWith('en'));
-            if (preferred) utterance.voice = preferred;
-        }
-
+    IrisVoice.speak(text, {
         // Orb reacts in real time while Iris is speaking!
-        utterance.onstart = () => {
-            setIrisOrbState('speaking');
-        };
-
+        onstart: () => setIrisOrbState('speaking'),
         // Bounce waveforms on boundary events
-        utterance.onboundary = () => {
-            const bars = document.querySelectorAll('.iris-waveform-bar');
-            bars.forEach(b => {
-                const randomH = Math.floor(Math.random() * 22) + 10;
-                b.style.height = `${randomH}px`;
+        onboundary: () => {
+            document.querySelectorAll('.iris-waveform-bar').forEach(b => {
+                b.style.height = `${Math.floor(Math.random() * 22) + 10}px`;
             });
-        };
-
-        utterance.onend = () => {
-            setIrisOrbState('');
-        };
-
-        utterance.onerror = () => {
-            setIrisOrbState('');
-        };
-
-        window.speechSynthesis.speak(utterance);
-    } catch (e) {
-        console.warn('Speech synthesis error:', e);
-        setIrisOrbState('');
-    }
+        },
+        onend: () => setIrisOrbState('')
+    });
 }
 
 function resetWaveforms() {
@@ -458,7 +404,7 @@ function closeIris() {
 
         if (irisIsListening) stopIrisListening();
         stopWaveformAnimation();
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        if (window.IrisVoice) IrisVoice.stop();
         if (typeof updateDockRunningIndicators === 'function') updateDockRunningIndicators();
     }
 }

@@ -51,6 +51,15 @@
     line-height: 1.42;
 }
 .siri-q { margin: 0 0 8px; color: var(--ios-label-2); font-size: 13.5px; }
+.siri-q-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.siri-q-row .siri-q { flex: 1; min-width: 0; }
+.siri-speak { flex-shrink: 0; display: grid; place-items: center; width: 30px; height: 30px; margin: -5px -6px 0 0; border: none; border-radius: 50%; background: var(--ios-fill-2); color: var(--ios-tint); font-size: 13px; cursor: pointer; transition: background-color 0.2s, color 0.2s; }
+.siri-speak { position: relative; }
+.siri-speak::after { content: ""; position: absolute; inset: -7px; }   /* a 44pt target */
+.siri-speak.on { background: var(--ios-tint); color: #fff; }
+.siri-speak.on i { animation: siri-speak 1.1s ease-in-out infinite; }
+@keyframes siri-speak { 50% { transform: scale(1.14); } }
+@media (prefers-reduced-motion: reduce) { .siri-speak.on i { animation: none; } }
 .siri-text a { color: var(--ios-tint); }
 .siri-thinking { display: flex; gap: 5px; padding: 6px 0; }
 .siri-thinking i { width: 8px; height: 8px; border-radius: 50%; background: var(--ios-label-3); animation: siri-dot 1s infinite ease-in-out; }

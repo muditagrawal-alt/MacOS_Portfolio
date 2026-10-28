@@ -1405,6 +1405,28 @@ const section = (name) => !only || only.test(name);
       const closed = await page.evaluate(() => !IrisEverywhere.isOpen);
       expect(stillThere === 'projects' && r.context.includes(project.name) && r.answer.includes(project.name) && closed, JSON.stringify({ stillThere, ...r, closed }));
     });
+    await test('asked aloud, Iris answers aloud; typed answers can be read out, and closing stops it', async () => {
+      const r = await page.evaluate(async (first) => {
+        // Record what would be said instead of saying it.
+        window.__spoken = []; window.__stops = 0;
+        let current = null;
+        speechSynthesis.speak = (u) => { window.__spoken.push(u.text); current = u; };
+        speechSynthesis.cancel = () => { window.__stops++; if (current && current.onend) current.onend(); current = null; };
+        IOS.home();
+        IrisEverywhere.open();
+        await IrisEverywhere.ask(`What does ${first} do?`, { voice: true });
+        const aloud = { spoken: window.__spoken.length, on: document.querySelector('#siri [data-speak]').classList.contains('on') };
+        await IrisEverywhere.ask('What are the skills?');
+        const typed = window.__spoken.length;
+        document.querySelector('#siri [data-speak]').click();
+        const button = window.__spoken.length;
+        return { aloud, typed, button, said: window.__spoken[0] || '' };
+      }, P.first);
+      await page.click('#siri .siri-scrim', { position: { x: 20, y: 120 } });
+      await page.waitForTimeout(400);
+      const after = await page.evaluate(() => ({ stops: window.__stops, on: Boolean(document.querySelector('#siri [data-speak].on')) }));
+      expect(r.aloud.spoken === 1 && r.aloud.on && r.typed === 1 && r.button === 2 && !/\*\*|\]\(/.test(r.said) && after.stops > 0 && !after.on, JSON.stringify({ ...r, after }));
+    });
     await test('with a model, "show me where he competed" goes straight to Maps', async () => {
       const pin = P.places.find(x => x.kind === 'hackathon') || P.places[0];
       if (!pin) return;
