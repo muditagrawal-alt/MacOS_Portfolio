@@ -1368,7 +1368,8 @@ const section = (name) => !only || only.test(name);
       const tiles = await page.evaluate(() => document.querySelectorAll('.g2048-tile').length);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(300);
-      expect(changed && tiles >= 3, JSON.stringify({ changed, tiles }));
+      // At least the moved tiles plus a new one: 2 when the two starting tiles merged.
+      expect(changed && tiles >= 2, JSON.stringify({ changed, tiles }));
     });
     await test('Snake starts on a swipe and pauses on a tap', async () => {
       await iosGo(page, 'snake');
