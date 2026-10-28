@@ -33,7 +33,7 @@
     /* ── State ──────────────────────────────────────────────────────────── */
     let draft = null;          // the info bank being edited
     let uploads = {};          // assets/me/… path → data: URL, written on build
-    let config = { web3formsKey: '', irisEndpoint: '' };
+    let config = { web3formsKey: '', irisEndpoint: '', analytics: false };
     let templateKey = '';      // the contact-form key the template shipped with
     let step = 0;
     let server = false;        // is the local setup server answering?
@@ -483,7 +483,7 @@
             id: 'site', title: 'Site & services', icon: 'fa-globe',
             render: () => {
                 const stale = staleKey();
-                return intro('Site & services', 'Where the site will live, and the two services it can use.') + `
+                return intro('Site & services', 'Where the site will live, and the services it can use.') + `
                 ${grid([{ path: 'site.url', label: 'Your site’s address', type: 'url', wide: true, placeholder: guessSiteUrl() || 'https://you.github.io/MacOS_Portfolio/', hint: 'Used in link previews. With GitHub Pages it’s https://&lt;your-username&gt;.github.io/&lt;repository&gt;/' }])}
                 <div class="service">
                     <div class="service-head"><i class="fas fa-paper-plane"></i><div><strong>Contact form</strong><small>Mail on both versions sends visitors’ messages to your inbox through <a href="https://web3forms.com" target="_blank" rel="noopener noreferrer">Web3Forms</a> (free, no backend). Paste your access key.</small></div></div>
@@ -494,6 +494,10 @@
                 <div class="service">
                     <div class="service-head"><i class="fas fa-wand-magic-sparkles"></i><div><strong>Iris’s hosted model</strong><small>Optional. Iris answers from your info bank without one; with a deployed <code>api/iris.js</code> endpoint it phrases answers with a language model. On Vercel, <code>/api/iris</code> is enough; from another host, use the full address.</small></div></div>
                     <input type="text" inputmode="url" data-config="irisEndpoint" value="${esc(config.irisEndpoint)}" placeholder="/api/iris" autocomplete="off" spellcheck="false" aria-label="Iris endpoint">
+                </div>
+                <div class="service service-toggle">
+                    <div class="service-head"><i class="fas fa-chart-simple"></i><div><strong>Visitor analytics</strong><small>Counts visits and where they come from with <a href="https://vercel.com/docs/analytics" target="_blank" rel="noopener noreferrer">Vercel Web Analytics</a>: no cookies, nothing personal. Only when the site is on Vercel, with Analytics turned on for the project.</small></div></div>
+                    <label class="switch"><input type="checkbox" data-config="analytics" ${config.analytics ? 'checked' : ''} aria-label="Visitor analytics"><span></span></label>
                 </div>`;
             },
             validate: () => (isUrl(draft.site.url) ? null : { path: 'site.url', message: 'Use a full address starting with https://' })
@@ -816,7 +820,7 @@
             }
             changed();
         } else if (el.dataset.config) {
-            config[el.dataset.config] = el.value.trim();
+            config[el.dataset.config] = el.type === 'checkbox' ? el.checked : el.value.trim();
             changed();
         }
     });
@@ -847,7 +851,7 @@
         if (!btn || btn.tagName === 'INPUT') return;
         const act = btn.dataset.act;
         if (act === 'goto') { go(Number(btn.dataset.step)); return; }
-        if (act === 'start-fresh') { draft = blank(); uploads = {}; config = { web3formsKey: '', irisEndpoint: '' }; built = false; go(1); updatePreview(); return; }
+        if (act === 'start-fresh') { draft = blank(); uploads = {}; config = { web3formsKey: '', irisEndpoint: '', analytics: false }; built = false; go(1); updatePreview(); return; }
         if (act === 'start-current') { draft = ensureShape(clone(CURRENT)); uploads = {}; config = { ...config, web3formsKey: templateKey }; built = false; go(1); updatePreview(); return; }
         if (act === 'tidy') { tidy(); return; }
         if (act === 'publish') { publishNow(btn); return; }
@@ -1300,7 +1304,7 @@
             if (server) {
                 const c = await (await fetch('/__setup/config', { cache: 'no-store' })).json();
                 templateKey = c.web3formsKey || '';
-                config = { web3formsKey: c.web3formsKey || '', irisEndpoint: c.irisEndpoint || '' };
+                config = { web3formsKey: c.web3formsKey || '', irisEndpoint: c.irisEndpoint || '', analytics: Boolean(c.analytics) };
             }
         } catch (e) { server = false; }
         if (ADMIN) {

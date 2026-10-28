@@ -132,7 +132,7 @@ function writeGenerated(raw, root = ROOT, { dryRun = false } = {}) {
     return written;
 }
 
-/** Updates the two service settings in js/config/config.js, leaving everything else as it is. */
+/** Updates the service settings in js/config/config.js, leaving everything else as it is. */
 function writeConfig(config, root, written) {
     if (!config) return;
     const file = 'js/config/config.js';
@@ -140,13 +140,14 @@ function writeConfig(config, root, written) {
     const str = (v) => (v ? `'${String(v).replace(/[\\']/g, '')}'` : 'null');
     if ('irisEndpoint' in config) src = src.replace(/IRIS_ENDPOINT:\s*[^,\n]+,/, `IRIS_ENDPOINT: ${str(config.irisEndpoint)},`);
     if ('web3formsKey' in config) src = src.replace(/WEB3FORMS_ACCESS_KEY:\s*[^,\n]+/, `WEB3FORMS_ACCESS_KEY: ${str(config.web3formsKey)}`);
+    if ('analytics' in config) src = src.replace(/VERCEL_ANALYTICS:\s*(true|false)/, `VERCEL_ANALYTICS: ${Boolean(config.analytics)}`);
     write(root, file, src, written);
 }
 
 function readConfig(root = ROOT) {
     const src = fs.readFileSync(path.join(root, 'js/config/config.js'), 'utf8');
     const pick = (key) => { const m = src.match(new RegExp(`${key}:\\s*'([^']*)'`)); return m ? m[1] : ''; };
-    return { irisEndpoint: pick('IRIS_ENDPOINT'), web3formsKey: pick('WEB3FORMS_ACCESS_KEY') };
+    return { irisEndpoint: pick('IRIS_ENDPOINT'), web3formsKey: pick('WEB3FORMS_ACCESS_KEY'), analytics: /VERCEL_ANALYTICS:\s*true/.test(src) };
 }
 
 /* ── Leftovers: files the previous info bank used that nothing uses now ── */
@@ -202,7 +203,7 @@ function removeLeftovers(root = ROOT) {
 /**
  * Saves a questionnaire submission.
  * @param {object} profile  the info bank (as the questionnaire built it)
- * @param {{ files?: {path:string, data:string}[], config?: {web3formsKey?:string, irisEndpoint?:string} }} extras
+ * @param {{ files?: {path:string, data:string}[], config?: {web3formsKey?:string, irisEndpoint?:string, analytics?:boolean} }} extras
  *        files: data: URLs to store at assets/me/…, already referenced from `profile`
  * @returns {{ written: string[], leftovers: {path:string, kind:string}[] }}
  */
@@ -250,7 +251,7 @@ function isSetupDone(root = ROOT) {
     return fs.existsSync(path.join(root, MARKER_FILE));
 }
 
-module.exports = { readProfile, normalize, writeGenerated, saveSubmission, removeLeftovers, readConfig, markDone, isSetupDone, ALLOWED_UPLOADS };
+module.exports = { readProfile, normalize, writeGenerated, saveSubmission, removeLeftovers, readConfig, writeConfig, markDone, isSetupDone, ALLOWED_UPLOADS };
 
 if (require.main === module) {
     const cmd = process.argv[2];

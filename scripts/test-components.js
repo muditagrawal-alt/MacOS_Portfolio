@@ -363,6 +363,34 @@ function finishAfter(ms) {
         assert(none.went === null && !none.canonical, 'with no address in the info bank, nothing is added');
     }
 
+    /* ── 10. Visitor analytics: only on the deployed site, and the admin's switch sticks ── */
+    console.log('\n--- 10. Visitor analytics ---');
+    {
+        const vm = require('vm');
+        const os = require('os');
+        const src = fs.readFileSync(path.join(ROOT_DIR, 'js/shared/analytics.js'), 'utf8');
+        const loads = (href, on = true) => {
+            const added = [];
+            const win = { APP_CONFIG: { VERCEL_ANALYTICS: on } };
+            const u = new URL(href);
+            vm.runInNewContext(src, { window: win, location: { hostname: u.hostname, protocol: u.protocol }, document: { createElement: () => ({}), head: { appendChild: (el) => added.push(el.src) } } });
+            return added[0] === '/_vercel/insights/script.js';
+        };
+        assert(loads('https://portfolio.example/ios.html') && !loads('https://portfolio.example/', false), 'page views are counted on the deployed site when it’s on');
+        assert(!loads('http://localhost:8899/') && !loads('http://127.0.0.1:8899/') && !loads('https://owner.github.io/repo/'), 'never locally or on a GitHub Pages copy, where Vercel’s script doesn’t exist');
+
+        const setup = require(path.join(ROOT_DIR, 'setup/apply.js'));
+        const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cfg-'));
+        fs.mkdirSync(path.join(tmp, 'js/config'), { recursive: true });
+        fs.copyFileSync(path.join(ROOT_DIR, 'js/config/config.js'), path.join(tmp, 'js/config/config.js'));
+        const before = setup.readConfig(tmp);
+        setup.writeConfig({ analytics: !before.analytics }, tmp, []);
+        const after = setup.readConfig(tmp);
+        assert(after.analytics === !before.analytics && after.irisEndpoint === before.irisEndpoint && after.web3formsKey === before.web3formsKey,
+            'the admin’s analytics switch is saved without touching the other services', JSON.stringify({ before, after }));
+        fs.rmSync(tmp, { recursive: true, force: true });
+    }
+
     console.log(`\n==================================================`);
     console.log(`Component Suite Summary: ${passCount} Passed, ${failCount} Failed out of ${testCount} tests`);
     console.log(`==================================================\n`);

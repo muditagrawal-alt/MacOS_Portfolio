@@ -13,6 +13,10 @@ window.APP_CONFIG = Object.freeze({
     // Serverless RSS aggregator for Medium/Substack (see api/feeds.js).
     FEEDS_ENDPOINT: null,
 
+    // Vercel Web Analytics: cookieless page views, on the deployed site only
+    // (js/shared/analytics.js). Turn it on for the project in Vercel too.
+    VERCEL_ANALYTICS: true,
+
     // Web3Forms access keys are public form tokens (they only permit posting
     // to the form owner's inbox, safe client-side).
     WEB3FORMS_ACCESS_KEY: '0026fd18-ff07-44f8-9879-c8e521298f9a'

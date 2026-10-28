@@ -148,6 +148,7 @@ Without `lat` and `lng` it's shown as text only. The questionnaire's **Pin it** 
 
 - **Contact form.** Mail sends visitors' messages to your inbox through [Web3Forms](https://web3forms.com), which is free and needs no backend. The access key goes in `js/config/config.js` (`WEB3FORMS_ACCESS_KEY`). It's public by design, because it can only send mail to you. Without a key, Mail offers visitors their own mail app.
 - **Iris's hosted model.** Iris answers from the info bank on its own. Deploy `api/iris.js` (see `api/README.md`) and set `IRIS_ENDPOINT`, and it phrases its answers with a language model too.
+- **Visitor analytics.** On Vercel, the site can count visits with [Vercel Web Analytics](https://vercel.com/docs/analytics): no cookies and nothing personal. Turn on **Visitor analytics** in **Site & services** (`VERCEL_ANALYTICS` in `js/config/config.js`), and Analytics for the project in Vercel (`vercel project web-analytics enable <project>`). It's never loaded locally or on GitHub Pages.
 
 ## Keeping it a template
 

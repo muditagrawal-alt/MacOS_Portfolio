@@ -286,6 +286,8 @@ h2.sub small { color: var(--text-2); font-size: 13px; font-weight: 500; margin-l
 .service-head > i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); flex-shrink: 0; }
 .service-head strong { display: block; }
 .service-head small { color: var(--text-2); font-size: 13.5px; }
+.service-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.service-toggle .service-head { margin-bottom: 0; }
 
 /* ── Review & done ───────────────────────────────────────────────────── */
 .review-card { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: var(--radius); background: linear-gradient(135deg, var(--tint), var(--tint-2)); color: #fff; box-shadow: var(--shadow); }
