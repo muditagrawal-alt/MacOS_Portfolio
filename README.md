@@ -173,7 +173,16 @@ Add a `case` to the `switch (cmd)` in `js/apps/terminal.js`, and list it in `TER
 3. Choose **Deploy from a branch**, then `main` / (root)
 4. Your site will be live at `https://yourusername.github.io/MacOS_Portfolio`. Pages caches pages for about ten minutes, so a new push can take that long to show
 
-### Netlify / Vercel
+### Vercel (the site and Iris's model together)
+
+1. At [vercel.com](https://vercel.com), **Add New → Project** and import the repository; leave the framework as **Other** (`vercel.json` says there's nothing to build). Or from a terminal: `vercel link`, then `vercel deploy --prod`.
+2. Add `GROQ_API_KEY`, and `GEMINI_API_KEY` as the backup, under **Settings → Environment Variables** (or `vercel env add GROQ_API_KEY production`), then redeploy. See `api/README.md`.
+3. Optional: **Settings → Domains** for your own domain, then put that address in the admin's **Site & services** so link previews use it.
+4. Each push to `main` deploys again. A GitHub Pages copy that's still switched on sends its visitors to the address in the info bank.
+
+`.vercelignore` keeps the questionnaire, the admin, the tooling and `.env` off the deployment.
+
+### Netlify
 
 1. Connect your GitHub repository
 2. Deploy with default settings (no build command needed)
