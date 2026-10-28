@@ -492,8 +492,8 @@
                     ${!config.web3formsKey ? '<p class="field-hint">Left empty, Mail offers to open the visitor’s own mail app instead.</p>' : ''}
                 </div>
                 <div class="service">
-                    <div class="service-head"><i class="fas fa-wand-magic-sparkles"></i><div><strong>Iris’s hosted model</strong><small>Optional. Iris answers from your info bank without one; with a deployed <code>api/iris.js</code> endpoint it phrases answers with a language model.</small></div></div>
-                    <input type="url" data-config="irisEndpoint" value="${esc(config.irisEndpoint)}" placeholder="https://your-app.vercel.app/api/iris" autocomplete="off" aria-label="Iris endpoint">
+                    <div class="service-head"><i class="fas fa-wand-magic-sparkles"></i><div><strong>Iris’s hosted model</strong><small>Optional. Iris answers from your info bank without one; with a deployed <code>api/iris.js</code> endpoint it phrases answers with a language model. On Vercel, <code>/api/iris</code> is enough; from another host, use the full address.</small></div></div>
+                    <input type="text" inputmode="url" data-config="irisEndpoint" value="${esc(config.irisEndpoint)}" placeholder="/api/iris" autocomplete="off" spellcheck="false" aria-label="Iris endpoint">
                 </div>`;
             },
             validate: () => (isUrl(draft.site.url) ? null : { path: 'site.url', message: 'Use a full address starting with https://' })

@@ -9,9 +9,9 @@ The API key stays **server-side**: the browser never sees it, other websites can
 1. **Get a free Groq key.** Sign in at [console.groq.com](https://console.groq.com), open **API Keys**, and create one. Copy it; you'll paste it into Vercel in step 2, not anywhere in this repository.
 2. **Deploy to Vercel.** At [vercel.com](https://vercel.com), choose **Add New → Project** and import this GitHub repository. Leave the framework preset as **Other**. Under **Environment Variables**, add `GROQ_API_KEY` with your key, then **Deploy**. For a backup, also add `GEMINI_API_KEY` (a free key from [Google AI Studio](https://aistudio.google.com/apikey)).
 3. **Check it.** Open `https://<your-project>.vercel.app/api/iris` in a browser. "Method not allowed" means the function is live.
-4. **Point the site at it.** Run `npm run admin`, open **Site & services**, and put `https://<your-project>.vercel.app/api/iris` in **Iris's hosted model**. Save, then Publish.
+4. **Point the site at it.** Run `npm run admin`, open **Site & services**, and check **Iris's hosted model**. Visitors on the Vercel address need only `/api/iris`, which is already the default. If they visit a copy on another host (GitHub Pages, say), put the full `https://<your-project>.vercel.app/api/iris` there instead, then Save and Publish.
 
-The full address matters: the site lives on GitHub Pages, so a relative `/api/iris` wouldn't reach Vercel.
+Keys added after a deploy take effect on the next one: run `vercel deploy --prod`, or push to `main`.
 
 ## Free tier, and the backup
 
@@ -21,7 +21,7 @@ Either key works on its own. To change models, set `GROQ_MODEL` or `GEMINI_MODEL
 
 ## What Vercel serves
 
-Vercel deploys the whole repository, so it also serves a copy of the site, and Iris works there too (the deployment's own address is always allowed). `.vercelignore` keeps the setup questionnaire, the admin and the tooling off it.
+Vercel deploys the whole repository, so it serves the site as well as Iris's model (the deployment's own address is always allowed). `.vercelignore` keeps the setup questionnaire, the admin, the tooling and `.env` off it.
 
 ## No proxy?
 
