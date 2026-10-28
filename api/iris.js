@@ -90,14 +90,19 @@ function isRateLimited(clientIp) {
     return entry.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+/** The page calling from the address this function is served on: any domain added to the project. */
+function sameHost(origin, host) {
+    try { return Boolean(origin && host) && new URL(origin).host === host; } catch (e) { return false; }
+}
+
 export default async function handler(req, res) {
     const origin = req.headers.origin || '';
     const referer = req.headers.referer || '';
 
     // Verify allowed origin or local dev
-    const isAllowed = ALLOWED_ORIGINS.some(allowed => 
-        origin === allowed || referer.startsWith(allowed)
-    ) || (!origin && req.headers.host?.includes('localhost'));
+    const isAllowed = ALLOWED_ORIGINS.some(allowed =>
+        origin === allowed || referer === allowed || referer.startsWith(`${allowed}/`)
+    ) || sameHost(origin, req.headers.host) || (!origin && req.headers.host?.includes('localhost'));
 
     if (origin && isAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);

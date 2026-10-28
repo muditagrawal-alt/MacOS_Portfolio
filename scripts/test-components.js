@@ -331,6 +331,12 @@ function finishAfter(ms) {
         assert(busy.code === 429, 'both out of tokens: the proxy says busy (the site then answers locally)', String(busy.code));
         const foreign = await call({ messages: [{ role: 'user', content: 'hi' }] }, { origin: 'https://evil.example' });
         assert(foreign.code === 403, 'other websites can’t use the proxy', String(foreign.code));
+        const lookalike = await call({ messages: [{ role: 'user', content: 'hi' }] }, { referer: `${origin}.evil.example/` });
+        assert(lookalike.code === 403, 'nor can one whose address only starts like the site’s', String(lookalike.code));
+
+        replies = { 'api.groq.com': answer };
+        const custom = await call({ messages: [{ role: 'user', content: 'hi' }] }, { origin: 'https://portfolio.example', host: 'portfolio.example' });
+        assert(custom.code === 200, 'the site on any domain added to the deployment can use it', String(custom.code));
         global.fetch = realFetch;
     }
 
