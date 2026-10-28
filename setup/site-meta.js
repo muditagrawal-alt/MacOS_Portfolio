@@ -45,12 +45,26 @@
         try { return p.site.url ? new URL(src, p.site.url).href : src; } catch (e) { return src; }
     }
 
+    // This page at the site's own address: ios.html sits next to the Mac page.
+    function pageUrl(p, page) {
+        try { return p.site.url ? new URL(page === 'ios' ? 'ios.html' : '', p.site.url).href : ''; } catch (e) { return ''; }
+    }
+
+    // A copy on GitHub Pages (Pages keeps serving `main` after a move to another
+    // host) sends visitors to the site's own address, keeping the deep link.
+    function mirrorRedirect(home) {
+        const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
+        return `<script>if (/\\.github\\.io$/.test(location.hostname) && location.hostname !== ${json(new URL(home).hostname)}) location.replace(${json(home)} + location.search + location.hash);</script>`;
+    }
+
     /** The managed block for one page ('mac' → index.html, 'ios' → ios.html), indented to sit in <head>. */
     function renderMetaBlock(p, page) {
         const m = metaFor(p, page);
         const image = imageUrl(p);
+        const home = pageUrl(p, page);
         const lines = [
             START,
+            ...(home ? [mirrorRedirect(home), `<link rel="canonical" href="${attr(home)}">`] : []),
             `<title>${text(m.title)}</title>`,
             `<meta name="description" content="${attr(m.description)}">`,
             ...(m.appTitle ? [`<meta name="apple-mobile-web-app-title" content="${attr(m.appTitle)}">`] : []),

@@ -543,7 +543,7 @@ window.PROFILE_DATA = {
     "updated": "August 2026"
   },
   "site": {
-    "url": "https://muditagrawal-alt.github.io/MacOS_Portfolio/",
+    "url": "https://macos-portfolio-mauve-seven.vercel.app/",
     "image": "assets/og-image.jpg"
   },
   "hackathons": [

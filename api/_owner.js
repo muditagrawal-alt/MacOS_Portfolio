@@ -17,6 +17,7 @@ export const OWNER = {
         "possessive": "his"
     },
     "origins": [
+        "https://macos-portfolio-mauve-seven.vercel.app",
         "https://muditagrawal-alt.github.io"
     ],
     "feeds": [

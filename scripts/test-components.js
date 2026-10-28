@@ -340,6 +340,29 @@ function finishAfter(ms) {
         global.fetch = realFetch;
     }
 
+    /* ── 9. One address: a copy on GitHub Pages sends visitors to the site ── */
+    console.log('\n--- 9. Site address ---');
+    {
+        const vm = require('vm');
+        const SiteMeta = require(path.join(ROOT_DIR, 'setup/site-meta.js'));
+        const visit = (siteUrl, page, href) => {
+            const block = SiteMeta.renderMetaBlock({ ...P, site: { ...P.site, url: siteUrl } }, page);
+            const script = (block.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
+            const u = new URL(href);
+            let went = null;
+            if (script) vm.runInNewContext(script, { location: { hostname: u.hostname, search: u.search, hash: u.hash, replace: (to) => { went = to; } } });
+            return { went, canonical: (block.match(/rel="canonical" href="([^"]+)"/) || [])[1] };
+        };
+        const site = 'https://portfolio.example/';
+        const mirror = visit(site, 'ios', 'https://owner.github.io/repo/ios.html?view=ios#/maps');
+        assert(mirror.went === 'https://portfolio.example/ios.html?view=ios#/maps' && mirror.canonical === 'https://portfolio.example/ios.html',
+            'the GitHub Pages copy goes to the same page at the site’s address, deep link kept', JSON.stringify(mirror));
+        assert(visit(site, 'mac', 'https://portfolio.example/#/x').went === null, 'the site itself never redirects');
+        assert(visit('https://owner.github.io/repo/', 'mac', 'https://owner.github.io/repo/').went === null, 'nor does a site that lives on GitHub Pages');
+        const none = visit('', 'mac', 'https://owner.github.io/repo/');
+        assert(none.went === null && !none.canonical, 'with no address in the info bank, nothing is added');
+    }
+
     console.log(`\n==================================================`);
     console.log(`Component Suite Summary: ${passCount} Passed, ${failCount} Failed out of ${testCount} tests`);
     console.log(`==================================================\n`);

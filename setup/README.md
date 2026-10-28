@@ -128,7 +128,7 @@ Without `lat` and `lng` it's shown as text only. The questionnaire's **Pin it** 
 
 | Field | Notes |
 | --- | --- |
-| `url` | The published address, such as `https://you.github.io/MacOS_Portfolio/`. Used for link previews and for which sites may call Iris's endpoint |
+| `url` | The published address, such as `https://you.github.io/MacOS_Portfolio/` or your own domain. Used for link previews, the canonical address and which sites may call Iris's endpoint. When it isn't on GitHub Pages, a copy that Pages still serves sends visitors here |
 | `image` | The link-preview card, 1200 × 630. The questionnaire draws one from your name, photo and stats |
 | `title`, `description` | Override the generated page title and description |
 
