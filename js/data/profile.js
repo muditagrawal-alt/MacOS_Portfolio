@@ -350,7 +350,7 @@ window.PROFILE_DATA = {
       "title": "VLM Business Card Lead Extraction",
       "subtitle": "Live Deployed Web Application",
       "kind": "Vision AI Web App",
-      "date": "Recent",
+      "date": "Sep 2026",
       "icon": "assets/icons/app-vlm.svg",
       "link": "https://muditagrawal-lead-extraction.vercel.app",
       "summary": "Live deployed web application: Bulk business-card lead extraction using vision-language models (Gemini & Qwen3-VL), structured parsing, and Excel export. FastAPI, React, Vercel, Oracle Cloud.",
@@ -363,7 +363,8 @@ window.PROFILE_DATA = {
       "featured": true,
       "aliases": ["business card", "lead extraction", "vlm"],
       "repo": "https://github.com/muditagrawal-alt/VLM_Business_Card_Lead_Extraction",
-      "embed": false
+      "embed": false,
+      "video": "assets/me/vlm-demo.mp4"
     },
     {
       "id": "slam",
@@ -371,13 +372,14 @@ window.PROFILE_DATA = {
       "title": "Monocular RGB Sparse Point Cloud SLAM",
       "subtitle": "Classical Multi-View Geometry",
       "kind": "Computer Vision System",
-      "date": "Recent",
+      "date": "Sep 2026",
       "icon": "assets/icons/app-slam.svg",
       "repo": "https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM",
       "summary": "Real-time camera trajectory & sparse 3D point cloud reconstruction from single-lens video without GPU or neural network. 10s clip reconstructs in <7s on CPU.",
       "description": "Camera trajectory and a sparse 3D point cloud from a single-lens RGB video. Classical multi-view geometry, no neural network, no GPU: a 10s clip reconstructs in under 7s on CPU.",
       "tags": ["slam", "computer vision", "3d", "point cloud", "geometry", "cpu", "c++", "python"],
-      "link": "https://muditagrawal-alt--monocular-slam.modal.run"
+      "link": "https://muditagrawal-alt--monocular-slam.modal.run",
+      "video": "assets/me/slam-demo.mp4"
     },
     {
       "id": "sliver",
@@ -389,7 +391,8 @@ window.PROFILE_DATA = {
       "icon": "assets/icons/app-sliver.svg",
       "repo": "https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool",
       "summary": "On-device AI video summarization engine & smart highlight extractor using YOLO11m, YOLOv8-Face, and OpenAI CLIP with sample-accurate audio sync.",
-      "tags": ["video", "clipping", "yolo", "ffmpeg", "highlights"]
+      "tags": ["video", "clipping", "yolo", "ffmpeg", "highlights"],
+      "video": "assets/me/sliver-demo.mp4"
     },
     {
       "id": "sword",
@@ -431,7 +434,8 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Multiva.Ai",
       "summary": "Offline video dubbing studio for Indian languages preserving speaker voice & lip sync using faster-whisper, NLLB-200, IndicF5 and Wav2Lip.",
       "description": "Offline video dubbing for Indian languages. Keeps speaker's own voice and re-syncs lips: faster-whisper, NLLB-200, IndicF5 and Wav2Lip in a desktop studio.",
-      "tags": ["audio", "speech synthesis", "voice cloning", "whisper", "wav2lip"]
+      "tags": ["audio", "speech synthesis", "voice cloning", "whisper", "wav2lip"],
+      "video": "assets/me/multiva-demo.mp4"
     },
     {
       "id": "artifex",
