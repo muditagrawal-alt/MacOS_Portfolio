@@ -68,7 +68,7 @@ if (fs.existsSync(manifestPath)) {
     const local = (v) => v && !/^(data:|https?:)/.test(v);
     [
         ['Photo', p.photo], ['Résumé', p.resume.file], ['Résumé preview', p.resume.preview], ['Link preview', p.site.image],
-        ...p.certificates.flatMap(c => [['Certificate image', c.image], ['Certificate file', c.file]]),
+        ...p.certificates.flatMap(c => [['Certificate image', c.image], ['Certificate file', c.file], ['Certificate badge', c.badge]]),
         ...p.projects.map(x => ['Project icon', x.icon])
     ].filter(([, v]) => local(v)).forEach(([type, v]) => check(type, v, 'js/data/profile.js'));
 }

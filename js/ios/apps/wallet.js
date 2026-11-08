@@ -41,9 +41,9 @@
             back: ev.detail, pin: placeId('event', ev.name)
         })),
         ...((window.PHOTO_LIBRARY || {}).certificates || { items: [] }).items.map(c => ({
-            id: c.file, type: 'pass', kind: 'certificate', colors: swatch(c.issuer), glyph: 'fas fa-award',
-            org: c.issuer, title: c.title, corner: '',
-            fields: [['Issued by', c.issuer], ['Type', 'Certificate']], image: c.thumb, file: c.full, photo: c.file
+            id: c.file, type: 'pass', kind: 'certificate', colors: swatch(c.issuer), glyph: 'fas fa-award', logo: c.badge,
+            org: c.issuer, title: c.title, corner: c.date,
+            fields: [['Issued by', c.issuer], ['Result', c.detail]], image: c.thumb, file: c.full, photo: c.file
         }))
     ].map(x => ({ ...x, fields: x.fields.filter(([, v]) => v) }));
 
@@ -55,7 +55,7 @@
     function card(x, { full = false } = {}) {
         return `<${full ? 'div' : 'button type="button"'} class="wl-card wl-${x.type}${full ? ' full' : ''}" ${full ? '' : `data-pass="${escapeHtml(x.id)}" aria-label="${escapeHtml(`${x.org}: ${x.title}`)}"`} style="--a:${x.colors[0]};--b:${x.colors[1]}">
                 <span class="wl-head">
-                    <span class="wl-logo"><i class="${x.glyph}"></i></span>
+                    <span class="wl-logo${x.logo ? ' is-badge' : ''}">${x.logo ? `<img src="${escapeHtml(x.logo)}" alt="">` : `<i class="${x.glyph}"></i>`}</span>
                     <span class="wl-name">${full ? '' : `<b>${escapeHtml(x.title)}</b>`}<small>${escapeHtml(x.org)}</small></span>
                     ${x.corner ? `<span class="wl-corner">${escapeHtml(x.corner)}</span>` : ''}
                 </span>

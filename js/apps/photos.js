@@ -15,7 +15,7 @@ function renderPhotoAlbums() {
     nav.innerHTML = Object.entries(window.PHOTO_LIBRARY).map(([key, album]) => `
         <div class="sidebar-item ${key === activePhotoAlbum ? 'active' : ''}"
              data-album="${key}" onclick="switchPhotoAlbum('${key}')">
-            <i class="fas ${key === 'certificates' ? 'fa-award' : 'fa-image'}"></i>
+            <i class="fas ${{ certificates: 'fa-award', badges: 'fa-medal' }[key] || 'fa-image'}"></i>
             <span>${escapeHtml(album.title)}</span>
             <span class="photos-count">${album.items.length}</span>
         </div>
@@ -36,7 +36,7 @@ function renderPhotoGrid() {
     document.getElementById('photos-window-title').textContent = album.title;
 
     grid.innerHTML = album.items.map((item, i) => `
-        <figure class="photo-tile" data-index="${i}" tabindex="0" role="button"
+        <figure class="photo-tile${activePhotoAlbum === 'badges' ? ' is-badge' : ''}" data-index="${i}" tabindex="0" role="button"
                 aria-label="${escapeHtml(item.title)}">
             <div class="photo-tile-frame">
                 <img src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}"
@@ -44,7 +44,7 @@ function renderPhotoGrid() {
             </div>
             <figcaption>
                 <span class="photo-tile-title">${escapeHtml(item.title)}</span>
-                <span class="photo-tile-issuer">${escapeHtml(item.issuer)}</span>
+                <span class="photo-tile-issuer">${escapeHtml([item.issuer, item.date].filter(Boolean).join(' · '))}</span>
             </figcaption>
         </figure>
     `).join('');
@@ -73,7 +73,7 @@ function openPhotoLightbox(index) {
 
     document.getElementById('photo-lightbox-img').src = item.thumb;
     document.getElementById('photo-lightbox-title').textContent = item.title;
-    document.getElementById('photo-lightbox-issuer').textContent = item.issuer;
+    document.getElementById('photo-lightbox-issuer').textContent = [item.issuer, item.date, item.detail].filter(Boolean).join(' · ');
     const openBtn = document.getElementById('photo-lightbox-open');
     openBtn.onclick = () => openExternal(item.full);
     openBtn.textContent = item.full.endsWith('.pdf') ? 'Open PDF' : 'Open Full Size';

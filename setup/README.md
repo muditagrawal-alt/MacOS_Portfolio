@@ -67,7 +67,7 @@ Add `"place"` to the degree and to each school to pin them on the map (see [Plac
 ### `courses` and `certificates`
 
 - `courses`: `[{ "title", "issuer", "year", "detail" }]`.
-- `certificates`: `[{ "title", "issuer", "image", "file" }]`. `image` is a thumbnail (JPG or PNG) and `file` the original (PDF or image). They fill the Photos app on both versions.
+- `certificates`: `[{ "title", "issuer", "date", "detail", "image", "file", "badge" }]`. `image` is a thumbnail (JPG or PNG) and `file` the original (PDF or image); `date` ("Mar 2025") and `detail` (a grade or distinction, such as "Elite + Silver") are optional, and so is `badge`, the image of a badge that came with it. They fill the Photos app on both versions (badges get an album of their own) and Wallet on the iPhone, where a badge becomes the pass's logo. List them newest first: Iris's model reads them in that order and, if the list is long, gets the newest.
 
 ### `projects`
 

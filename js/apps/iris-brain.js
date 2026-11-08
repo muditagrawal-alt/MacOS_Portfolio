@@ -165,7 +165,7 @@
             placeSource('event', v.name, `Maps · ${v.name}`), { kind: 'event' }));
 
         ((window.PHOTO_LIBRARY || {}).certificates || { items: [] }).items.forEach(c => {
-            add('Certificates', `${c.title} certificate from ${c.issuer}.`, { label: 'Photos · Certificates', open: () => openWindow('photos-window') }, { kind: 'cert' });
+            add('Certificates', `${c.title} certificate from ${c.issuer}${c.date ? ` (${c.date})` : ''}.${c.detail ? ` ${c.detail}.` : ''}`, { label: 'Photos · Certificates', open: () => openWindow('photos-window') }, { kind: 'cert' });
         });
 
         (window.TRASH_ITEMS || []).forEach(t => {

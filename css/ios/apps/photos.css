@@ -43,6 +43,17 @@
 .photos-viewer strong { font-size: 18px; }
 .photos-viewer span { color: rgba(255, 255, 255, 0.6); font-size: 14px; }
 
+/* Badges: whole, on a soft tile; one opens its certificate */
+.photos-badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.photos-badge { aspect-ratio: 1; padding: 8px; border: none; border-radius: 14px; background: var(--ios-card); cursor: pointer; }
+.photos-badge img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.photos-badge:active { opacity: 0.7; }
+.photos-viewer.is-badge img { max-height: 42cqh; padding: 24px 0; }
+.photos-viewer-badge { display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 12px; padding: 10px 12px; border: none; border-radius: 14px; background: rgba(255, 255, 255, 0.1); color: #fff; font: inherit; font-size: 15px; text-align: left; cursor: pointer; }
+.photos-viewer-badge img { width: 44px; height: 44px; object-fit: contain; }
+.photos-viewer-badge span { flex: 1; }
+.photos-viewer-badge i { color: rgba(255, 255, 255, 0.5); font-size: 13px; }
+
 /* Camera Roll photos: Share and Delete under the picture */
 .photos-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 16px 0; }
 .photos-actions .ios-btn { justify-content: center; }

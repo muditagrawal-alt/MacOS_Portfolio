@@ -85,6 +85,8 @@ export const OWNER = ${JSON.stringify({ name: p.name, first: p.first, possessive
 `;
 }
 
+const DIGEST_MAX = 6500;   // about 1,600 tokens: room for the question on Groq's free tier
+
 /** The info bank as compact plain text for the model's system prompt: about 1,500 tokens, most important first. */
 function profileDigest(p) {
     const lines = [];
@@ -109,10 +111,12 @@ function profileDigest(p) {
     }
     add('SKILLS', cut(list(p.skills.map(g => `${g.label}: ${g.items.join(', ')}`)), 700));
     add('EVENTS ATTENDED', list(p.events.map(v => `${v.name}${v.place ? ` at ${v.place.label}` : ''}${v.date ? ` (${v.date})` : ''}`)));
-    add('CERTIFICATES', cut(list(p.certificates.map(c => `${c.title}${c.issuer ? ` (${c.issuer})` : ''}`)), 400));
     add('PRINCIPLES', cut(list(p.values), 300));
     add('CONTACT', list([p.contact.email && `email ${p.contact.email}`, p.link('linkedin') && 'LinkedIn', p.link('github') && 'GitHub'].filter(Boolean)));
-    return lines.join('\n').slice(0, 6500);
+    // Certificates last, in whatever room is left: they're newest first, so a long list loses its oldest.
+    const room = DIGEST_MAX - lines.join('\n').length - 40;
+    if (p.certificates.length && room > 80) add(`CERTIFICATES (${p.certificates.length}, newest first)`, cut(list(p.certificates.map(c => `${c.title}${c.issuer ? ` (${c.issuer}${c.date ? `, ${c.date}` : ''})` : ''}${c.detail ? `: ${c.detail}` : ''}`)), room));
+    return lines.join('\n').slice(0, DIGEST_MAX);
 }
 
 /**

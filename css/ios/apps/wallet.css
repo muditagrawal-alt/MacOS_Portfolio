@@ -28,6 +28,9 @@
 
 .wl-head { display: flex; align-items: center; gap: 10px; min-height: 36px; }
 .wl-logo { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: rgba(255, 255, 255, 0.2); font-size: 14px; }
+/* The issuer's own badge, when the certificate came with one */
+.wl-logo.is-badge { padding: 2px; background: rgba(255, 255, 255, 0.92); }
+.wl-logo.is-badge img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .wl-name { flex: 1; min-width: 0; }
 .wl-name b, .wl-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wl-name b { font-size: 16px; font-weight: 700; }

@@ -146,7 +146,11 @@ function normalizeProfile(raw) {
     p.hackathons = arr(p.hackathons).filter(h => h.name).map(h => ({ name: str(h.name), date: str(h.date), result: str(h.result), project: str(h.project), detail: str(h.detail), place: normalizePlace(h.place) }));
     p.events = arr(p.events).filter(v => v.name).map(v => ({ name: str(v.name), date: str(v.date), detail: str(v.detail), place: normalizePlace(v.place) }));
     p.courses = arr(p.courses).map(c => ({ title: str(c.title), issuer: str(c.issuer), year: str(c.year), detail: str(c.detail) }));
-    p.certificates = arr(p.certificates).filter(c => c.title).map(c => ({ title: str(c.title), issuer: str(c.issuer), image: str(c.image, str(c.file)), file: str(c.file, str(c.image)) }));
+    // date and detail ("Elite + Silver") are shown with it; badge is the issuer's badge image, if it came with one.
+    p.certificates = arr(p.certificates).filter(c => c.title).map(c => ({
+        title: str(c.title), issuer: str(c.issuer), date: str(c.date), detail: str(c.detail),
+        image: str(c.image, str(c.file)), file: str(c.file, str(c.image)), badge: str(c.badge)
+    }));
 
     const seen = new Set();
     p.projects = arr(p.projects).filter(x => x.name).map(x => {

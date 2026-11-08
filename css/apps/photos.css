@@ -64,6 +64,10 @@
     object-position: top center;
 }
 
+/* Badges are shown whole, not cropped to the tile. */
+.photo-tile.is-badge .photo-tile-frame { aspect-ratio: 1; background: rgba(255, 255, 255, 0.06); }
+.photo-tile.is-badge .photo-tile-frame img { width: 78%; height: 78%; object-fit: contain; object-position: center; }
+
 .photo-tile figcaption {
     display: flex;
     flex-direction: column;

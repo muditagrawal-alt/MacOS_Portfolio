@@ -191,46 +191,178 @@ window.PROFILE_DATA = {
   ],
   "certificates": [
     {
-      "title": "Machine Learning Foundations",
-      "issuer": "AWS Academy",
-      "image": "assets/photos/thumbs/aws-academy-machine-learning.jpg",
-      "file": "assets/photos/certificates/aws-academy-machine-learning.pdf"
+      "title": "Privacy and Security in Online Social Media",
+      "issuer": "NPTEL · IIIT Hyderabad",
+      "date": "Jul–Oct 2026",
+      "detail": "Elite + Silver · 12-week course",
+      "image": "assets/photos/thumbs/nptel-privacy-security-online-social-media.jpg",
+      "file": "assets/photos/certificates/nptel-privacy-security-online-social-media.pdf"
     },
     {
-      "title": "Introduction to Artificial Intelligence",
-      "issuer": "IBM · Coursera",
-      "image": "assets/photos/thumbs/ibm-introduction-to-ai.jpg",
-      "file": "assets/photos/certificates/ibm-introduction-to-ai.pdf"
+      "title": "Social Networks",
+      "issuer": "NPTEL · IIT Madras",
+      "date": "Jul–Oct 2026",
+      "detail": "Elite · 12-week course",
+      "image": "assets/photos/thumbs/nptel-social-networks.jpg",
+      "file": "assets/photos/certificates/nptel-social-networks.pdf"
     },
     {
-      "title": "Foundations of Cybersecurity",
-      "issuer": "Google · Coursera",
-      "image": "assets/photos/thumbs/google-foundations-of-cybersecurity.jpg",
-      "file": "assets/photos/certificates/google-foundations-of-cybersecurity.pdf"
+      "title": "MATLAB Onramp",
+      "issuer": "MathWorks",
+      "date": "Nov 2025",
+      "image": "assets/photos/thumbs/mathworks-matlab-onramp.jpg",
+      "file": "assets/photos/certificates/mathworks-matlab-onramp.pdf"
     },
     {
-      "title": "Python for Everybody",
-      "issuer": "University of Michigan",
-      "image": "assets/photos/thumbs/michigan-python-for-everybody.jpg",
-      "file": "assets/photos/certificates/michigan-python-for-everybody.pdf"
+      "title": "AWS Certified Machine Learning: Machine Learning in SageMaker",
+      "issuer": "Infosys Springboard",
+      "date": "Sep 2025",
+      "image": "assets/photos/thumbs/infosys-aws-ml-sagemaker.jpg",
+      "file": "assets/photos/certificates/infosys-aws-ml-sagemaker.pdf"
     },
     {
       "title": "Python Data Structures",
-      "issuer": "University of Michigan",
+      "issuer": "University of Michigan · Coursera",
+      "date": "Jun 2025",
       "image": "assets/photos/thumbs/michigan-python-data-structures.jpg",
       "file": "assets/photos/certificates/michigan-python-data-structures.pdf"
     },
     {
+      "title": "Programming for Everybody (Getting Started with Python)",
+      "issuer": "University of Michigan · Coursera",
+      "date": "Jun 2025",
+      "image": "assets/photos/thumbs/michigan-python-for-everybody.jpg",
+      "file": "assets/photos/certificates/michigan-python-for-everybody.pdf"
+    },
+    {
+      "title": "Learn Artificial Intelligence with TensorFlow",
+      "issuer": "Infosys Springboard",
+      "date": "May 2025",
+      "image": "assets/photos/thumbs/infosys-ai-with-tensorflow.jpg",
+      "file": "assets/photos/certificates/infosys-ai-with-tensorflow.pdf"
+    },
+    {
+      "title": "Hands-on Scikit-learn for Machine Learning",
+      "issuer": "Infosys Springboard",
+      "date": "May 2025",
+      "image": "assets/photos/thumbs/infosys-scikit-learn.jpg",
+      "file": "assets/photos/certificates/infosys-scikit-learn.pdf"
+    },
+    {
+      "title": "Computational Theory: Language Principle & Finite Automata Theory",
+      "issuer": "Infosys Springboard",
+      "date": "May 2025",
+      "image": "assets/photos/thumbs/infosys-computational-theory.jpg",
+      "file": "assets/photos/certificates/infosys-computational-theory.pdf"
+    },
+    {
       "title": "Technology Job Simulation",
-      "issuer": "Deloitte",
+      "issuer": "Deloitte · Forage",
+      "date": "Apr 2025",
       "image": "assets/photos/thumbs/deloitte-technology-job-simulation.jpg",
       "file": "assets/photos/certificates/deloitte-technology-job-simulation.pdf"
     },
     {
+      "title": "Introduction to Artificial Intelligence (AI)",
+      "issuer": "IBM · Coursera",
+      "date": "Apr 2025",
+      "image": "assets/photos/thumbs/ibm-introduction-to-ai.jpg",
+      "file": "assets/photos/certificates/ibm-introduction-to-ai.pdf"
+    },
+    {
+      "title": "Advanced Data Structures & Algorithms in Java: Working with Binary Search Trees",
+      "issuer": "Infosys Springboard",
+      "date": "Apr 2025",
+      "image": "assets/photos/thumbs/infosys-dsa-java-binary-search-trees.jpg",
+      "file": "assets/photos/certificates/infosys-dsa-java-binary-search-trees.pdf",
+      "badge": "assets/photos/badges/skillsoft-dsa-java-binary-search-trees.png"
+    },
+    {
+      "title": "Data Structures & Algorithms in Java: Working with Stacks",
+      "issuer": "Infosys Springboard",
+      "date": "Mar 2025",
+      "image": "assets/photos/thumbs/infosys-dsa-java-stacks.jpg",
+      "file": "assets/photos/certificates/infosys-dsa-java-stacks.pdf",
+      "badge": "assets/photos/badges/skillsoft-dsa-java-stacks.png"
+    },
+    {
+      "title": "Google AI Essentials",
+      "issuer": "Google · Coursera",
+      "date": "Mar 2025",
+      "image": "assets/photos/thumbs/google-ai-essentials.jpg",
+      "file": "assets/photos/certificates/google-ai-essentials.pdf"
+    },
+    {
+      "title": "Introduction to Artificial Intelligence with Java",
+      "issuer": "Infosys Springboard",
+      "date": "Feb 2025",
+      "image": "assets/photos/thumbs/infosys-ai-with-java.jpg",
+      "file": "assets/photos/certificates/infosys-ai-with-java.pdf"
+    },
+    {
+      "title": "Machine Learning Foundations",
+      "issuer": "AWS Academy",
+      "date": "2025",
+      "detail": "AWS Academy Graduate · 20 hours",
+      "image": "assets/photos/thumbs/aws-academy-machine-learning.jpg",
+      "file": "assets/photos/certificates/aws-academy-machine-learning.pdf",
+      "badge": "assets/photos/badges/aws-academy-machine-learning.png"
+    },
+    {
       "title": "Data Science & Analytics",
       "issuer": "HP LIFE",
+      "date": "2025",
       "image": "assets/photos/thumbs/hp-life-data-science-analytics.jpg",
       "file": "assets/photos/certificates/hp-life-data-science-analytics.pdf"
+    },
+    {
+      "title": "Career Edge – Young Professional",
+      "issuer": "TCS iON",
+      "date": "Jan 2025",
+      "image": "assets/photos/thumbs/tcs-ion-career-edge.jpg",
+      "file": "assets/photos/certificates/tcs-ion-career-edge.pdf"
+    },
+    {
+      "title": "Internet of Things 201",
+      "issuer": "Infosys Springboard",
+      "date": "Nov 2024",
+      "image": "assets/photos/thumbs/infosys-iot-201.jpg",
+      "file": "assets/photos/certificates/infosys-iot-201.pdf"
+    },
+    {
+      "title": "Programming in C",
+      "issuer": "Infosys Springboard",
+      "date": "Oct 2024",
+      "image": "assets/photos/thumbs/infosys-programming-in-c.jpg",
+      "file": "assets/photos/certificates/infosys-programming-in-c.pdf"
+    },
+    {
+      "title": "Introduction to Java",
+      "issuer": "Infosys Springboard",
+      "date": "Sep 2024",
+      "image": "assets/photos/thumbs/infosys-intro-to-java.jpg",
+      "file": "assets/photos/certificates/infosys-intro-to-java.pdf"
+    },
+    {
+      "title": "Python Fundamentals",
+      "issuer": "Infosys Springboard",
+      "date": "Aug 2024",
+      "image": "assets/photos/thumbs/infosys-python-fundamentals.jpg",
+      "file": "assets/photos/certificates/infosys-python-fundamentals.pdf"
+    },
+    {
+      "title": "Foundations of Cybersecurity",
+      "issuer": "Google · Coursera",
+      "date": "Jul 2024",
+      "image": "assets/photos/thumbs/google-foundations-of-cybersecurity.jpg",
+      "file": "assets/photos/certificates/google-foundations-of-cybersecurity.pdf"
+    },
+    {
+      "title": "Introduction to Python",
+      "issuer": "DataFlair",
+      "date": "Apr 2024",
+      "image": "assets/photos/thumbs/dataflair-intro-to-python.jpg",
+      "file": "assets/photos/certificates/dataflair-intro-to-python.pdf"
     }
   ],
   "projects": [

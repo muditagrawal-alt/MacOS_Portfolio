@@ -421,14 +421,16 @@
                     ${upload({ path: 'resume.preview', target: 'assets/me/resume-preview.jpg', accept: 'image/*', label: 'First-page image', hint: 'Optional — a screenshot of page one', icon: 'fas fa-image', maxSide: 1600 })}
                 </div>
                 ${grid([{ path: 'resume.updated', label: 'Last updated', placeholder: 'June 2025' }])}
-                <h2 class="sub">Certificates <small>shown in Photos</small></h2>
+                <h2 class="sub">Certificates <small>shown in Photos, and in Wallet on the iPhone</small></h2>
                 ${repeatable({
                     path: 'certificates', addLabel: 'Add a certificate',
                     title: (c) => c.title || 'New certificate',
-                    extra: (c, i) => `<div class="upload-row">${upload({ path: `certificates.${i}.image`, target: `assets/me/cert-${i + 1}.jpg`, accept: 'image/*', label: 'Image', hint: 'A photo or screenshot', icon: 'fas fa-award', maxSide: 1200 })}${upload({ path: `certificates.${i}.file`, target: `assets/me/cert-${i + 1}.pdf`, accept: 'application/pdf', label: 'PDF', hint: 'Optional', icon: 'fas fa-file-pdf' })}</div>`,
+                    extra: (c, i) => `<div class="upload-row">${upload({ path: `certificates.${i}.image`, target: `assets/me/cert-${i + 1}.jpg`, accept: 'image/*', label: 'Image', hint: 'A photo or screenshot', icon: 'fas fa-award', maxSide: 1200 })}${upload({ path: `certificates.${i}.file`, target: `assets/me/cert-${i + 1}.pdf`, accept: 'application/pdf', label: 'PDF', hint: 'Optional', icon: 'fas fa-file-pdf' })}${upload({ path: `certificates.${i}.badge`, target: `assets/me/badge-${i + 1}.png`, accept: 'image/*', label: 'Badge', hint: 'Optional — the badge that came with it', icon: 'fas fa-medal', maxSide: 600 })}</div>`,
                     fields: [
                         { key: 'title', label: 'Title', placeholder: 'Cloud Practitioner' },
-                        { key: 'issuer', label: 'Issuer', placeholder: 'AWS' }
+                        { key: 'issuer', label: 'Issuer', placeholder: 'AWS' },
+                        { key: 'date', label: 'When', placeholder: 'Mar 2025' },
+                        { key: 'detail', label: 'Result', placeholder: 'Optional — a grade or distinction' }
                     ]
                 })}`
         },

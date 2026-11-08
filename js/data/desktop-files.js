@@ -185,18 +185,32 @@ function wrapText(text, width) {
 
 /* ── Photos library ───────────────────────────────────────────────────── */
 
-window.PHOTO_LIBRARY = {
-    certificates: {
-        title: 'Certificates',
-        items: window.PROFILE_DATA.certificates.map((c, i) => ({
-            file: `cert-${i + 1}`,
-            title: c.title,
-            issuer: c.issuer,
-            thumb: c.image,
-            full: c.file
-        }))
+window.PHOTO_LIBRARY = (() => {
+    const certs = window.PROFILE_DATA.certificates;
+    const library = {
+        certificates: {
+            title: 'Certificates',
+            items: certs.map((c, i) => ({
+                file: `cert-${i + 1}`,
+                title: c.title,
+                issuer: c.issuer,
+                date: c.date,
+                detail: c.detail,
+                badge: c.badge,
+                thumb: c.image,
+                full: c.file
+            }))
+        }
+    };
+    const badges = certs.map((c, i) => ({ c, i })).filter(({ c }) => c.badge);
+    if (badges.length) {
+        library.badges = {
+            title: 'Badges',
+            items: badges.map(({ c, i }) => ({ file: `badge-${i + 1}`, cert: `cert-${i + 1}`, title: c.title, issuer: c.issuer, date: c.date, thumb: c.badge, full: c.badge }))
+        };
     }
-};
+    return library;
+})();
 
 /* ── Disk images: one per project with a `demo` in the info bank ─────────── */
 

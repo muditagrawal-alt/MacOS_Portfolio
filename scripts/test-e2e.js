@@ -1370,6 +1370,7 @@ const section = (name) => !only || only.test(name);
       await iosGo(page, 'wallet');
       await page.waitForSelector('.wl-card', { timeout: 4000 });
       const count = await page.evaluate(() => document.querySelectorAll('.wl-stack .wl-card').length);
+      const badges = await page.evaluate(() => document.querySelectorAll('.wl-stack .wl-logo.is-badge img').length);
       await page.screenshot({ path: SHOTS + 'ios-wallet.png' });
       let opened = null;
       if (P.certificates.length) {
@@ -1381,7 +1382,24 @@ const section = (name) => !only || only.test(name);
       }
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(400);
-      expect(count === want && (!P.certificates.length || opened === '#/photos/cert-1'), JSON.stringify({ count, want, opened }));
+      const wantBadges = P.certificates.filter(c => c.badge).length;
+      expect(count === want && badges === wantBadges && (!P.certificates.length || opened === '#/photos/cert-1'), JSON.stringify({ count, want, badges, wantBadges, opened }));
+    });
+    await test('Photos shows each badge, and a badge leads to the certificate it came with', async () => {
+      const i = P.certificates.findIndex(c => c.badge);
+      if (i < 0) return;
+      await iosGo(page, 'photos');
+      await page.waitForSelector('.photos-grid', { timeout: 4000 });
+      const shown = await page.evaluate(() => document.querySelectorAll('.photos-badge').length);
+      await page.click(`.photos-badge[data-file="badge-${i + 1}"]`);
+      await page.waitForSelector('.photos-viewer.is-badge', { timeout: 3000 });
+      await page.click('[data-action="cert"]');
+      await page.waitForTimeout(600);
+      const r = await page.evaluate(() => ({ hash: location.hash, back: Boolean(document.querySelector('.ios-page:last-child .photos-viewer-badge')), caption: (document.querySelector('.ios-page:last-child .photos-viewer figcaption') || {}).textContent || '' }));
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      const c = P.certificates[i];
+      expect(shown === P.certificates.filter(x => x.badge).length && r.hash === `#/photos/cert-${i + 1}` && r.back && (!c.date || r.caption.includes(c.date)), JSON.stringify({ shown, ...r }));
     });
     await test('Camera takes a photo into the Camera Roll, Photos shows it, and the camera is released', async () => {
       await iosGo(page, 'camera');
