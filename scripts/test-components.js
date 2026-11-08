@@ -340,6 +340,13 @@ function finishAfter(ms) {
         global.fetch = realFetch;
     }
 
+    /* ── Mac Photos: the strongest certificates here, the rest on LinkedIn ── */
+    {
+        const link = document.querySelector('#photos-albums .photos-all-certs');
+        assert(!P.certificatesUrl || (link && link.getAttribute('href') === P.certificatesUrl && link.target === '_blank'),
+            'Photos on the Mac links to every certificate on LinkedIn', link ? link.getAttribute('href') : 'no link');
+    }
+
     /* ── 9. One address: a copy on GitHub Pages sends visitors to the site ── */
     console.log('\n--- 9. Site address ---');
     {

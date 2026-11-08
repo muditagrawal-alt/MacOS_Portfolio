@@ -35,7 +35,8 @@
             ${IOS.group([
                 { icon: 'fas fa-award', color: '#ff9500', title: 'Certificates', detail: String(items.length) },
                 ...(marks.length ? [{ icon: 'fas fa-medal', color: '#af52de', title: 'Badges', detail: String(marks.length) }] : []),
-                { icon: 'fas fa-user', color: '#007aff', title: 'Portraits', detail: '1' }
+                { icon: 'fas fa-user', color: '#007aff', title: 'Portraits', detail: '1' },
+                ...(P.certificatesUrl ? [{ icon: 'fab fa-linkedin-in', color: '#0a66c2', title: 'All certificates on LinkedIn', href: P.certificatesUrl, className: 'photos-all-certs' }] : [])
             ])}`;
         content.onclick = (e) => {
             const tile = e.target.closest('[data-file]');

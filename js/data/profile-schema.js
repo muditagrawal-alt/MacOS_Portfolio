@@ -151,6 +151,8 @@ function normalizeProfile(raw) {
         title: str(c.title), issuer: str(c.issuer), date: str(c.date), detail: str(c.detail),
         image: str(c.image, str(c.file)), file: str(c.file, str(c.image)), badge: str(c.badge)
     }));
+    // The portfolio shows the strongest few; LinkedIn's certifications page has them all.
+    p.certificatesUrl = /linkedin\.com\/in\/[^/?#]+/i.test(p.contact.linkedin) ? `${p.contact.linkedin.match(/^.*linkedin\.com\/in\/[^/?#]+/i)[0]}/details/certifications/` : '';
 
     const seen = new Set();
     p.projects = arr(p.projects).filter(x => x.name).map(x => {

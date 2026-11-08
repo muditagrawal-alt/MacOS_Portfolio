@@ -19,7 +19,10 @@ function renderPhotoAlbums() {
             <span>${escapeHtml(album.title)}</span>
             <span class="photos-count">${album.items.length}</span>
         </div>
-    `).join('');
+    `).join('') + (window.PROFILE_DATA.certificatesUrl ? `
+        <a class="sidebar-item photos-all-certs" href="${escapeHtml(safeUrl(window.PROFILE_DATA.certificatesUrl))}" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-linkedin-in"></i><span>All on LinkedIn</span><i class="fas fa-arrow-up-right-from-square photos-count"></i>
+        </a>` : '');
 }
 
 function switchPhotoAlbum(key) {

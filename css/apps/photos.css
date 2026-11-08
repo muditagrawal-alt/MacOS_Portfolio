@@ -5,6 +5,8 @@
 .photos-sidebar { width: 190px; }
 
 .photos-sidebar .sidebar-item { position: relative; }
+.photos-sidebar .photos-all-certs { margin-top: 10px; color: inherit; text-decoration: none; }
+.photos-sidebar .photos-all-certs .photos-count { font-size: 10px; }
 
 .photos-count {
     margin-left: auto;

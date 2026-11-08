@@ -1371,6 +1371,7 @@ const section = (name) => !only || only.test(name);
       await page.waitForSelector('.wl-card', { timeout: 4000 });
       const count = await page.evaluate(() => document.querySelectorAll('.wl-stack .wl-card').length);
       const badges = await page.evaluate(() => document.querySelectorAll('.wl-stack .wl-logo.is-badge img').length);
+      const allCerts = await page.evaluate(() => (document.querySelector('.wl-all-certs') || {}).href || '');
       await page.screenshot({ path: SHOTS + 'ios-wallet.png' });
       let opened = null;
       if (P.certificates.length) {
@@ -1383,7 +1384,8 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(400);
       const wantBadges = P.certificates.filter(c => c.badge).length;
-      expect(count === want && badges === wantBadges && (!P.certificates.length || opened === '#/photos/cert-1'), JSON.stringify({ count, want, badges, wantBadges, opened }));
+      const linked = !P.certificatesUrl || allCerts === P.certificatesUrl;
+      expect(count === want && badges === wantBadges && linked && (!P.certificates.length || opened === '#/photos/cert-1'), JSON.stringify({ count, want, badges, wantBadges, allCerts, opened }));
     });
     await test('Photos shows each badge, and a badge leads to the certificate it came with', async () => {
       const i = P.certificates.findIndex(c => c.badge);
@@ -1391,6 +1393,7 @@ const section = (name) => !only || only.test(name);
       await iosGo(page, 'photos');
       await page.waitForSelector('.photos-grid', { timeout: 4000 });
       const shown = await page.evaluate(() => document.querySelectorAll('.photos-badge').length);
+      const allCerts = await page.evaluate(() => (document.querySelector('.photos-all-certs') || {}).href || '');
       await page.click(`.photos-badge[data-file="badge-${i + 1}"]`);
       await page.waitForSelector('.photos-viewer.is-badge', { timeout: 3000 });
       await page.click('[data-action="cert"]');
@@ -1399,7 +1402,7 @@ const section = (name) => !only || only.test(name);
       await page.evaluate(() => IOS.home());
       await page.waitForTimeout(400);
       const c = P.certificates[i];
-      expect(shown === P.certificates.filter(x => x.badge).length && r.hash === `#/photos/cert-${i + 1}` && r.back && (!c.date || r.caption.includes(c.date)), JSON.stringify({ shown, ...r }));
+      expect(shown === P.certificates.filter(x => x.badge).length && (!P.certificatesUrl || allCerts === P.certificatesUrl) && r.hash === `#/photos/cert-${i + 1}` && r.back && (!c.date || r.caption.includes(c.date)), JSON.stringify({ shown, allCerts, ...r }));
     });
     await test('a project still in development says so', async () => {
       const p = P.projects.find(x => x.building);

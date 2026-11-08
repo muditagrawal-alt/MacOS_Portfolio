@@ -68,7 +68,8 @@
     function list(content) {
         content.innerHTML = groups.map(([title, items]) => `
             <div class="ios-section-header">${escapeHtml(title)} · ${items.length}</div>
-            <div class="wl-stack">${items.map(x => card(x)).join('')}</div>`).join('');
+            <div class="wl-stack">${items.map(x => card(x)).join('')}</div>`).join('')
+            + (P.certificatesUrl && passes.some(x => x.type === 'pass') ? IOS.group([{ icon: 'fab fa-linkedin-in', color: '#0a66c2', title: 'All certificates on LinkedIn', href: P.certificatesUrl, className: 'wl-all-certs' }]) : '');
         content.onclick = (e) => {
             const c = e.target.closest('[data-pass]');
             if (c) { IOS.haptic(); IOS.go('wallet', [c.dataset.pass]); }
