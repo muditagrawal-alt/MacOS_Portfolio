@@ -235,6 +235,116 @@ window.PROFILE_DATA = {
   ],
   "projects": [
     {
+      "id": "omnidoc",
+      "name": "OmniDoc",
+      "title": "OmniDoc",
+      "subtitle": "Document intelligence with answers you can verify",
+      "kind": "Multi-Agent RAG App (Live)",
+      "date": "Jan 2026",
+      "icon": "assets/icons/app-omnidoc.svg",
+      "link": "https://omnidoc-silk.vercel.app",
+      "repo": "https://github.com/muditagrawal-alt/OmniDoc",
+      "embed": false,
+      "video": "https://omnidoc-silk.vercel.app/demo/omnidoc-demo.mp4",
+      "featured": true,
+      "summary": "Ask questions across PDFs, scans, contracts, spreadsheets, slides and recordings: every claim cites the page it came from, and every sentence is checked against its source.",
+      "description": "Multi-agent RAG for documents. Hybrid search (vectors, BM25 and a reranker), a knowledge graph, OCR in ten Indian languages, read-only SQL over tables and exact math gather the evidence; each cited answer is then checked sentence by sentence. Runs on free model API tiers, or entirely on your machine with Ollama.",
+      "highlights": [
+        "Benchmarks: 77.8% on FinanceBench and 71.7% on MMLongBench-Doc (test splits), up from 30.6% and 35.8% at the baseline",
+        "A citation opens the document at the cited page with the supporting sentence highlighted",
+        "Structured extraction, version comparison, and a privacy scan that truly redacts Aadhaar, PAN and card numbers",
+        "Stack: FastAPI · LangGraph · React 19 · LanceDB · Kùzu · ONNX, with 211 tests in CI",
+        "Live app: omnidoc-silk.vercel.app (Vercel and Oracle Cloud, on free tiers)"
+      ],
+      "tags": [
+        "rag",
+        "multi-agent",
+        "llm",
+        "document intelligence",
+        "knowledge graph",
+        "ocr",
+        "fastapi",
+        "langgraph",
+        "react",
+        "typescript",
+        "python"
+      ],
+      "aliases": ["document intelligence", "pdf", "omni doc", "rag"],
+      "demo": {
+        "description": "Ask questions across PDFs, scans, contracts and spreadsheets, and get answers that cite their pages, with every sentence checked against its source. Multi-agent RAG with a knowledge graph, OCR and exact math over tables.",
+        "requirements": "Python 3.9+ · Node 20+ · Docker optional · free model API keys or local Ollama",
+        "stack": ["Python", "FastAPI", "LangGraph", "React", "LanceDB", "Kùzu", "ONNX"]
+      }
+    },
+    {
+      "id": "veritas",
+      "name": "Veritas Check",
+      "title": "Veritas Check",
+      "subtitle": "Is this news story, image or video what it claims to be?",
+      "kind": "Media Forensics (Live)",
+      "date": "Feb 2026",
+      "icon": "assets/icons/app-veritas.svg",
+      "link": "https://veritas-check.vercel.app",
+      "repo": "https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector",
+      "embed": false,
+      "video": "assets/me/veritas-demo.mp4",
+      "summary": "Checks whether a news link, image or short video is what it claims to be: local forensics plus an LLM fact-check, with every claim and source shown.",
+      "description": "Reads the evidence a file carries (EXIF and XMP metadata, signed C2PA provenance, Google SynthID watermarks, video container data), cross-checks a story's claims against independent sources that exclude the publisher under review, and gives a calibrated verdict: likely real, likely fake or uncertain.",
+      "highlights": [
+        "Three inputs: live news links, images up to 10 MB and videos up to 90 seconds",
+        "Evidence is fingerprinted with SHA-256 and exported as a multi-page PDF report",
+        "Gemini 3.5 Flash-Lite for reasoning and Groq Whisper for audio, or fully local with Ollama",
+        "Hardened: SSRF blocking, file-signature checks, AES-256-GCM for visitors' own API keys, rate limits",
+        "Stack: Next.js 16 · FastAPI · Tailwind CSS v4 · NextAuth",
+        "Live app: veritas-check.vercel.app, with 3 free checks per visitor"
+      ],
+      "tags": [
+        "deepfake detection",
+        "fact-checking",
+        "media forensics",
+        "c2pa",
+        "gemini",
+        "fastapi",
+        "nextjs",
+        "typescript",
+        "python"
+      ],
+      "aliases": ["deepfake", "fake news", "misinformation", "veritas"]
+    },
+    {
+      "id": "skyguard",
+      "name": "Skyguard AI",
+      "title": "SkyGuard AI (SIH 2026)",
+      "subtitle": "Anomaly detection and self-healing for automatic weather stations",
+      "kind": "AI for Weather Sensors (Live)",
+      "date": "Aug 2026",
+      "icon": "assets/icons/app-skyguard.svg",
+      "link": "https://skyguard-ai-orcin.vercel.app",
+      "repo": "https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026",
+      "summary": "Tells a faulty weather-station sensor from genuine weather in real time, explains why, and repairs the bad readings. Built for Smart India Hackathon 2026 (problem statement 26073).",
+      "description": "Watches temperature, pressure and humidity from Automatic Weather Stations with a consensus of physics rules (Magnus-Tetens, WMO limits), a PyTorch sequence autoencoder, an Isolation Forest trained with about 46,000 real NOAA observations, and streaming EWMA and CUSUM drift filters. Neighbouring stations corroborate real storms, and faulty readings are imputed so forecasts downstream never see a gap.",
+      "highlights": [
+        "On its seeded benchmark: 99.1% precision, 91.3% recall, 95.1% F1, no false alarms on storms, 4.9 ms per reading",
+        "A root-cause classifier explains each fault for meteorologists, with SHAP analysis offline",
+        "An edge build for ESP32 and ARM Cortex-M in under 3.2 KB of RAM",
+        "An operator dashboard (React, Vite, TypeScript) over live WebSocket telemetry, plus a Streamlit fault-injection sandbox",
+        "Stack: FastAPI · PyTorch · scikit-learn · React · ESP32"
+      ],
+      "tags": [
+        "anomaly detection",
+        "weather",
+        "iot",
+        "edge ai",
+        "pytorch",
+        "fastapi",
+        "react",
+        "sih",
+        "typescript",
+        "python"
+      ],
+      "aliases": ["skyguard", "weather station", "sensor anomaly", "sih"]
+    },
+    {
       "id": "vlm",
       "name": "VLM Lead Extraction",
       "title": "VLM Business Card Lead Extraction",
@@ -270,24 +380,6 @@ window.PROFILE_DATA = {
       "link": "https://muditagrawal-alt--monocular-slam.modal.run"
     },
     {
-      "id": "omnidoc",
-      "name": "OmniDoc",
-      "title": "OmniDoc",
-      "subtitle": "Multimodal RAG Document Intelligence",
-      "kind": "Multimodal RAG App",
-      "date": "Jan 2026",
-      "icon": "assets/icons/app-omnidoc.svg",
-      "repo": "https://github.com/muditagrawal-alt/OmniDoc",
-      "summary": "Multimodal RAG Document Intelligence System using Mistral-7B, Nomic embeddings, and BLIP.",
-      "description": "Built using Mistral-7B, Nomic embeddings, and BLIP for grounded visual QA and semantic search across complex PDFs.",
-      "tags": ["rag", "llm", "multimodal", "document intelligence", "mistral", "nomic", "blip", "python"],
-      "demo": {
-        "description": "Ask questions about any PDF — text, tables and figures. Mistral-7B for synthesis, Nomic quantised embeddings for retrieval, and BLIP for visual question answering over document images.",
-        "requirements": "Python 3.10+ · CUDA optional · 8 GB RAM minimum",
-        "stack": ["Python", "PyTorch", "Mistral-7B", "Nomic", "BLIP", "Gradio"]
-      }
-    },
-    {
       "id": "sliver",
       "name": "Sliver.Ai",
       "title": "Sliver.Ai",
@@ -312,22 +404,6 @@ window.PROFILE_DATA = {
       "description": "Surveillance for Weapon Observation using real-time YOLOv8 deep learning detection models for high-threat defense monitoring.",
       "tags": ["computer vision", "yolo", "weapon detection", "defense", "surveillance"],
       "aliases": ["sword", "weapon"]
-    },
-    {
-      "id": "veritas",
-      "name": "Veritas Check",
-      "title": "Veritas Check / Deepfake Detector",
-      "subtitle": "Live Deployed Web Application",
-      "kind": "Media Forensics (Live)",
-      "date": "Nov 2025",
-      "icon": "assets/icons/app-veritas.svg",
-      "link": "https://veritas-check.vercel.app",
-      "repo": "https://github.com/muditagrawal-alt/Deepfake-and-Fake-News-Detector",
-      "summary": "Media forensics plus LLM fact-checking system detecting facial manipulation signals and misinformation patterns.",
-      "description": "Checks whether a news link, image or short video is what it claims to be. Local forensics plus an LLM fact-check with verifiable sources.",
-      "highlights": ["Live App: veritas-check.vercel.app"],
-      "tags": ["deepfake", "forensics", "fake news", "security"],
-      "aliases": ["deepfake", "fake news"]
     },
     {
       "id": "helix",
@@ -356,20 +432,6 @@ window.PROFILE_DATA = {
       "summary": "Offline video dubbing studio for Indian languages preserving speaker voice & lip sync using faster-whisper, NLLB-200, IndicF5 and Wav2Lip.",
       "description": "Offline video dubbing for Indian languages. Keeps speaker's own voice and re-syncs lips: faster-whisper, NLLB-200, IndicF5 and Wav2Lip in a desktop studio.",
       "tags": ["audio", "speech synthesis", "voice cloning", "whisper", "wav2lip"]
-    },
-    {
-      "id": "skyguard",
-      "name": "Skyguard AI",
-      "title": "Skyguard AI (SIH 2026)",
-      "subtitle": "Autonomous Aerial Defense Surveillance",
-      "kind": "Defense CV System",
-      "date": "2026",
-      "icon": "assets/icons/app-skyguard.svg",
-      "repo": "https://github.com/muditagrawal-alt/Skyguard_AI_SIH2026",
-      "summary": "Autonomous aerial surveillance & smart defense monitoring system built for Smart India Hackathon (SIH 2026).",
-      "description": "Smart aerial monitoring and autonomous surveillance computer vision pipeline engineered for Smart India Hackathon.",
-      "tags": ["defense", "aerial", "surveillance", "sih", "computer vision"],
-      "link": "https://skyguard-ai-orcin.vercel.app"
     },
     {
       "id": "artifex",
