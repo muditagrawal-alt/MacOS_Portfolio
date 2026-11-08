@@ -107,7 +107,7 @@ function profileDigest(p) {
     add('HACKATHONS', list(p.hackathons.map(h => `${h.name}${h.result ? ` — ${h.result}` : ''}${h.place ? ` at ${h.place.label}` : ''}${h.date ? ` (${h.date})` : ''}`)));
     if (p.projects.length) {
         lines.push('PROJECTS:');
-        p.projects.forEach(x => lines.push(`- ${x.name} — ${cut(x.subtitle || x.kind, 90)}. ${cut(x.description.split('\n')[0], 150)}${x.live ? ' [live]' : ''}${x.video ? ' [demo video]' : ''}`));
+        p.projects.forEach(x => lines.push(`- ${x.name} — ${cut(x.subtitle || x.kind, 90)}. ${cut(x.description.split('\n')[0], 150)}${x.building ? ' [in development]' : ''}${x.live ? ` [${x.building ? 'preview ' : ''}live]` : ''}${x.video ? ' [demo video]' : ''}`));
     }
     add('SKILLS', cut(list(p.skills.map(g => `${g.label}: ${g.items.join(', ')}`)), 700));
     add('EVENTS ATTENDED', list(p.events.map(v => `${v.name}${v.place ? ` at ${v.place.label}` : ''}${v.date ? ` (${v.date})` : ''}`)));

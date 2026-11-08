@@ -87,6 +87,7 @@ Add `"place"` to the degree and to each school to pin them on the map (see [Plac
 | `icon` | An image. The questionnaire draws one from the initials if you leave it empty |
 | `category` | `ai`, `vision`, `web`, `mobile`, `data`, `systems`, `design`, `defense` or `games` (or a list). Guessed from the text otherwise |
 | `featured` | `true` for the App Store's hero. Defaults to the first live project |
+| `building` | `true` while it's still in development: the project shows as "Building" (with "preview live" if it has a link) instead of finished |
 | `aliases` | Other names visitors might type, for Iris, Spotlight and Finder |
 | `demo` | `{ "description", "requirements", "download", "stack" }`: adds an installer disk image to the Mac |
 | `live` | Overrides whether the project counts as deployed |

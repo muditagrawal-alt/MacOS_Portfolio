@@ -131,7 +131,7 @@
         projects = P.projects.map(x => ({
             id: x.fsId, name: x.name, link: x.link, live: x.live, aliases: x.aliases,
             summary: x.subtitle || x.kind, desc: x.description.split('\n')[0],
-            text: `${x.title} — ${x.subtitle}. ${x.description} ${x.summary} ${x.tags.join(' ')}`
+            text: `${x.title} — ${x.subtitle}.${x.building ? ' Still in development.' : ''} ${x.description} ${x.summary} ${x.tags.join(' ')}`
         }));
         projects.forEach(pr => add(`Project · ${pr.name}`, pr.text, {
             label: `Project · ${pr.name}`, open: () => pr.link ? openExternal(pr.link) : openFinderPane('projects')

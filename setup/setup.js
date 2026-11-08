@@ -365,6 +365,7 @@
                     { key: 'category', label: 'Category', placeholder: 'Web, AI, Design… (optional)' },
                     { key: 'video', label: 'Demo video', type: 'url', placeholder: 'https://youtu.be/… or a .mp4 link', hint: 'Optional. Plays on the project’s page.' },
                     { key: 'featured', label: 'Feature it first', type: 'toggle' },
+                    { key: 'building', label: 'Still in development', type: 'toggle', hint: 'Shown as “Building” instead of finished.' },
                     { key: 'embed', label: 'Opens inside the iPhone version', type: 'toggle', default: true, hint: 'Turn off if the live site refuses to be embedded; it then opens in a browser tab.' }
                 ]
             }),

@@ -85,7 +85,7 @@ function openAppStoreProduct(id) {
             </div>
         </header>
         <div class="product-facts">
-            <div><span>Status</span><strong>${p.live ? 'Live' : 'Open source'}</strong></div>
+            <div><span>Status</span><strong>${p.building ? `In development${p.live ? ' · preview live' : ''}` : (p.live ? 'Live' : 'Open source')}</strong></div>
             <div><span>Hosted on</span><strong>${escapeHtml(host || '—')}</strong></div>
             <div><span>Updated</span><strong>${escapeHtml(p.date || '—')}</strong></div>
         </div>

@@ -93,7 +93,7 @@
                 </div>
             </header>
             <div class="proj-facts">
-                <div><span>STATUS</span><strong>${p.live ? 'Live' : 'Source'}</strong><small>${p.live ? 'Deployed' : 'Open source'}</small></div>
+                <div><span>STATUS</span>${p.building ? `<strong>Building</strong><small>${p.live ? 'Preview live' : 'In development'}</small>` : `<strong>${p.live ? 'Live' : 'Source'}</strong><small>${p.live ? 'Deployed' : 'Open source'}</small>`}</div>
                 <div><span>HOSTED ON</span><strong><i class="fa${/github/.test(host) ? 'b fa-github' : 's fa-globe'}"></i></strong><small>${escapeHtml(host || '—')}</small></div>
                 <div><span>UPDATED</span><strong>${escapeHtml(p.date || '—')}</strong><small>&nbsp;</small></div>
             </div>

@@ -448,7 +448,7 @@ window.PROFILE_DATA = {
       "name": "Skyguard AI",
       "title": "SkyGuard AI (SIH 2026)",
       "subtitle": "Anomaly detection and self-healing for automatic weather stations",
-      "kind": "AI for Weather Sensors (Live)",
+      "kind": "AI for Weather Sensors",
       "date": "Aug 2026",
       "icon": "assets/icons/app-skyguard.svg",
       "link": "https://skyguard-ai-orcin.vercel.app",
@@ -474,7 +474,8 @@ window.PROFILE_DATA = {
         "typescript",
         "python"
       ],
-      "aliases": ["skyguard", "weather station", "sensor anomaly", "sih"]
+      "aliases": ["skyguard", "weather station", "sensor anomaly", "sih"],
+      "building": true
     },
     {
       "id": "vlm",
@@ -538,7 +539,8 @@ window.PROFILE_DATA = {
       "summary": "Real-time weapon observation using YOLOv8 defense module, pose estimation, and behavioral classification for high-threat surveillance.",
       "description": "Surveillance for Weapon Observation using real-time YOLOv8 deep learning detection models for high-threat defense monitoring.",
       "tags": ["computer vision", "yolo", "weapon detection", "defense", "surveillance"],
-      "aliases": ["sword", "weapon"]
+      "aliases": ["sword", "weapon"],
+      "building": true
     },
     {
       "id": "helix",
@@ -546,7 +548,7 @@ window.PROFILE_DATA = {
       "title": "Helix-Compiler",
       "subtitle": "Interactive Playground on Hugging Face",
       "kind": "Language Compiler (Live)",
-      "date": "Oct 2025",
+      "date": "Mar 2026",
       "icon": "assets/icons/app-helix.svg",
       "link": "https://huggingface.co/spaces/muditagrawal03/Helix-Compiler",
       "repo": "https://github.com/muditagrawal-alt/Helix-Compiler",
@@ -561,7 +563,7 @@ window.PROFILE_DATA = {
       "title": "Multiva.Ai",
       "subtitle": "Offline Video Dubbing Studio",
       "kind": "Speech Dubbing App",
-      "date": "Oct 2025",
+      "date": "Feb 2026",
       "icon": "assets/icons/app-multiva.svg",
       "repo": "https://github.com/muditagrawal-alt/Multiva.Ai",
       "summary": "Offline video dubbing studio for Indian languages preserving speaker voice & lip sync using faster-whisper, NLLB-200, IndicF5 and Wav2Lip.",
@@ -575,7 +577,7 @@ window.PROFILE_DATA = {
       "title": "Artifex.ai",
       "subtitle": "Text-to-Image Chatbot",
       "kind": "Generative AI Platform",
-      "date": "Sep 2025",
+      "date": "Jul 2025",
       "repo": "https://github.com/muditagrawal-alt/Artifex.ai",
       "summary": "Generative AI text-to-image chatbot utilizing Stable Diffusion v1.5 with Gradio UI and prompt history sidebar.",
       "tags": ["generative ai", "stable diffusion", "image generation", "gradio"]

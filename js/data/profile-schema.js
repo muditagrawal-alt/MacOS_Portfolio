@@ -169,7 +169,7 @@ function normalizeProfile(raw) {
             embed: x.embed === false || !live ? '' : str(x.embed, link),
             video: str(x.video),
             date: str(x.date), icon: str(x.icon, 'assets/icons/filetype-project.svg'),
-            featured: Boolean(x.featured), demo: x.demo || null, category: x.category || null
+            featured: Boolean(x.featured), building: Boolean(x.building), demo: x.demo || null, category: x.category || null
         };
     });
     if (p.projects.length && !p.projects.some(x => x.featured)) (p.projects.find(x => x.live) || p.projects[0]).featured = true;

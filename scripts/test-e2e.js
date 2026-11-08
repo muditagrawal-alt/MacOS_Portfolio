@@ -1401,6 +1401,16 @@ const section = (name) => !only || only.test(name);
       const c = P.certificates[i];
       expect(shown === P.certificates.filter(x => x.badge).length && r.hash === `#/photos/cert-${i + 1}` && r.back && (!c.date || r.caption.includes(c.date)), JSON.stringify({ shown, ...r }));
     });
+    await test('a project still in development says so', async () => {
+      const p = P.projects.find(x => x.building);
+      if (!p) return;
+      await iosGo(page, 'projects', [p.fsId]);
+      await page.waitForSelector('.proj-facts', { timeout: 4000 });
+      const status = await page.evaluate(() => document.querySelector('.ios-page:last-child .proj-facts div').textContent.replace(/\s+/g, ' ').trim());
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      expect(/Building/.test(status) && !/Deployed/.test(status), status);
+    });
     await test('Camera takes a photo into the Camera Roll, Photos shows it, and the camera is released', async () => {
       await iosGo(page, 'camera');
       await page.waitForTimeout(400);
