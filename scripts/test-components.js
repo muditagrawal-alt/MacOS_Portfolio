@@ -356,6 +356,8 @@ function finishAfter(ms) {
         const how = window.IrisBrain.respond(`How did ${P.first} build ${pj.name}?`).text;
         const before = window.IrisBrain.respond(`What did ${pj.name} look like at first?`).text;
         const ctx = window.IrisBrain.contextFor(`the first version of ${pj.name}`, 4).join(' ');
+        const evolved = window.IrisBrain.respond(`How has ${pj.name.replace(/^Project\s+/i, '')} evolved?`).text;
+        assert(evolved.includes(pj.buildStory.slice(0, 40)), 'any way of asking how it came about gets the story (“how has X evolved?”)', evolved.slice(0, 120));
         assert(how.includes(pj.buildStory.slice(0, 40)) && /words/.test(how), 'asked how a project was built, Iris gives the owner’s own account', how.slice(0, 120));
         assert(before.includes(pj.firstVersion.slice(0, 40)) && (!pj.milestones.length || before.includes(pj.milestones[0].slice(0, 20))), 'asked what it looked like at first, Iris gives the first version and what changed', before.slice(0, 120));
         assert(ctx.includes(pj.firstVersion.slice(0, 30)), 'the story reaches the model too, as context', ctx.slice(0, 120));

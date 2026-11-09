@@ -211,6 +211,15 @@
 
     function normaliseName(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
+    /** The project a question names: by its name ("Project X" also as "X") or one of its aliases. */
+    function namedProject(ql) {
+        const q = normaliseName(ql);
+        return projects.find(pr => {
+            const n = normaliseName(pr.name).replace(/^project/, '').replace(/ai$/, '');
+            return n.length > 2 && q.includes(n);
+        }) || projects.find(x => x.aliases.some(a => ql.includes(a.toLowerCase())));
+    }
+
     function retrieve(query, { k = 5, kinds = null } = {}) {
         if (!passages) buildIndex();
         const q = tokenize(query, true);
@@ -346,11 +355,8 @@
         }
 
         // How a project was built, or what it looked like at first: the owner's own account.
-        const storyAsk = /\b(how (did|was|were|do|does) .{0,40}\b(build|built|make|made|create|created|develop|developed|work on)|first (version|iteration|draft|prototype|attempt)|\bv1\b|version (1|one)|original(ly)?|start(ed)?( out)? (as|with)|began|look(ed)? like (before|at first|originally|initially)|what (was|did) it (like|look like) before|before (it|the rebuild|v2)|evolv|chang(e|ed) over|journey|story (behind|of)|history of|iterations?|how it (came|started|began))\b/i;
-        const storyOf = projects.find(pr => {
-            const n = normaliseName(pr.name).replace(/ai$/, '');
-            return n.length > 2 && normaliseName(ql).includes(n);
-        }) || projects.find(x => x.aliases.some(a => ql.includes(a.toLowerCase())));
+        const storyAsk = /\b(how (did|was|were|do|does) .{0,40}\b(build|built|make|made|create|created|develop|developed|work(ed)? on)|first (version|iteration|draft|prototype|attempt)|v1|version (1|one)|original(ly)?|start(ed)?( out)? (as|with)|began|look(ed)? like (before|at first|originally|initially)|what (was|did) it (like|look like) before|before (it|the rebuild|v2)|evolv\w*|chang(e|ed|es) over|journey|story (behind|of)|history of|iterations?|how it (came|started|began))\b/i;
+        const storyOf = namedProject(ql);
         if (storyOf && storyAsk.test(ql) && (storyOf.firstVersion || storyOf.buildStory)) {
             const before = /\b(first|v1|version (1|one)|original|start|began|before|look(ed)? like|initial)/i.test(ql);
             const parts = before
@@ -360,10 +366,7 @@
         }
 
         // A named project
-        const named = projects.find(pr => {
-            const n = normaliseName(pr.name).replace(/ai$/, '');
-            return n.length > 2 && normaliseName(ql).includes(n);
-        }) || projects.find(x => x.aliases.some(a => ql.includes(a.toLowerCase())));
+        const named = namedProject(ql);
         if (named) {
             return answer(`**${named.name}** — ${named.summary}.\n${named.desc}${named.link ? `\n\n${named.live ? 'Try it live' : 'Source'}: [${named.link.replace(/^https?:\/\//, '')}](${named.link})` : ''}`,
                 passages.filter(p => p.project === named).map(p => p.source), named.link ? {
