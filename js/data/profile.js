@@ -285,7 +285,15 @@ window.PROFILE_DATA = {
         "description": "Ask questions across PDFs, scans, contracts and spreadsheets, and get answers that cite their pages, with every sentence checked against its source. Multi-agent RAG with a knowledge graph, OCR and exact math over tables.",
         "requirements": "Python 3.9+ · Node 20+ · Docker optional · free model API keys or local Ollama",
         "stack": ["Python", "FastAPI", "LangGraph", "React", "LanceDB", "Kùzu", "ONNX"]
-      }
+      },
+      "firstVersion": "OmniDoc began in January 2026, during my internship at Zee Tech, as a local document assistant: an intent router in front of a RAG pipeline, PDF and Word loading, nomic-embed-text embeddings in FAISS, Mistral answering through Ollama, BLIP captions to find images inside documents, and a Streamlit page.",
+      "buildStory": "I came back to it in September 2026 and rebuilt it around one rule: an answer is only as good as the evidence it cites. Retrieval, table queries and maths became separate agents, and every answer is checked sentence by sentence against its sources. I let public benchmarks decide each change instead of impressions: over four revisions the test-split scores went from 30.6% to 77.8% on FinanceBench and from 35.8% to 71.7% on MMLongBench-Doc. Then I made it cheap to run, on free model API tiers with fallbacks and a slim build that fits in 1 GB of memory.",
+      "milestones": [
+        "Jan 2026 — Local RAG with Mistral, FAISS, BLIP image captions and a Streamlit page",
+        "Sep 2026 — An evaluation harness and faithfulness checks, before any rewrite",
+        "Oct 2026 — Rebuilt as a FastAPI and React app with multi-agent retrieval and streaming answers",
+        "Nov 2026 — 211 tests in CI and 77.8% on FinanceBench, live on Vercel and Oracle Cloud"
+      ]
     },
     {
       "id": "veritas",
@@ -320,7 +328,16 @@ window.PROFILE_DATA = {
         "typescript",
         "python"
       ],
-      "aliases": ["deepfake", "fake news", "misinformation", "veritas"]
+      "aliases": ["deepfake", "fake news", "misinformation", "veritas"],
+      "firstVersion": "Veritas started in February 2026 as my sixth-semester major project: a notebook with a BERT model for fake-news text and a separate deepfake classifier. By April I had frame extraction and audio and metadata checks for video, and on my own curated test set the image pipeline went from 50% to 86% accuracy and the video pipeline from 66% to 100%.",
+      "buildStory": "A classifier’s score alone wasn’t convincing, so I rebuilt it around evidence a reader can check: metadata, C2PA provenance, SynthID watermarks, and a story’s claims cross-examined against independent sources that exclude the publisher under review. From September I treated it like research: a 130-item benchmark, then the external benchmarks its reviewers named (FakeNewsNet, LIAR, FaceForensics++), with the protocol written down before any results. On FakeNewsNet-PolitiFact it reached 0.804 accuracy. Then I hardened it for the public and gave it a PDF report and a new interface.",
+      "milestones": [
+        "Feb 2026 — Semester-6 major project: BERT for fake news and a deepfake classifier",
+        "Apr 2026 — Frame, audio and metadata checks; image accuracy 50% → 86% on a curated set",
+        "Sep 2026 — A 130-item benchmark and a Next.js deployment on Vercel",
+        "Oct 2026 — Engine v3 with a pre-registered protocol; 0.804 accuracy on FakeNewsNet-PolitiFact",
+        "Nov 2026 — PDF forensic report, hardened security and a redesigned interface"
+      ]
     },
     {
       "id": "skyguard",
@@ -354,7 +371,15 @@ window.PROFILE_DATA = {
         "python"
       ],
       "aliases": ["skyguard", "weather station", "sensor anomaly", "sih"],
-      "building": true
+      "building": true,
+      "firstVersion": "I built the first version in August 2026 for Smart India Hackathon problem 26073: a FastAPI service and a Streamlit dashboard checking temperature, pressure and humidity with physics rules, an autoencoder and an Isolation Forest, all trained and tested on synthetic weather.",
+      "buildStory": "The interesting part was being honest about the numbers. My first benchmark graded the detector on data from the same generator it learned from, so I added real NOAA observations from four stations and a real-data benchmark. Fixing what that exposed took most of the work: a spike-labelling bug, results that weren’t reproducible, and a 15% false-alarm rate on storms, which I brought to zero with a faster genuine-weather gate, drift detection that knows how much time has passed, and a cross-station check that reads several stations going off together as weather, not faults. It’s still in progress.",
+      "milestones": [
+        "Aug 2026 — Physics rules, autoencoder, Isolation Forest, self-healing, Streamlit and FastAPI",
+        "Aug 2026 — Real NOAA data, cross-station checks and reproducible benchmarks; F1 above 90% on real data",
+        "Aug 2026 — A React operator dashboard and Docker deployment",
+        "Oct 2026 — A live network map and a guided tour; still in development"
+      ]
     },
     {
       "id": "vlm",
@@ -378,7 +403,14 @@ window.PROFILE_DATA = {
       "aliases": ["business card", "lead extraction", "vlm"],
       "repo": "https://github.com/muditagrawal-alt/VLM_Business_Card_Lead_Extraction",
       "embed": false,
-      "video": "assets/me/vlm-demo.mp4"
+      "video": "assets/me/vlm-demo.mp4",
+      "firstVersion": "I built it in a week in September 2026 to an engineering brief: upload business cards, get structured leads. The first deployment ran Qwen3-VL-8B on an NVIDIA T4 GPU in Azure, behind FastAPI, PostgreSQL and a React review screen, and it read all eight of my test cards perfectly.",
+      "buildStory": "I wrote the accuracy and latency harness early and let it make the decisions: eight synthetic cards built around layouts that break extraction (two people on one card, a first name as an initial, a slogan where the company usually goes), plus real cards graded by hand at 95–97%. A GPU costs money every hour, so I moved the public version to Gemini’s free tier on an Oracle Cloud Always Free VM, with the frontend on Vercel, and added the guardrails a public URL with no accounts needs. Every decision, and why, is in its decision log.",
+      "milestones": [
+        "Sep 2026 — Built in a week: FastAPI, PostgreSQL, React and Qwen3-VL on a T4 GPU",
+        "Sep 2026 — Moved to Gemini’s free tier, with guardrails for an open URL",
+        "Oct 2026 — Live on Vercel and Oracle Cloud"
+      ]
     },
     {
       "id": "slam",
@@ -399,7 +431,15 @@ window.PROFILE_DATA = {
         "Bundle adjustment and loop closure cut trajectory error 4.8× on a looping scene",
         "42 of 44 real-world clips from Wikimedia Commons reconstructed",
         "Stack: Python · OpenCV · GTSAM · FastAPI · React · Modal"
-      ]
+      ],
+      "firstVersion": "The first version, in September 2026, was the whole classical pipeline in its first days: a KLT feature tracker, two-view initialisation, PnP tracking, bundle adjustment and loop closure, with a FastAPI service and a React viewer, tested on a synthetic scene with exact ground truth.",
+      "buildStory": "I kept it deliberately classical, with no neural network and no GPU, and measured what each layer adds: bundle adjustment does most of the work, and loop closure helps only where the camera returns. Real footage is where it broke, so I batch-tested 45 arbitrary clips from Wikimedia Commons, added a homography fallback for flat scenes, and made the results reproducible. To process a 10-second video in under 10 seconds, I tuned it for a 4-core CPU container and moved it from AWS Fargate to Modal, where a 10-second clip takes 5.5 to 6.7 seconds.",
+      "milestones": [
+        "Sep 2026 — End-to-end SLAM: tracking, bundle adjustment, loop closure, an API and a viewer",
+        "Sep 2026 — 45 real clips, a homography fallback for flat scenes, reproducible results",
+        "Sep 2026 — Deployed on AWS Fargate, then moved to Modal"
+      ],
+      "aliases": ["slam", "point cloud"]
     },
     {
       "id": "sliver",
@@ -418,6 +458,13 @@ window.PROFILE_DATA = {
         "Fuses YOLO11m objects, YOLOv8-Face, motion and a CLIP text prompt",
         "Clips keep their context, and FFmpeg keeps the audio in sync to the sample",
         "Runs locally on Apple Silicon: nothing is uploaded"
+      ],
+      "firstVersion": "Sliver started in January 2026 as a prototype notebook for one idea: cut a long video down to the moments where faces and important objects appear. By April it was a postcard-themed web app with accounts, a workspace with live progress and saved clips.",
+      "buildStory": "Picking the highest-scoring frames gave jarring one-second snippets, so the real work was context. Sliver fuses object tracking (YOLO11m), faces (YOLOv8-Face), motion and a text prompt matched with CLIP, then widens each peak so a clip keeps its lead-in and reaction. Audio drifted on long cuts until I matched timestamps losslessly with FFmpeg. It all runs locally on Apple Silicon, so nothing is uploaded.",
+      "milestones": [
+        "Jan 2026 — A prototype notebook for face- and object-based clipping",
+        "Apr 2026 — A web app with accounts, a workspace and saved clips",
+        "Oct 2026 — The production pipeline: YOLO11m, YOLOv8-Face, CLIP prompts and sample-accurate audio"
       ]
     },
     {
@@ -441,12 +488,19 @@ window.PROFILE_DATA = {
         "defense",
         "pytorch"
       ],
-      "aliases": ["sword", "weapon"],
+      "aliases": ["sword", "weapon", "weapon detection"],
       "building": true,
       "highlights": [
         "10 classes, from pistols and knives to rocket launchers, on about 28,000 images",
         "Weighted Boxes Fusion over YOLO26s, YOLO26m and RT-DETR-L",
         "A Streamlit dashboard for images, video and a live camera"
+      ],
+      "firstVersion": "S.W.O.R.D v1, in December 2025, was a single YOLOv8 Nano model behind a Gradio page: upload an image or a video and it boxed firearms and blades, frame by frame.",
+      "buildStory": "One small model was the limit of v1, so in September 2026 I started v2 from scratch: a 10-class dataset of about 28,000 images and three complementary detectors (YOLO26s for recall, YOLO26m for precision, RT-DETR-L for transformer attention) fused with Weighted Boxes Fusion. A surveillance system needs more than boxes, so v2 adds tracking, pose, action recognition, alarm rules over time and an incident service. It’s still in development: the latest work is a verifier to cut false alarms, measured on the CCTV-Gun benchmark.",
+      "milestones": [
+        "Dec 2025 — v1: YOLOv8 Nano with a Gradio interface",
+        "Sep 2026 — v2: 10 classes, about 28,000 images, a three-model ensemble with Weighted Boxes Fusion",
+        "Nov 2026 — Tracking benchmarks, a false-alarm verifier and a CCTV-Gun comparison"
       ]
     },
     {
@@ -462,7 +516,14 @@ window.PROFILE_DATA = {
       "summary": "An educational compiler in C for the Helix language (.hxi): lexical analysis, recursive-descent parsing, three-address code and DAG-based optimisation.",
       "description": "Takes .hxi source through the classic phases: tokens, an abstract syntax tree built by recursive descent, three-address code, and a DAG pass that removes repeated subexpressions. It compiles arithmetic expressions today, and a Gradio playground on Hugging Face Spaces shows every phase.",
       "tags": ["compiler", "systems", "c", "parsing", "gradio"],
-      "embed": "https://muditagrawal03-helix-compiler.hf.space"
+      "embed": "https://muditagrawal03-helix-compiler.hf.space",
+      "firstVersion": "I started Helix in March 2026 with a lexical analyzer and a recursive-descent parser for a small language of my own, written in .hxi files.",
+      "buildStory": "I built it one compiler phase at a time, the way the textbook pipeline goes: tokens, then an abstract syntax tree, then three-address code, then a DAG optimiser that removes repeated subexpressions. It handles arithmetic expressions today, and in May I put it on Hugging Face Spaces with a Gradio playground so anyone can watch each phase work.",
+      "milestones": [
+        "Mar 2026 — A lexer and a recursive-descent parser",
+        "Apr 2026 — Three-address code and a DAG optimiser",
+        "May 2026 — A live playground on Hugging Face Spaces"
+      ]
     },
     {
       "id": "multiva",
@@ -481,6 +542,13 @@ window.PROFILE_DATA = {
         "12 Indian languages with IndicF5, and 16 more with XTTS",
         "Clones the speaker’s voice from 6–12 seconds of audio, with no training",
         "About 10× realtime on an M4, and nothing leaves the machine"
+      ],
+      "firstVersion": "The first version of Multiva, started in February 2026, was a cloud pipeline: Whisper to transcribe, NLLB to translate, Coqui XTTS to clone the voice and MuseTalk for lip-sync, with the videos stored in Cloudflare R2.",
+      "buildStory": "I rebuilt it in about two weeks at the end of August 2026 to run entirely on one machine: no uploads, no API keys, no per-minute cost. It uses faster-whisper, NLLB-200, IndicF5 for twelve Indian languages, and Wav2Lip on the mouth region only, blended back with a soft mask. The fixes that mattered were small and specific: rewriting a translation from the original on each attempt instead of from the last one, keeping one failed rewrite from discarding a good one, and saying the engine is busy instead of hanging.",
+      "milestones": [
+        "Feb 2026 — A cloud pipeline: Whisper, NLLB, XTTS and MuseTalk on Cloudflare R2",
+        "Aug 2026 — Rebuilt to run offline: faster-whisper, NLLB-200, IndicF5 and Wav2Lip",
+        "Sep 2026 — First-run setup, in-app model downloads, and projects that keep every output"
       ]
     },
     {
@@ -493,7 +561,10 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Artifex.ai",
       "summary": "Generative AI text-to-image chatbot utilizing Stable Diffusion v1.5 with Gradio UI and prompt history sidebar.",
       "tags": ["generative ai", "stable diffusion", "image generation", "gradio"],
-      "description": "Text-to-image generation with Stable Diffusion v1.5 in a Gradio app, with a prompt-history sidebar for reusing earlier prompts. Kept small and modular as a base for audio and video generation later."
+      "description": "Text-to-image generation with Stable Diffusion v1.5 in a Gradio app, with a prompt-history sidebar for reusing earlier prompts. Kept small and modular as a base for audio and video generation later.",
+      "firstVersion": "Artifex was one of my first generative-AI projects, in July 2025: a Stable Diffusion v1.5 image chatbot in a single script.",
+      "buildStory": "In December 2025 I split it into a modular app: a Gradio interface, a prompt-history sidebar for reusing earlier prompts and custom styling, and I took the API key out of the code. It stays small on purpose, as a clean base to add audio and video generation to later.",
+      "milestones": ["Jul 2025 — A single-script Stable Diffusion chatbot", "Dec 2025 — A modular Gradio app with prompt history"]
     }
   ],
   "skills": [
