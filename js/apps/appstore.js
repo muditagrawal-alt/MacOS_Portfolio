@@ -94,6 +94,7 @@ function openAppStoreProduct(id) {
             <h3>About this project</h3>
             <p>${escapeHtml(p.desc)}</p>
         </section>
+        ${projectStoryHtml(p, 'product-section')}
         ${p.stack.length ? `<section class="product-section"><h3>Built with</h3><div class="product-tags">${p.stack.map(t => `<span>${escapeHtml(t)}</span>`).join('')}</div></section>` : ''}
         <section class="product-section">
             <h3>Ask about it</h3>

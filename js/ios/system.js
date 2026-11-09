@@ -812,6 +812,10 @@ function openWindow(id) {
     const t = map[id];
     if (t) IOS.go(t[0], t[1] || []);
 }
+function openProjectDetails(name) {
+    const p = (typeof getPortfolioProjects === 'function' ? getPortfolioProjects() : []).find(x => x.name === name || x.title === name);
+    IOS.go('projects', p ? [p.id] : []);
+}
 function selectNote(id) { IOS.go('notes', ['all', String(id)]); }
 function openMailCompose() { IOS.go('mail', ['compose']); }
 function closeIris() { /* Iris lives inside Messages on iPhone — nothing to close */ }

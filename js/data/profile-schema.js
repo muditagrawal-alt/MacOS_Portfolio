@@ -171,7 +171,9 @@ function normalizeProfile(raw) {
             embed: x.embed === false || !live ? '' : str(x.embed, link),
             video: str(x.video),
             date: str(x.date), icon: str(x.icon, 'assets/icons/filetype-project.svg'),
-            featured: Boolean(x.featured), building: Boolean(x.building), demo: x.demo || null, category: x.category || null
+            featured: Boolean(x.featured), building: Boolean(x.building), demo: x.demo || null, category: x.category || null,
+            // The owner's own account: what the first version was, how they built it, and what changed when.
+            firstVersion: str(x.firstVersion), buildStory: str(x.buildStory), milestones: arr(x.milestones).map(String).filter(Boolean)
         };
     });
     if (p.projects.length && !p.projects.some(x => x.featured)) (p.projects.find(x => x.live) || p.projects[0]).featured = true;

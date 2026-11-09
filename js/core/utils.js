@@ -52,6 +52,23 @@ function projectVideoHtml(url, className = 'proj-video') {
 }
 
 /**
+ * A project's story, in the owner's words: how it started, how it was built,
+ * and its milestones ("Jan 2026 — First prototype") as a version history.
+ * `section` is the class each block gets ('proj-section' / 'product-section').
+ */
+function projectStoryHtml(p, section) {
+    const milestone = (m) => {
+        const [when, ...rest] = String(m).split(/\s+[—–-]\s+/);
+        return rest.length ? `<li><b>${escapeHtml(when)}</b><span>${escapeHtml(rest.join(' — '))}</span></li>` : `<li><span>${escapeHtml(m)}</span></li>`;
+    };
+    return [
+        p.firstVersion && `<section class="${section} story"><h3>How it started</h3><p>${escapeHtml(p.firstVersion)}</p></section>`,
+        p.buildStory && `<section class="${section} story"><h3>How I built it</h3><p>${escapeHtml(p.buildStory)}</p></section>`,
+        p.milestones && p.milestones.length && `<section class="${section} story"><h3>Version history</h3><ol class="story-history">${p.milestones.map(milestone).join('')}</ol></section>`
+    ].filter(Boolean).join('');
+}
+
+/**
  * Opens an external URL without handing the new tab a window.opener
  * reference back to this page (reverse-tabnabbing protection).
  */

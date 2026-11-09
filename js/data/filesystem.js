@@ -321,6 +321,7 @@ function getPortfolioProjects() {
             subtitle: p.subtitle, title: p.title,
             desc: [p.description, ...p.highlights.map(h => `• ${h}`)].filter(Boolean).join('\n'),
             blurb: p.summary, stack, date: p.date, featured: p.featured,
+            firstVersion: p.firstVersion, buildStory: p.buildStory, milestones: p.milestones,
             cats: own.length ? own : Object.entries(APPSTORE_CATEGORIES).filter(([, re]) => re.test(text)).map(([k]) => k),
             search: text.toLowerCase()
         };

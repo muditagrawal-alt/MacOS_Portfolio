@@ -130,12 +130,20 @@
 
         projects = P.projects.map(x => ({
             id: x.fsId, name: x.name, link: x.link, live: x.live, aliases: x.aliases,
+            firstVersion: x.firstVersion, buildStory: x.buildStory, milestones: x.milestones,
             summary: x.subtitle || x.kind, desc: x.description.split('\n')[0],
             text: `${x.title} — ${x.subtitle}.${x.building ? ' Still in development.' : ''} ${x.description} ${x.summary} ${x.tags.join(' ')}`
         }));
         projects.forEach(pr => add(`Project · ${pr.name}`, pr.text, {
             label: `Project · ${pr.name}`, open: () => pr.link ? openExternal(pr.link) : openFinderPane('projects')
         }, { kind: 'project', project: pr }));
+        // The story behind each project, in the owner's words: how it started, how it was built, what changed.
+        projects.forEach(pr => {
+            const src = { label: `Project · ${pr.name} · story`, open: () => (typeof openProjectDetails === 'function' ? openProjectDetails(pr.name) : openFinderPane('projects')) };
+            if (pr.firstVersion || pr.milestones.length) add(`Project · ${pr.name} · first version`,
+                `How ${pr.name} started, in ${P.first}’s words: ${pr.firstVersion}${pr.milestones.length ? ` Milestones: ${pr.milestones.join('; ')}.` : ''}`, src, { kind: 'story', project: pr });
+            if (pr.buildStory) add(`Project · ${pr.name} · how it was built`, `How ${P.first} built ${pr.name}, in ${P.pron.possessive} words: ${pr.buildStory}`, src, { kind: 'story', project: pr });
+        });
 
         P.skills.forEach(g => {
             const skillList = g.items.join(', ');
@@ -183,6 +191,7 @@
             experience: 'experience work worked job internship career company role employer',
             'experience-bullet': 'experience work achievement impact result',
             project: 'project built build app product',
+            story: 'story how built build made make process approach journey first version iteration original began started start before earlier evolved changed history timeline prototype milestone v1',
             skills: 'skills stack technologies tools languages frameworks know proficient',
             hackathon: 'hackathon competition compete competed finalist winner achievement award',
             event: 'event attended attend summit expo conference',
@@ -334,6 +343,20 @@
         }
         if (/\b(skills?|tech(nology)? stack|stack|tools|frameworks|languages)\b/i.test(ql)) {
             return answer(skillPassages.map(p => `• **${p.title.replace('Skills · ', '')}:** ${trimSentence(p.skillList, 160)}`).join('\n'), skillPassages.map(p => p.source));
+        }
+
+        // How a project was built, or what it looked like at first: the owner's own account.
+        const storyAsk = /\b(how (did|was|were|do|does) .{0,40}\b(build|built|make|made|create|created|develop|developed|work on)|first (version|iteration|draft|prototype|attempt)|\bv1\b|version (1|one)|original(ly)?|start(ed)?( out)? (as|with)|began|look(ed)? like (before|at first|originally|initially)|what (was|did) it (like|look like) before|before (it|the rebuild|v2)|evolv|chang(e|ed) over|journey|story (behind|of)|history of|iterations?|how it (came|started|began))\b/i;
+        const storyOf = projects.find(pr => {
+            const n = normaliseName(pr.name).replace(/ai$/, '');
+            return n.length > 2 && normaliseName(ql).includes(n);
+        }) || projects.find(x => x.aliases.some(a => ql.includes(a.toLowerCase())));
+        if (storyOf && storyAsk.test(ql) && (storyOf.firstVersion || storyOf.buildStory)) {
+            const before = /\b(first|v1|version (1|one)|original|start|began|before|look(ed)? like|initial)/i.test(ql);
+            const parts = before
+                ? [storyOf.firstVersion && `**How ${storyOf.name} started**, in ${first}’s words: “${storyOf.firstVersion}”`, storyOf.milestones.length && `**What changed since:**\n${storyOf.milestones.map(m => `• ${m}`).join('\n')}`]
+                : [storyOf.buildStory && `**How ${first} built ${storyOf.name}**, in ${pr.possessive} words: “${storyOf.buildStory}”`, storyOf.firstVersion && `It started out like this: “${trimSentence(storyOf.firstVersion, 220)}”`];
+            return answer(parts.filter(Boolean).join('\n\n'), passages.filter(p => p.project === storyOf).map(p => p.source));
         }
 
         // A named project

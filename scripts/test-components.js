@@ -318,6 +318,7 @@ function finishAfter(ms) {
         assert(system.includes(OWNER.digest.slice(0, 60)) && /Veritas Check/.test(system) && /Never invent/.test(system) && /advocate/.test(system),
             'the model always gets the whole info bank, the screen, and the stay-positive-but-factual rules');
         assert(calls[0].body.model === (process.env.GROQ_MODEL || 'openai/gpt-oss-120b'), 'a free-tier Groq model by default', calls[0].body.model);
+        assert(/own account/.test(system) && /Never add steps/.test(system), 'the model relays a project’s story as the owner’s account, adding nothing');
 
         calls.length = 0;
         replies = { 'api.groq.com': busyReply, 'generativelanguage.googleapis.com': answer };
@@ -345,6 +346,19 @@ function finishAfter(ms) {
         const link = document.querySelector('#photos-albums .photos-all-certs');
         assert(!P.certificatesUrl || (link && link.getAttribute('href') === P.certificatesUrl && link.target === '_blank'),
             'Photos on the Mac links to every certificate on LinkedIn', link ? link.getAttribute('href') : 'no link');
+    }
+
+    /* ── Iris and a project's story: how it was built, and what it was at first ── */
+    {
+        const pj = P.projects.find(x => x.buildStory && x.firstVersion)
+            || Object.assign(P.projects[0], { firstVersion: 'It began as a notebook prototype.', buildStory: 'I rebuilt it as a web app and measured every change.', milestones: ['Jan 2026 — Prototype', 'Oct 2026 — Rebuilt'] });
+        window.IrisBrain.rebuild();
+        const how = window.IrisBrain.respond(`How did ${P.first} build ${pj.name}?`).text;
+        const before = window.IrisBrain.respond(`What did ${pj.name} look like at first?`).text;
+        const ctx = window.IrisBrain.contextFor(`the first version of ${pj.name}`, 4).join(' ');
+        assert(how.includes(pj.buildStory.slice(0, 40)) && /words/.test(how), 'asked how a project was built, Iris gives the owner’s own account', how.slice(0, 120));
+        assert(before.includes(pj.firstVersion.slice(0, 40)) && (!pj.milestones.length || before.includes(pj.milestones[0].slice(0, 20))), 'asked what it looked like at first, Iris gives the first version and what changed', before.slice(0, 120));
+        assert(ctx.includes(pj.firstVersion.slice(0, 30)), 'the story reaches the model too, as context', ctx.slice(0, 120));
     }
 
     /* ── 9. One address: a copy on GitHub Pages sends visitors to the site ── */

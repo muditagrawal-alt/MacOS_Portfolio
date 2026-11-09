@@ -88,6 +88,9 @@ Add `"place"` to the degree and to each school to pin them on the map (see [Plac
 | `category` | `ai`, `vision`, `web`, `mobile`, `data`, `systems`, `design`, `defense` or `games` (or a list). Guessed from the text otherwise |
 | `featured` | `true` for the App Store's hero. Defaults to the first live project |
 | `building` | `true` while it's still in development: the project shows as "Building" (with "preview live" if it has a link) instead of finished |
+| `firstVersion` | What the first version was, in your own words. Shown as "How it started"; Iris answers "what did it look like at first?" from it |
+| `buildStory` | How you built it and what changed along the way, in the first person. Shown as "How I built it"; Iris relays it as your account |
+| `milestones` | `["Jan 2026 — First prototype", "Oct 2026 — Rebuilt and deployed"]`, shown as a version history |
 | `aliases` | Other names visitors might type, for Iris, Spotlight and Finder |
 | `demo` | `{ "description", "requirements", "download", "stack" }`: adds an installer disk image to the Mac |
 | `live` | Overrides whether the project counts as deployed |

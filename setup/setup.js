@@ -366,6 +366,9 @@
                     { key: 'video', label: 'Demo video', type: 'url', placeholder: 'https://youtu.be/… or a .mp4 link', hint: 'Optional. Plays on the project’s page.' },
                     { key: 'featured', label: 'Feature it first', type: 'toggle' },
                     { key: 'building', label: 'Still in development', type: 'toggle', hint: 'Shown as “Building” instead of finished.' },
+                    { key: 'firstVersion', label: 'How it started', type: 'textarea', wide: true, placeholder: 'What the first version was, in your words', hint: 'Iris answers “what did it look like at first?” from this.' },
+                    { key: 'buildStory', label: 'How you built it', type: 'textarea', wide: true, rows: 4, placeholder: 'How you built it and what you changed along the way, in your words' },
+                    { key: 'milestones', label: 'Version history', type: 'lines', wide: true, placeholder: 'Jan 2026 — First prototype\nOct 2026 — Rebuilt and deployed', hint: 'One per line: “Month Year — what changed”.' },
                     { key: 'embed', label: 'Opens inside the iPhone version', type: 'toggle', default: true, hint: 'Turn off if the live site refuses to be embedded; it then opens in a browser tab.' }
                 ]
             }),

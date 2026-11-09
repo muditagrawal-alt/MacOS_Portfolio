@@ -103,6 +103,7 @@
                 ${prose.map(s => `<p>${escapeHtml(s)}</p>`).join('')}
                 ${bullets.length ? `<ul>${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : ''}
             </section>
+            ${projectStoryHtml(p, 'proj-section')}
             ${p.stack.length ? `<section class="proj-section"><h3>Built with</h3><div class="proj-tags">${p.stack.map(t => `<span>${escapeHtml(t)}</span>`).join('')}</div></section>` : ''}
             ${p.repo ? `<section class="proj-section"><h3>Source code</h3><a class="ios-btn block secondary" href="${escapeHtml(safeUrl(p.repo))}" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> View on GitHub · ${escapeHtml(p.repo.replace(/^https?:\/\/(www\.)?github\.com\//, ''))}</a></section>` : ''}
             <section class="proj-section">

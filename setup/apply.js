@@ -85,7 +85,7 @@ export const OWNER = ${JSON.stringify({ name: p.name, first: p.first, possessive
 `;
 }
 
-const DIGEST_MAX = 6500;   // about 1,600 tokens: room for the question on Groq's free tier
+const DIGEST_MAX = 8000;   // about 2,000 tokens: still fits a question on Groq's free tier, easily on Gemini's
 
 /** The info bank as compact plain text for the model's system prompt: about 1,500 tokens, most important first. */
 function profileDigest(p) {
@@ -107,7 +107,7 @@ function profileDigest(p) {
     add('HACKATHONS', list(p.hackathons.map(h => `${h.name}${h.result ? ` — ${h.result}` : ''}${h.place ? ` at ${h.place.label}` : ''}${h.date ? ` (${h.date})` : ''}`)));
     if (p.projects.length) {
         lines.push('PROJECTS:');
-        p.projects.forEach(x => lines.push(`- ${x.name} — ${cut(x.subtitle || x.kind, 90)}. ${cut(x.description.split('\n')[0], 150)}${x.building ? ' [in development]' : ''}${x.live ? ` [${x.building ? 'preview ' : ''}live]` : ''}${x.video ? ' [demo video]' : ''}`));
+        p.projects.forEach(x => lines.push(`- ${x.name} — ${cut(x.subtitle || x.kind, 90)}. ${cut(x.description.split('\n')[0], 150)}${x.firstVersion ? ` Started as: ${cut(x.firstVersion.split(/(?<=\.)\s/)[0], 140)}` : ''}${x.building ? ' [in development]' : ''}${x.live ? ` [${x.building ? 'preview ' : ''}live]` : ''}${x.video ? ' [demo video]' : ''}`));
     }
     add('SKILLS', cut(list(p.skills.map(g => `${g.label}: ${g.items.join(', ')}`)), 700));
     add('EVENTS ATTENDED', list(p.events.map(v => `${v.name}${v.place ? ` at ${v.place.label}` : ''}${v.date ? ` (${v.date})` : ''}`)));

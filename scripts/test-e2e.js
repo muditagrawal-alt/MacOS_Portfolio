@@ -1404,6 +1404,20 @@ const section = (name) => !only || only.test(name);
       const c = P.certificates[i];
       expect(shown === P.certificates.filter(x => x.badge).length && (!P.certificatesUrl || allCerts === P.certificatesUrl) && r.hash === `#/photos/cert-${i + 1}` && r.back && (!c.date || r.caption.includes(c.date)), JSON.stringify({ shown, allCerts, ...r }));
     });
+    await test('a project page tells its story: how it started, how it was built, its version history', async () => {
+      const p = P.projects.find(x => x.firstVersion || x.buildStory);
+      if (!p) return;
+      await iosGo(page, 'projects', [p.fsId]);
+      await page.waitForSelector('.proj-facts', { timeout: 4000 });
+      const r = await page.evaluate(() => {
+        const top = [...document.querySelectorAll('.ios-page')].pop();
+        return { heads: [...top.querySelectorAll('.proj-section.story h3')].map(h => h.textContent), steps: top.querySelectorAll('.story-history li').length };
+      });
+      await page.evaluate(() => IOS.home());
+      await page.waitForTimeout(400);
+      const want = [p.firstVersion && 'How it started', p.buildStory && 'How I built it', p.milestones.length && 'Version history'].filter(Boolean);
+      expect(JSON.stringify(r.heads) === JSON.stringify(want) && r.steps === p.milestones.length, JSON.stringify({ ...r, want }));
+    });
     await test('a project still in development says so', async () => {
       const p = P.projects.find(x => x.building);
       if (!p) return;

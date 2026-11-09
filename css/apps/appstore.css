@@ -256,6 +256,11 @@ button.appstore-get-btn { border: none; font: inherit; font-size: 12px; font-wei
 .product-section { margin-bottom: 18px; }
 .product-section h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
 .product-section p { font-size: 13px; line-height: 1.65; white-space: pre-line; }
+.story-history { margin: 0; padding: 0 0 0 16px; list-style: none; border-left: 2px solid rgba(255, 255, 255, 0.14); }
+.story-history li { position: relative; display: grid; grid-template-columns: 76px 1fr; gap: 10px; padding: 0 0 10px 6px; font-size: 13px; line-height: 1.5; }
+.story-history li::before { content: ""; position: absolute; top: 6px; left: -22px; width: 8px; height: 8px; border-radius: 50%; background: #0a84ff; }
+.story-history b { color: rgba(255, 255, 255, 0.6); font-weight: 600; }
+.story-history li:not(:has(b)) { grid-template-columns: 1fr; }
 .product-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .product-tags span {
     font-size: 12px; padding: 4px 10px; border-radius: 999px;

@@ -137,6 +137,12 @@
 .proj-section h3 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.3px; }
 .proj-section p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.5; }
 .proj-section ul { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.5; }
+/* Version history: a dated timeline, like the App Store's */
+.story-history { position: relative; margin: 0; padding: 0 0 0 18px; list-style: none; }
+.story-history::before { content: ""; position: absolute; top: 6px; bottom: 6px; left: 4px; width: 2px; border-radius: 1px; background: var(--ios-sep); }
+.story-history li { position: relative; display: flex; flex-direction: column; gap: 1px; padding-bottom: 12px; font-size: 15px; line-height: 1.45; }
+.story-history li::before { content: ""; position: absolute; top: 6px; left: -18px; width: 10px; height: 10px; border-radius: 50%; background: var(--ios-tint); box-shadow: 0 0 0 3px var(--ios-bg, #fff); }
+.story-history b { color: var(--ios-label-2); font-size: 13px; font-weight: 600; }
 .proj-section li { margin-bottom: 4px; }
 
 .proj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
