@@ -20,6 +20,12 @@
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
+/* Reduce Motion: windows move without sliding or zooming (Mission Control
+   included, in css/mission-control.css). */
+@media (prefers-reduced-motion: reduce) {
+    .window { transition: opacity 0.2s ease; }
+}
+
 .hidden {
     display: none !important;
 }

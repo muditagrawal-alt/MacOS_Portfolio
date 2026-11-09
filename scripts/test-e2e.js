@@ -538,10 +538,15 @@ const section = (name) => !only || only.test(name);
       await page.keyboard.press('Escape');
       await page.evaluate(() => { openWindow('finder-window'); openWindow('safari-window'); });
       const before = await page.evaluate(() => ['finder-window', 'safari-window'].map(i => document.getElementById(i).getBoundingClientRect().toJSON()));
+      // Wait on what the screen shows, checked every frame, not on fixed sleeps: CSS
+      // transitions only advance when frames are drawn, and a busy CI runner can stall them.
       await page.evaluate(() => enterMissionControl());
-      await page.waitForTimeout(500);
+      await page.waitForFunction(() => document.querySelectorAll('.window.in-mission-control').length === 2 && document.getElementById('finder-window').getBoundingClientRect().width < 700, null, { polling: 'raf', timeout: 4000 }).catch(() => {});
       await page.evaluate(() => exitMissionControl());
-      await page.waitForTimeout(500);
+      await page.waitForFunction((was) => ['finder-window', 'safari-window'].every((id, i) => {
+        const r = document.getElementById(id).getBoundingClientRect();
+        return Math.abs(r.x - was[i].x) < 2 && Math.abs(r.y - was[i].y) < 2;
+      }), before, { polling: 'raf', timeout: 4000 }).catch(() => {});
       const after = await page.evaluate(() => ['finder-window', 'safari-window'].map(i => document.getElementById(i).getBoundingClientRect().toJSON()));
       expect(before.every((r, i) => Math.abs(r.x - after[i].x) < 2 && Math.abs(r.y - after[i].y) < 2), JSON.stringify({ before, after }));
     });

@@ -85,6 +85,11 @@
     z-index: 9992 !important;
 }
 
+/* Reduce Motion: windows go straight to their places and back, as on a Mac. */
+@media (prefers-reduced-motion: reduce) {
+    .window.in-mission-control { transition: box-shadow 0.2s ease, opacity 0.2s ease !important; }
+}
+
 .window.in-mission-control:hover {
     transform: scale(var(--mc-scale, 0.55)) translateY(-8px) !important;
     box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 2px var(--accent), 0 0 24px color-mix(in srgb, var(--accent) 45%, transparent) !important;
