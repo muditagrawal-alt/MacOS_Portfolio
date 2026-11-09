@@ -360,18 +360,20 @@ window.PROFILE_DATA = {
       "id": "vlm",
       "name": "VLM Lead Extraction",
       "title": "VLM Business Card Lead Extraction",
-      "subtitle": "Live Deployed Web Application",
+      "subtitle": "Business cards in, a verified lead list out",
       "kind": "Vision AI Web App",
       "date": "Sep 2026",
       "icon": "assets/icons/app-vlm.svg",
       "link": "https://muditagrawal-lead-extraction.vercel.app",
-      "summary": "Live deployed web application: Bulk business-card lead extraction using vision-language models (Gemini & Qwen3-VL), structured parsing, and Excel export. FastAPI, React, Vercel, Oracle Cloud.",
-      "description": "Bulk business-card lead extraction using vision-language models (Gemini & Qwen3-VL), structured field parsing, review drawer, and formatted Excel export.",
+      "summary": "Upload business cards in bulk, get seven structured fields per card from a vision-language model, review and correct them in the browser, and export a formatted Excel workbook.",
+      "description": "A vision-language model reads each card into seven fields (Qwen3-VL-8B on a GPU, or Gemini on the free tier), and a review screen lets you correct anything before export. FastAPI, a job queue and PostgreSQL sit behind a React app, with guardrails for a public URL that has no accounts.",
       "highlights": [
-        "Stack: FastAPI · React · PostgreSQL · Vercel · Oracle Cloud",
-        "Live App: muditagrawal-lead-extraction.vercel.app"
+        "100% field accuracy on an eight-card test set built from layouts that break extraction; 95–97% on real cards graded by hand",
+        "Runs Qwen3-VL-8B on a T4 GPU, or Gemini on the free tier",
+        "Stack: FastAPI · PostgreSQL · React · Vercel · Oracle Cloud",
+        "Live app: muditagrawal-lead-extraction.vercel.app"
       ],
-      "tags": ["vlm", "vision", "leads", "business card", "gemini", "fastapi", "react", "vercel"],
+      "tags": ["vlm", "vision", "leads", "business card", "qwen", "gemini", "fastapi", "react", "postgresql", "vercel"],
       "featured": true,
       "aliases": ["business card", "lead extraction", "vlm"],
       "repo": "https://github.com/muditagrawal-alt/VLM_Business_Card_Lead_Extraction",
@@ -382,16 +384,22 @@ window.PROFILE_DATA = {
       "id": "slam",
       "name": "Monocular SLAM",
       "title": "Monocular RGB Sparse Point Cloud SLAM",
-      "subtitle": "Classical Multi-View Geometry",
+      "subtitle": "A camera path and a 3D point cloud from one ordinary video",
       "kind": "Computer Vision System",
       "date": "Sep 2026",
       "icon": "assets/icons/app-slam.svg",
       "repo": "https://github.com/muditagrawal-alt/Monocular_RGB_Sparse_Point_Cloud_SLAM",
-      "summary": "Real-time camera trajectory & sparse 3D point cloud reconstruction from single-lens video without GPU or neural network. 10s clip reconstructs in <7s on CPU.",
-      "description": "Camera trajectory and a sparse 3D point cloud from a single-lens RGB video. Classical multi-view geometry, no neural network, no GPU: a 10s clip reconstructs in under 7s on CPU.",
-      "tags": ["slam", "computer vision", "3d", "point cloud", "geometry", "cpu", "c++", "python"],
+      "summary": "Recovers a camera’s trajectory and a sparse 3D point cloud from a single-lens RGB video with classical multi-view geometry: no depth sensor, no neural network, no GPU.",
+      "description": "Corners are tracked frame to frame with optical flow, each camera pose is solved against the map built so far, bundle adjustment refines poses and structure together, and loop closure removes drift wherever the camera revisits a place. A 10-second clip reconstructs in under 7 seconds on a CPU container.",
+      "tags": ["slam", "computer vision", "3d", "point cloud", "geometry", "opencv", "gtsam", "fastapi", "react", "python"],
       "link": "https://muditagrawal-alt--monocular-slam.modal.run",
-      "video": "assets/me/slam-demo.mp4"
+      "video": "assets/me/slam-demo.mp4",
+      "highlights": [
+        "A 10-second clip in 5.5–6.7 s on 4 CPU cores, with no GPU",
+        "Bundle adjustment and loop closure cut trajectory error 4.8× on a looping scene",
+        "42 of 44 real-world clips from Wikimedia Commons reconstructed",
+        "Stack: Python · OpenCV · GTSAM · FastAPI · React · Modal"
+      ]
     },
     {
       "id": "sliver",
@@ -403,23 +411,43 @@ window.PROFILE_DATA = {
       "icon": "assets/icons/app-sliver.svg",
       "repo": "https://github.com/muditagrawal-alt/Sliver-Smart-Video-Clipping-Tool",
       "summary": "On-device AI video summarization engine & smart highlight extractor using YOLO11m, YOLOv8-Face, and OpenAI CLIP with sample-accurate audio sync.",
-      "tags": ["video", "clipping", "yolo", "ffmpeg", "highlights"],
-      "video": "assets/me/sliver-demo.mp4"
+      "tags": ["video", "clipping", "yolo", "clip", "pytorch", "ffmpeg", "highlights"],
+      "video": "assets/me/sliver-demo.mp4",
+      "description": "Finds the moments that matter in a long video (people, important objects, motion, and anything you describe in words) and cuts them into a short highlight reel that keeps each moment’s lead-in and reaction. Runs entirely on your own machine.",
+      "highlights": [
+        "Fuses YOLO11m objects, YOLOv8-Face, motion and a CLIP text prompt",
+        "Clips keep their context, and FFmpeg keeps the audio in sync to the sample",
+        "Runs locally on Apple Silicon: nothing is uploaded"
+      ]
     },
     {
       "id": "sword",
       "name": "Project S.W.O.R.D",
-      "title": "Project S.W.O.R.D",
-      "subtitle": "Real-Time Weapon Surveillance System",
+      "title": "Project S.W.O.R.D v2",
+      "subtitle": "Multi-model weapon detection for surveillance",
       "kind": "Defense CV App",
       "date": "Dec 2025",
       "icon": "assets/icons/app-sword.svg",
-      "repo": "https://github.com/muditagrawal-alt/Project-S.W.O.R.D",
-      "summary": "Real-time weapon observation using YOLOv8 defense module, pose estimation, and behavioral classification for high-threat surveillance.",
-      "description": "Surveillance for Weapon Observation using real-time YOLOv8 deep learning detection models for high-threat defense monitoring.",
-      "tags": ["computer vision", "yolo", "weapon detection", "defense", "surveillance"],
+      "repo": "https://github.com/muditagrawal-alt/Project_S.W.O.R.D_v2",
+      "summary": "A three-model weapon detector (YOLO26s, YOLO26m and RT-DETR-L, fused with Weighted Boxes Fusion) trained on 10 weapon classes and about 28,000 images, connected to tracking, pose and alarm rules.",
+      "description": "Three complementary detectors vote through Weighted Boxes Fusion: YOLO26s for recall, YOLO26m for precision and RT-DETR-L for transformer attention. Around them, tracking, pose, action recognition, alarm rules over time and an incident service turn detections into alerts.",
+      "tags": [
+        "computer vision",
+        "yolo",
+        "rt-detr",
+        "object detection",
+        "weapon detection",
+        "surveillance",
+        "defense",
+        "pytorch"
+      ],
       "aliases": ["sword", "weapon"],
-      "building": true
+      "building": true,
+      "highlights": [
+        "10 classes, from pistols and knives to rocket launchers, on about 28,000 images",
+        "Weighted Boxes Fusion over YOLO26s, YOLO26m and RT-DETR-L",
+        "A Streamlit dashboard for images, video and a live camera"
+      ]
     },
     {
       "id": "helix",
@@ -431,9 +459,9 @@ window.PROFILE_DATA = {
       "icon": "assets/icons/app-helix.svg",
       "link": "https://huggingface.co/spaces/muditagrawal03/Helix-Compiler",
       "repo": "https://github.com/muditagrawal-alt/Helix-Compiler",
-      "summary": "C-based compiler implementation with lexical analysis, recursive descent AST parsing, three-address code generation, and DAG optimization.",
-      "description": "Systems project implementing lexical analysis, AST parsing, symbol tables, intermediate representation, and machine translation with live web REPL.",
-      "tags": ["compiler", "systems", "c", "parsing"],
+      "summary": "An educational compiler in C for the Helix language (.hxi): lexical analysis, recursive-descent parsing, three-address code and DAG-based optimisation.",
+      "description": "Takes .hxi source through the classic phases: tokens, an abstract syntax tree built by recursive descent, three-address code, and a DAG pass that removes repeated subexpressions. It compiles arithmetic expressions today, and a Gradio playground on Hugging Face Spaces shows every phase.",
+      "tags": ["compiler", "systems", "c", "parsing", "gradio"],
       "embed": "https://muditagrawal03-helix-compiler.hf.space"
     },
     {
@@ -447,8 +475,13 @@ window.PROFILE_DATA = {
       "repo": "https://github.com/muditagrawal-alt/Multiva.Ai",
       "summary": "Offline video dubbing studio for Indian languages preserving speaker voice & lip sync using faster-whisper, NLLB-200, IndicF5 and Wav2Lip.",
       "description": "Offline video dubbing for Indian languages. Keeps speaker's own voice and re-syncs lips: faster-whisper, NLLB-200, IndicF5 and Wav2Lip in a desktop studio.",
-      "tags": ["audio", "speech synthesis", "voice cloning", "whisper", "wav2lip"],
-      "video": "assets/me/multiva-demo.mp4"
+      "tags": ["audio", "speech synthesis", "voice cloning", "whisper", "nllb", "indicf5", "wav2lip"],
+      "video": "assets/me/multiva-demo.mp4",
+      "highlights": [
+        "12 Indian languages with IndicF5, and 16 more with XTTS",
+        "Clones the speaker’s voice from 6–12 seconds of audio, with no training",
+        "About 10× realtime on an M4, and nothing leaves the machine"
+      ]
     },
     {
       "id": "artifex",
@@ -459,7 +492,8 @@ window.PROFILE_DATA = {
       "date": "Jul 2025",
       "repo": "https://github.com/muditagrawal-alt/Artifex.ai",
       "summary": "Generative AI text-to-image chatbot utilizing Stable Diffusion v1.5 with Gradio UI and prompt history sidebar.",
-      "tags": ["generative ai", "stable diffusion", "image generation", "gradio"]
+      "tags": ["generative ai", "stable diffusion", "image generation", "gradio"],
+      "description": "Text-to-image generation with Stable Diffusion v1.5 in a Gradio app, with a prompt-history sidebar for reusing earlier prompts. Kept small and modular as a base for audio and video generation later."
     }
   ],
   "skills": [
