@@ -802,7 +802,9 @@ const section = (name) => !only || only.test(name);
     await page.click('#dock-music');
     await test('pause then play resumes from the same position', async () => {
       await page.evaluate(() => playMusicTrackIndex(0));
-      await page.waitForTimeout(1300);
+      // Playback starts once the track has buffered, which takes longer on some machines:
+      // wait until a second has actually played rather than for a fixed time.
+      await page.waitForFunction(() => /^0:0[1-9]/.test(document.getElementById('music-lcd-time').textContent), null, { timeout: 6000 }).catch(() => {});
       await page.click('#music-play-btn');            // pause
       await page.waitForTimeout(200);
       const t1 = await page.textContent('#music-lcd-time');
