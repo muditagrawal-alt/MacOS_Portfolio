@@ -330,6 +330,12 @@ function finishAfter(ms) {
         replies = { 'api.groq.com': busyReply, 'generativelanguage.googleapis.com': busyReply };
         const busy = await call({ messages: [{ role: 'user', content: 'hi' }] });
         assert(busy.code === 429, 'both out of tokens: the proxy says busy (the site then answers locally)', String(busy.code));
+        calls.length = 0;
+        replies = { 'api.groq.com': busyReply, 'generativelanguage.googleapis.com': { status: 200, body: { choices: [{ finish_reason: 'length', message: { content: 'He rebuilt it around evidence. Every answer cites its pa' } }] } } };
+        const cut = await call({ messages: [{ role: 'user', content: 'how did he build it?' }] });
+        const gemBody = (calls.find(c => c.host === 'generativelanguage.googleapis.com') || {}).body || {};
+        assert(cut.body.reply === 'He rebuilt it around evidence.' && !('reasoning_effort' in gemBody),
+            'an answer cut off by the token limit ends at its last whole sentence, and Gemini isn’t asked to think', JSON.stringify({ reply: cut.body.reply, reasoning: gemBody.reasoning_effort }));
         const foreign = await call({ messages: [{ role: 'user', content: 'hi' }] }, { origin: 'https://evil.example' });
         assert(foreign.code === 403, 'other websites can’t use the proxy', String(foreign.code));
         const lookalike = await call({ messages: [{ role: 'user', content: 'hi' }] }, { referer: `${origin}.evil.example/` });

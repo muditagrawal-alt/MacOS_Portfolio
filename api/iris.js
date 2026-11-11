@@ -40,7 +40,7 @@ const PROVIDERS = [
         timeoutMs: 8000,
         body: (messages) => {
             const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-            return { model, messages, max_completion_tokens: 700, temperature: 0.5, ...(/gpt-oss/.test(model) ? { reasoning_effort: 'low' } : {}) };
+            return { model, messages, max_completion_tokens: 1000, temperature: 0.5, ...(/gpt-oss/.test(model) ? { reasoning_effort: 'low' } : {}) };
         }
     },
     {
@@ -48,7 +48,8 @@ const PROVIDERS = [
         key: () => process.env.GEMINI_API_KEY,
         url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   // Gemini's OpenAI-compatible endpoint
         timeoutMs: 9000,
-        body: (messages) => ({ model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite', messages, max_tokens: 700, temperature: 0.5, reasoning_effort: 'low' })
+        // No reasoning_effort: Gemini's thinking tokens count against max_tokens and cut answers off mid-sentence.
+        body: (messages) => ({ model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite', messages, max_tokens: 1200, temperature: 0.5 })
     }
 ];
 
@@ -88,6 +89,12 @@ function isRateLimited(clientIp) {
     }
 
     return entry.count > MAX_REQUESTS_PER_WINDOW;
+}
+
+/** Text up to its last complete sentence (or all of it, if it has none). */
+function lastWholeSentence(text) {
+    const m = text.match(/^[\s\S]*[.!?)”"](?=\s|$)/);
+    return m ? m[0].trim() : text;
 }
 
 /** The page calling from the address this function is served on: any domain added to the project. */
@@ -195,6 +202,8 @@ export default async function handler(req, res) {
             const tag = reply.match(/\[\[open:([a-z]+)(?::([^\]\n]{1,80}))?\]\]/i);
             if (tag) action = { app: tag[1].toLowerCase(), target: tag[2] ? tag[2].trim() : null };
             reply = reply.replace(/\[\[[^\]\n]*\]\]/g, '').trim();
+            // Out of tokens mid-answer: end at the last complete sentence rather than mid-word.
+            if (data.choices?.[0]?.finish_reason === 'length') reply = lastWholeSentence(reply);
             return res.status(200).json({ reply, action, via: provider.name });
         } catch (e) {
             // Unreachable or too slow: try the next provider.
