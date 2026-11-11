@@ -25,7 +25,7 @@ window.IrisEverywhere = (() => {
             const href = safeUrl(url.replace(/&amp;/g, '&'));
             return href === '#' ? label : `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
         });
-        return out.replace(/^[•-] /gm, '&bull; ').replace(/\n/g, '<br>');
+        return out.replace(/^[•-] /gm, '&bull; ').replace(/^&gt; ?/gm, '').replace(/\n/g, '<br>');
     }
 
     function mount() {

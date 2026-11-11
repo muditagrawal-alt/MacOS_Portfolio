@@ -354,6 +354,12 @@ function finishAfter(ms) {
             'Photos on the Mac links to every certificate on LinkedIn', link ? link.getAttribute('href') : 'no link');
     }
 
+    /* ── Iris's answers: a quoted line shows as the quote, not with a stray ">" ── */
+    {
+        const html = window.formatIrisResponse('In his words:\n> “I rebuilt it around one rule.”');
+        assert(!html.includes('&gt;') && html.includes('“I rebuilt it around one rule.”'), 'a Markdown quote in an answer shows without its “>” marker', html);
+    }
+
     /* ── Iris and a project's story: how it was built, and what it was at first ── */
     {
         const pj = P.projects.find(x => x.buildStory && x.firstVersion)

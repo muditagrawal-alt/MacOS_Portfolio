@@ -513,6 +513,7 @@ function formatIrisResponse(text) {
         return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
     });
     out = out.replace(/^• /gm, '&bull; ');
+    out = out.replace(/^&gt; ?/gm, '');   // a Markdown quote marker: the quote marks already show it
     out = out.replace(/\n/g, '<br>');
     return out;
 }
